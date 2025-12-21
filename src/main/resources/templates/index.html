@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>PISIP - La Choza</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body class="text-center">
+    <header>
+        <h1>🌊 Cevichería "La Choza"</h1>
+    </header>
+    
+    <main style="padding: 50px;">
+        <h2>¡Bienvenido al Sistema PISIP!</h2>
+        <p>¿Qué deseas hacer hoy?</p>
+        <div style="margin-top: 20px;">
+            <a th:href="@{/producto}" class="btn-pedido" style="text-decoration: none;">Ver Menú de Ceviches</a>
+            <br><br>
+            <a href="#" class="btn-pedido" style="background-color: #3498db; text-decoration: none;">Realizar un Pedido</a>
+        </div>
+    </main>
+</body>
+</html>
