@@ -30,6 +30,10 @@ public class ProductoEntity {
     @Column(length = 255)
     private String descripcion;
 
-    // Si tu versión de Spring/Java no reconoce las anotaciones de Lombok (@Getter/@Setter)
-    // recuerda generar los Getters y Setters manualmente.
+    @Column(nullable = false)
+    private Boolean activo = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id", nullable = false)
+    private CategoriaEntity categoria;
 }
