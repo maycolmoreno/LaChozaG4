@@ -8,14 +8,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/pedidos")
 public class PedidoController {
 
-    private final CrearPedidoPort crearPedidoPort;
+	private final CrearPedidoPort crearPedidoPort;
 
-    public PedidoController(CrearPedidoPort crearPedidoPort) {
-        this.crearPedidoPort = crearPedidoPort;
-    }
+	public PedidoController(CrearPedidoPort crearPedidoPort) {
+		this.crearPedidoPort = crearPedidoPort;
+	}
 
-    @PostMapping
-    public Pedido crearPedido(@RequestBody Pedido pedido) {
-        return crearPedidoPort.ejecutar(pedido);
-    }
+	@PostMapping
+	public Pedido crearPedido(@RequestBody Pedido pedido) {
+		return crearPedidoPort.ejecutar(pedido);
+	}
 }

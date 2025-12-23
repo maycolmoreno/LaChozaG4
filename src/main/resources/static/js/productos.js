@@ -80,3 +80,35 @@ async function confirmarEnvioPedido() {
         console.error("Error:", error);
     }
 }
+
+// 4. Enviar POST al PedidoController con manejo de errores detallado
+async function confirmarEnvioPedido() {
+    const mesaId = document.getElementById("select-mesa").value;
+    
+    const pedidoDTO = {
+        mesaId: parseInt(mesaId),
+        productosIds: [parseInt(productoSeleccionadoId)], // Aseguramos que sea entero
+        clienteId: 1 
+    };
+
+    try {
+        const response = await fetch('/api/pedidos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(pedidoDTO)
+        });
+
+        if (response.ok) {
+            alert("✅ ¡Pedido enviado a cocina!");
+            cerrarModal();
+        } else {
+            // Intentamos leer el mensaje de error del servidor
+            const errorMsg = await response.text();
+            alert("❌ Error: " + errorMsg || "No se pudo crear el pedido.");
+            console.error("Detalle del error:", errorMsg);
+        }
+    } catch (error) {
+        alert("❌ Error de conexión con el servidor.");
+        console.error("Error:", error);
+    }
+}

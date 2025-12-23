@@ -10,14 +10,19 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class ProductoController {
 
-    private final ProductoRepositoryPort productoRepo;
+	private final ProductoRepositoryPort productoRepo;
 
-    public ProductoController(ProductoRepositoryPort productoRepo) {
-        this.productoRepo = productoRepo;
-    }
+	public ProductoController(ProductoRepositoryPort productoRepo) {
+		this.productoRepo = productoRepo;
+	}
 
-    @GetMapping
-    public List<Producto> listarMenu() {
-        return productoRepo.listarTodos();
-    }
+	@PostMapping
+	public Producto crear(@RequestBody Producto producto) {
+		return productoRepo.guardar(producto);
+	}
+
+	@GetMapping
+	public List<Producto> listarMenu() {
+		return productoRepo.listarTodos();
+	}
 }

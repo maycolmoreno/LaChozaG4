@@ -10,18 +10,18 @@ import java.util.List;
 @Repository
 public interface PedidoJpaRepository extends JpaRepository<PedidoEntity, Long> {
 
-    // Buscar pedidos por estado (ej: "PENDIENTE", "PARA_COCINA")
-    List<PedidoEntity> findByEstado(String estado);
+	// Buscar pedidos por estado (ej: "PENDIENTE", "PARA_COCINA")
+	List<PedidoEntity> findByEstado(String estado);
 
-    // Buscar pedidos activos de una mesa (no pagados)
-    @Query("""
-        SELECT p 
-        FROM PedidoEntity p 
-        WHERE p.mesa.id = :mesaId 
-          AND p.estado <> 'PAGADO'
-    """)
-    List<PedidoEntity> findPedidosActivosPorMesa(Long mesaId);
+	// Buscar pedidos activos de una mesa (no pagados)
+	@Query("""
+			    SELECT p
+			    FROM PedidoEntity p
+			    WHERE p.mesa.id = :mesaId
+			      AND p.estado <> 'PAGADO'
+			""")
+	List<PedidoEntity> findPedidosActivosPorMesa(Long mesaId);
 
-    // Buscar pedidos por identificación del cliente
-    List<PedidoEntity> findByClienteIdentificacion(String identificacion);
+	// Buscar pedidos por identificación del cliente
+	List<PedidoEntity> findByClienteIdentificacion(String identificacion);
 }

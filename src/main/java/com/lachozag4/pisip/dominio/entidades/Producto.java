@@ -14,35 +14,35 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Producto {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false)
-    private String nombre;
+	@Column(nullable = false)
+	private String nombre;
 
-    private Double precio;
+	private Double precio;
 
-    @Column(name = "stock_actual")
-    private Integer stockActual;
+	@Column(name = "stock_actual")
+	private Integer stockActual;
 
-    private String descripcion;
+	private String descripcion;
 
-    @ManyToOne
-    @JoinColumn(name = "categoria_id", nullable = false)
-    private Categoria categoria;
+	@ManyToOne
+	@JoinColumn(name = "categoria_id", nullable = false)
+	private Categoria categoria;
 
-    private Boolean disponible;
+	private Boolean disponible;
 
-    /* ===== Lógica de dominio ===== */
+	/* ===== Lógica de dominio ===== */
 
-    public boolean tieneStockDisponible(int cantidadSolicitada) {
-        return this.stockActual != null && this.stockActual >= cantidadSolicitada;
-    }
+	public boolean tieneStockDisponible(int cantidadSolicitada) {
+		return this.stockActual != null && this.stockActual >= cantidadSolicitada;
+	}
 
-    public void reducirStock(int cantidad) {
-        if (tieneStockDisponible(cantidad)) {
-            this.stockActual -= cantidad;
-        }
-    }
+	public void reducirStock(int cantidad) {
+		if (tieneStockDisponible(cantidad)) {
+			this.stockActual -= cantidad;
+		}
+	}
 }

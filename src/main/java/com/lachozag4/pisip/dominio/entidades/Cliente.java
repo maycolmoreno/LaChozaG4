@@ -11,18 +11,18 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Cliente {
 
-    private Long id;
-    private String identificacion; // Cédula o RUC
-    private String nombre;
-    private String direccion;
-    private String telefono;
-    private String email;
+	private Long id;
+	private String identificacion; // Cédula o RUC
+	private String nombre;
+	private String direccion;
+	private String telefono;
+	private String email;
 
-    /**
-     * Ejemplo de lógica de negocio: Validar si la identificación es válida
-     * (Específica para Ecuador si es el caso)
-     */
-    public boolean esIdentificacionValida() {
-        return this.identificacion != null && this.identificacion.length() >= 10;
-    }
+	/**
+	 * Ejemplo de lógica de negocio: Validar si la identificación es válida
+	 * (Específica para Ecuador si es el caso)
+	 */
+	public boolean esIdentificacionValida() {
+		return this.identificacion != null && this.identificacion.length() >= 10;
+	}
 }

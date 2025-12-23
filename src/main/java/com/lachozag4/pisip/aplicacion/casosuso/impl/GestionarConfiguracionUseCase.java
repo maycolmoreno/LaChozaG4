@@ -11,23 +11,22 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class GestionarConfiguracionUseCase implements GestionarConfiguracionPort {
 
-    private final ConfiguracionRepository configRepo;
+	private final ConfiguracionRepository configRepo;
 
-    @Override
-    @Transactional(readOnly = true)
-    public Double obtenerIvaActual() {
-        return configRepo.findById(1L)
-                .map(Configuracion::getPorcentajeIva)
-                .orElse(15.0); // Valor por defecto si no hay config
-    }
+	@Override
+	@Transactional(readOnly = true)
+	public Double obtenerIvaActual() {
+		return configRepo.findById(1L).map(Configuracion::getPorcentajeIva).orElse(15.0); // Valor por defecto si no hay
+																							// config
+	}
 
-    @Override
-    @Transactional
-    public void actualizarPorcentajeIva(Double nuevoIva) {
-        Configuracion config = configRepo.findById(1L)
-                .orElseThrow(() -> new RuntimeException("No se encontró la configuración inicial."));
-        
-        config.setPorcentajeIva(nuevoIva);
-        configRepo.save(config);
-    }
+	@Override
+	@Transactional
+	public void actualizarPorcentajeIva(Double nuevoIva) {
+		Configuracion config = configRepo.findById(1L)
+				.orElseThrow(() -> new RuntimeException("No se encontró la configuración inicial."));
+
+		config.setPorcentajeIva(nuevoIva);
+		configRepo.save(config);
+	}
 }

@@ -12,28 +12,28 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Usuario {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String username;
+	@Column(nullable = false, unique = true)
+	private String username;
 
-    @Column(nullable = false)
-    private String password;
+	@Column(nullable = false)
+	private String password;
 
-    @Column(nullable = false)
-    private String nombreCompleto;
+	@Column(nullable = false)
+	private String nombreCompleto;
 
-    @Column(nullable = false)
-    private String rol; // EJEMPLOS: 'ADMIN', 'CAMARERO', 'COCINA'
+	@Column(nullable = false)
+	private String rol; // EJEMPLOS: 'ADMIN', 'CAMARERO', 'COCINA'
 
-    private Boolean activo = true;
+	private Boolean activo = true;
 
-    /**
-     * Lógica de Dominio: Verifica si el usuario tiene permisos de administrador
-     */
-    public boolean esAdministrador() {
-        return "ADMIN".equalsIgnoreCase(this.rol);
-    }
+	/**
+	 * Lógica de Dominio: Verifica si el usuario tiene permisos de administrador
+	 */
+	public boolean esAdministrador() {
+		return "ADMIN".equalsIgnoreCase(this.rol);
+	}
 }

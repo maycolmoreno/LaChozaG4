@@ -14,22 +14,22 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ClienteEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false, unique = true, length = 15)
-    private String identificacion; // Cédula o RUC
+	@Column(nullable = false, unique = true, length = 15)
+	private String identificacion; // Cédula o RUC
 
-    @Column(nullable = false, length = 100)
-    private String nombre;
+	@Column(nullable = false, length = 100)
+	private String nombre;
 
-    @Column(length = 150)
-    private String direccion;
+	@Column(length = 150)
+	private String direccion;
 
-    @Column(length = 20)
-    private String telefono;
+	@Column(length = 20)
+	private String telefono;
 
-    @Column(length = 100)
-    private String email;
+	@Column(length = 100)
+	private String email;
 }

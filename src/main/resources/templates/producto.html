@@ -1,55 +1,61 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PISIP - Menú La Choza</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>PISIP - Menú La Choza</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" th:href="@{/css/estilos.css}">
 </head>
+
 <body>
 
-<header class="bg-dark text-white text-center py-4 mb-4">
-    <h1>🍽️ PISIP - Menú Digital</h1>
-    <p>Cevichería "La Choza"</p>
-</header>
+	<header class="bg-dark text-white text-center py-4 mb-4">
+		<h1>🍽️ PISIP - Menú Digital</h1>
+		<p>Cevichería "La Choza"</p>
+	</header>
 
-<nav class="container mb-4 text-center">
-    <a th:href="@{/}" class="btn btn-outline-secondary">Inicio</a>
-    <a th:href="@{/producto}" class="btn btn-primary">Menú</a>
-</nav>
+	<nav class="container mb-4 d-flex justify-content-between align-items-center">
+		<div>
+			<a th:href="@{/}" class="btn btn-outline-secondary">Inicio</a>
+			<a th:href="@{/producto}" class="btn btn-primary">Menú</a>
+		</div>
 
-<main class="container">
-    <div id="contenedor-productos" class="row">
-        <div class="col-12 text-center">
-            <p>Cargando el menú del día...</p>
-        </div>
-    </div>
-</main>
+		<a th:href="@{/agregar-producto}" class="btn btn-success">
+			➕ Agregar Nuevo Producto
+		</a>
+	</nav>
 
-<div id="modal-pedido" class="modal-overlay" style="display:none;">
-    <div class="modal-content shadow-lg">
-        <h3 class="mb-3">Confirmar Pedido</h3>
-        <p id="producto-info" class="fw-bold text-primary"></p>
-        
-        <div class="mb-3 text-start">
-            <label class="form-label">Seleccionar Mesa:</label>
-            <select id="select-mesa" class="form-select">
-                <option value="1">Mesa 1</option>
-                <option value="2">Mesa 2</option>
-                <option value="3">Mesa 3</option>
-                <option value="4">Mesa 4</option>
-                <option value="5">Mesa 5</option>
-            </select>
-        </div>
+	<main class="container">
+		<div id="contenedor-productos" class="row">
+		</div>
+	</main>
 
-        <div class="d-flex justify-content-between">
-            <button onclick="cerrarModal()" class="btn btn-danger">Cancelar</button>
-            <button onclick="confirmarEnvioPedido()" class="btn btn-success">Enviar Pedido</button>
-        </div>
-    </div>
-</div>
+	<div id="modal-pedido" class="modal-overlay" style="display:none;">
+		<div class="modal-content shadow-lg">
+			<h3 class="mb-3">Confirmar Pedido</h3>
+			<p id="producto-info" class="fw-bold text-primary"></p>
 
-<script th:src="@{/js/productos.js}"></script>
+			<div class="mb-3 text-start">
+				<label class="form-label">Seleccionar Mesa:</label>
+				<select id="select-mesa" class="form-select">
+					<option value="1">Mesa 1</option>
+					<option value="2">Mesa 2</option>
+					<option value="3">Mesa 3</option>
+					<option value="4">Mesa 4</option>
+					<option value="5">Mesa 5</option>
+				</select>
+			</div>
+
+			<div class="d-flex justify-content-between">
+				<button onclick="cerrarModal()" class="btn btn-danger">Cancelar</button>
+				<button onclick="confirmarEnvioPedido()" class="btn btn-success">Enviar Pedido</button>
+			</div>
+		</div>
+	</div>
+
+	<script th:src="@{/js/productos.js}"></script>
 </body>
+
 </html>

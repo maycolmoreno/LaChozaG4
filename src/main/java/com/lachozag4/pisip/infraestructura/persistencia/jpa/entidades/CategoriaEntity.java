@@ -16,20 +16,16 @@ import java.util.List;
 @AllArgsConstructor
 public class CategoriaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false, unique = true, length = 100)
-    private String nombre;
+	@Column(nullable = false, unique = true, length = 100)
+	private String nombre;
 
-    @Column(length = 255)
-    private String descripcion;
+	@Column(length = 255)
+	private String descripcion;
 
-    @OneToMany(
-        mappedBy = "categoria",
-        cascade = CascadeType.ALL,
-        orphanRemoval = true
-    )
-    private List<ProductoEntity> productos;
+	@OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ProductoEntity> productos;
 }
