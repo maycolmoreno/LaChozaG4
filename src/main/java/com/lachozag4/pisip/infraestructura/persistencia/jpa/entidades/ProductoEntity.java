@@ -13,26 +13,29 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductoEntity {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @Column(nullable = false, length = 100)
     private String nombre;
-
+    
     @Column(nullable = false)
     private Double precio;
-
+    
     @Column(name = "stock_actual", nullable = false)
     private Integer stockActual;
-
+    
     @Column(length = 255)
     private String descripcion;
-
+    
     @Column(nullable = false)
     private Boolean activo = true;
-
+    
+    @Column(name = "imagen_url", length = 500)  // ⭐ NUEVO CAMPO
+    private String imagenUrl;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", nullable = false)
     private CategoriaEntity categoria;

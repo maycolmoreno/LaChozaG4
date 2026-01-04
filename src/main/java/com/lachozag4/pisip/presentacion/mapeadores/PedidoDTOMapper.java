@@ -1,7 +1,6 @@
 package com.lachozag4.pisip.presentacion.mapeadores;
 
 import com.lachozag4.pisip.presentacion.dto.PedidoRequestDTO;
-
 import com.lachozag4.pisip.dominio.entidades.Pedido;
 import com.lachozag4.pisip.dominio.entidades.PedidoDetalle;
 import com.lachozag4.pisip.dominio.entidades.Producto;
@@ -10,12 +9,12 @@ import com.lachozag4.pisip.infraestructura.persistencia.jpa.entidades.MesaEntity
 import com.lachozag4.pisip.infraestructura.persistencia.jpa.entidades.ClienteEntity;
 import com.lachozag4.pisip.infraestructura.persistencia.jpa.entidades.ProductoEntity;
 
-import com.lachozag4.pisip.infraestructura.persistencia.jpa.ProductoJpaRepository;
 import com.lachozag4.pisip.infraestructura.persistencia.jpa.MesaJpaRepository;
 import com.lachozag4.pisip.infraestructura.persistencia.jpa.ClienteJpaRepository;
+import com.lachozag4.pisip.infraestructura.persistencia.jpa.ProductoJpaRepository;
 
-import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.ClienteMapper;
 import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.MesaMapper;
+import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.ClienteMapper;
 import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.ProductoMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -28,9 +27,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PedidoDTOMapper {
 
-    private final ProductoJpaRepository productoRepo;
+    // ✅ Ahora sí inyectamos los repos JPA correctos
     private final MesaJpaRepository mesaRepo;
     private final ClienteJpaRepository clienteRepo;
+    private final ProductoJpaRepository productoRepo;
 
     public Pedido requestToEntity(PedidoRequestDTO dto) {
 
@@ -38,22 +38,22 @@ public class PedidoDTOMapper {
         pedido.setFecha(LocalDateTime.now());
         pedido.setEstado("PENDIENTE");
 
-        // 1️⃣ MESA
+        // 1️⃣ Buscar MESA en JPA
         MesaEntity mesaEntity = mesaRepo.findById(dto.getMesaId())
                 .orElseThrow(() ->
                         new RuntimeException("Mesa no encontrada con ID: " + dto.getMesaId())
                 );
         pedido.setMesa(MesaMapper.aDominio(mesaEntity));
 
-        // 2️⃣ CLIENTE
+        // 2️⃣ Buscar CLIENTE en JPA
         ClienteEntity clienteEntity = clienteRepo.findById(dto.getClienteId())
                 .orElseThrow(() ->
                         new RuntimeException("Cliente no encontrado con ID: " + dto.getClienteId())
                 );
         pedido.setCliente(ClienteMapper.aDominio(clienteEntity));
 
-        // 3️⃣ DETALLES
-        if (dto.getItems() != null) {
+        // 3️⃣ Mapear ITEMS → PedidoDetalle
+        if (dto.getItems() != null && !dto.getItems().isEmpty()) {
             pedido.setDetalles(
                 dto.getItems().stream().map(item -> {
 
@@ -74,7 +74,7 @@ public class PedidoDTOMapper {
             );
         }
 
-        // 4️⃣ CÁLCULOS
+        // 4️⃣ Calcular totales
         pedido.calcularTotales(15.0);
 
         return pedido;

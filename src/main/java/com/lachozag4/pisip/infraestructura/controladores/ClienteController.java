@@ -22,6 +22,26 @@ public class ClienteController {
 	public List<Cliente> listar() {
 		return clienteRepo.findAll().stream().map(ClienteMapper::aDominio).toList();
 	}
+	
+	@GetMapping("/{id}")
+	public ResponseEntity<Cliente> obtener(@PathVariable Long id) {
+	    return clienteRepo.findById(id)
+	        .map(c -> ResponseEntity.ok(ClienteMapper.aDominio(c)))
+	        .orElse(ResponseEntity.notFound().build());
+	}
+
+	@PutMapping("/{id}")
+	public ResponseEntity<Cliente> editar(@PathVariable Long id, @RequestBody Cliente cliente) {
+	    return clienteRepo.findById(id)
+	        .map(c -> {
+	            ClienteEntity entity = ClienteMapper.aEntity(cliente);
+	            entity.setId(id);
+	            ClienteEntity actualizado = clienteRepo.save(entity);
+	            return ResponseEntity.ok(ClienteMapper.aDominio(actualizado));
+	        })
+	        .orElse(ResponseEntity.notFound().build());
+	}
+
 
 	@PostMapping
 	public ResponseEntity<Cliente> guardar(@RequestBody Cliente cliente) {

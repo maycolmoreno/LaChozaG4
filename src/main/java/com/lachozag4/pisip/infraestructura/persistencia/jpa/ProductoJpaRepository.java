@@ -18,3 +18,4 @@ public interface ProductoJpaRepository extends JpaRepository<ProductoEntity, Lon
     // Buscar productos por nombre (buscador)
     List<ProductoEntity> findByNombreContainingIgnoreCase(String nombre);
 }
+

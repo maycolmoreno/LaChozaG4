@@ -12,31 +12,65 @@ import java.util.Optional;
 
 @Component
 public class ProductoPersistenceAdapter implements ProductoRepositoryPort {
-
+    
     private final ProductoJpaRepository productoJpaRepository;
-
+    
     public ProductoPersistenceAdapter(ProductoJpaRepository productoJpaRepository) {
         this.productoJpaRepository = productoJpaRepository;
     }
-
+    
     @Override
     public Optional<Producto> buscarPorId(Long id) {
         return productoJpaRepository.findById(id)
-                .map(ProductoMapper::aDominio); // ✅ FORMA CORRECTA
+                .map(ProductoMapper::aDominio);
     }
-
+    
     @Override
     public List<Producto> listarTodos() {
         return productoJpaRepository.findAll()
                 .stream()
-                .map(ProductoMapper::aDominio) // ✅ CORRECTO
+                .map(ProductoMapper::aDominio)
                 .toList();
     }
-
+    
+    @Override
+    public List<Producto> listarActivos() {
+        return productoJpaRepository.findByActivoTrueAndStockActualGreaterThan(0)
+                .stream()
+                .map(ProductoMapper::aDominio)
+                .toList();
+    }
+    
     @Override
     public Producto guardar(Producto producto) {
         ProductoEntity entity = ProductoMapper.aEntity(producto);
         ProductoEntity guardado = productoJpaRepository.save(entity);
         return ProductoMapper.aDominio(guardado);
+    }
+    
+    @Override
+    public void eliminar(Long id) {
+        productoJpaRepository.deleteById(id);
+    }
+    
+    @Override
+    public boolean existePorId(Long id) {
+        return productoJpaRepository.existsById(id);
+    }
+    
+    @Override
+    public List<Producto> buscarPorCategoriaId(Long categoriaId) {
+        return productoJpaRepository.findByCategoriaId(categoriaId)
+                .stream()
+                .map(ProductoMapper::aDominio)
+                .toList();
+    }
+    
+    @Override
+    public List<Producto> buscarPorNombre(String nombre) {
+        return productoJpaRepository.findByNombreContainingIgnoreCase(nombre)
+                .stream()
+                .map(ProductoMapper::aDominio)
+                .toList();
     }
 }

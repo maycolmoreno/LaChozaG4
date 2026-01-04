@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MesaJpaRepository extends JpaRepository<MesaEntity, Long> {
 
+public interface MesaJpaRepository extends JpaRepository<MesaEntity, Long> { 
     // Mesas por estado: LIBRE, OCUPADA, MANTENIMIENTO
     List<MesaEntity> findByEstado(String estado);
 

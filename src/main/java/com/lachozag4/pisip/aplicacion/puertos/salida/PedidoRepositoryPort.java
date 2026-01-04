@@ -5,10 +5,19 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PedidoRepositoryPort {
-
+    
     Pedido guardar(Pedido pedido);
-
+    
     Optional<Pedido> buscarPorId(Long id);
-
+    
     List<Pedido> listarTodos();
+    
+    // ⭐ AGREGAR ESTOS MÉTODOS
+    List<Pedido> buscarPorMesaId(Long mesaId);
+    
+    List<Pedido> buscarPorEstado(String estado);
+    
+    void eliminar(Long id);
+    
+    boolean existePorId(Long id);
 }
