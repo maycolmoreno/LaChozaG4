@@ -4,6 +4,8 @@
 let pedidosData = [];
 let pedidosFiltrados = [];
 let mesasData = [];
+let productosData = [];
+let carrito = [];
 
 // ============================================
 // INICIALIZACIÓN
@@ -14,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Solo ejecutar si estamos en la página de pedidos
     if (document.getElementById("contenedor-pedidos")) {
         cargarMesas();
+        cargarProductos();
         cargarPedidos();
         inicializarFiltros();
         
@@ -50,6 +53,278 @@ async function cargarMesas() {
         
     } catch (error) {
         console.error("Error cargando mesas:", error);
+    }
+}
+
+// ============================================
+// CARGAR PRODUCTOS
+// ============================================
+async function cargarProductos() {
+    try {
+        const response = await fetch("/api/productos");
+        
+        if (!response.ok) {
+            throw new Error("Error al cargar productos");
+        }
+        
+        productosData = await response.json();
+        console.log("Productos cargados:", productosData.length);
+        
+    } catch (error) {
+        console.error("Error cargando productos:", error);
+    }
+}
+
+// ============================================
+// ABRIR MODAL NUEVO PEDIDO
+// ============================================
+function abrirModalNuevoPedido() {
+    // Limpiar carrito
+    carrito = [];
+    actualizarVistaCarrito();
+    
+    // Cargar mesas en el select
+    const selectMesa = document.getElementById("nuevoPedidoMesa");
+    selectMesa.innerHTML = '<option value="">-- Seleccione una mesa --</option>';
+    mesasData.forEach(mesa => {
+        const option = document.createElement("option");
+        option.value = mesa.id;
+        option.textContent = `Mesa ${mesa.numero} - ${mesa.ubicacion || ''} (${mesa.estado})`;
+        option.disabled = mesa.estado !== 'LIBRE';
+        selectMesa.appendChild(option);
+    });
+    
+    // Mostrar productos
+    mostrarProductosParaPedido(productosData);
+    
+    // Inicializar búsqueda
+    document.getElementById("buscarProducto").addEventListener("input", (e) => {
+        const termino = e.target.value.toLowerCase();
+        const productosFiltrados = productosData.filter(p => 
+            p.nombre.toLowerCase().includes(termino)
+        );
+        mostrarProductosParaPedido(productosFiltrados);
+    });
+    
+    // Abrir modal
+    const modal = new bootstrap.Modal(document.getElementById("modal-nuevo-pedido"));
+    modal.show();
+}
+
+// ============================================
+// MOSTRAR PRODUCTOS PARA PEDIDO
+// ============================================
+function mostrarProductosParaPedido(productos) {
+    const contenedor = document.getElementById("listaProductos");
+    
+    if (productos.length === 0) {
+        contenedor.innerHTML = '<div class="col-12 text-center text-muted">No hay productos disponibles</div>';
+        return;
+    }
+    
+    contenedor.innerHTML = productos.map(producto => {
+        const disponible = producto.disponible && producto.stockActual > 0;
+        const imagenUrl = producto.imagenUrl || "https://via.placeholder.com/150x150/4CAF50/FFFFFF?text=Sin+Imagen";
+        
+        return `
+            <div class="col-md-3 mb-3">
+                <div class="card ${!disponible ? 'opacity-50' : ''}" style="cursor: pointer;">
+                    <img src="${imagenUrl}" class="card-img-top" style="height: 100px; object-fit: cover;">
+                    <div class="card-body p-2">
+                        <h6 class="card-title mb-1" style="font-size: 0.9rem;">${producto.nombre}</h6>
+                        <p class="mb-1"><strong>${parseFloat(producto.precio).toFixed(2)}</strong></p>
+                        <p class="mb-2 small text-muted">Stock: ${producto.stockActual}</p>
+                        <button class="btn btn-sm btn-success w-100" 
+                                onclick="agregarAlCarrito(${producto.id})"
+                                ${!disponible ? 'disabled' : ''}>
+                            ➕ Agregar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ============================================
+// AGREGAR AL CARRITO
+// ============================================
+function agregarAlCarrito(productoId) {
+    const producto = productosData.find(p => p.id === productoId);
+    
+    if (!producto) return;
+    
+    // Verificar si ya está en el carrito
+    const itemExistente = carrito.find(item => item.productoId === productoId);
+    
+    if (itemExistente) {
+        // Verificar stock
+        if (itemExistente.cantidad >= producto.stockActual) {
+            mostrarNotificacion("⚠️ No hay más stock disponible", "warning");
+            return;
+        }
+        itemExistente.cantidad++;
+    } else {
+        carrito.push({
+            productoId: producto.id,
+            nombre: producto.nombre,
+            precio: producto.precio,
+            cantidad: 1,
+            stockMax: producto.stockActual
+        });
+    }
+    
+    actualizarVistaCarrito();
+    mostrarNotificacion(`✅ ${producto.nombre} agregado`, "success");
+}
+
+// ============================================
+// ACTUALIZAR VISTA CARRITO
+// ============================================
+function actualizarVistaCarrito() {
+    const contenedor = document.getElementById("carritoItems");
+    
+    if (carrito.length === 0) {
+        contenedor.innerHTML = '<p class="text-muted text-center py-3">No hay items agregados</p>';
+        document.getElementById("carritoSubtotal").textContent = "$0.00";
+        document.getElementById("carritoIva").textContent = "$0.00";
+        document.getElementById("carritoTotal").textContent = "$0.00";
+        return;
+    }
+    
+    let html = '<table class="table table-sm">';
+    html += '<thead><tr><th>Producto</th><th width="150">Cantidad</th><th width="100" class="text-end">Subtotal</th><th width="50"></th></tr></thead>';
+    html += '<tbody>';
+    
+    carrito.forEach((item, index) => {
+        const subtotal = item.precio * item.cantidad;
+        html += `
+            <tr>
+                <td>${item.nombre}</td>
+                <td>
+                    <div class="input-group input-group-sm">
+                        <button class="btn btn-outline-secondary" onclick="cambiarCantidad(${index}, -1)">-</button>
+                        <input type="number" class="form-control text-center" value="${item.cantidad}" 
+                               min="1" max="${item.stockMax}" 
+                               onchange="actualizarCantidad(${index}, this.value)">
+                        <button class="btn btn-outline-secondary" onclick="cambiarCantidad(${index}, 1)">+</button>
+                    </div>
+                </td>
+                <td class="text-end">${subtotal.toFixed(2)}</td>
+                <td>
+                    <button class="btn btn-sm btn-danger" onclick="eliminarDelCarrito(${index})">🗑️</button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></table>';
+    contenedor.innerHTML = html;
+    
+    // Calcular totales
+    const subtotal = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+    const iva = subtotal * 0.15;
+    const total = subtotal + iva;
+    
+    document.getElementById("carritoSubtotal").textContent = `${subtotal.toFixed(2)}`;
+    document.getElementById("carritoIva").textContent = `${iva.toFixed(2)}`;
+    document.getElementById("carritoTotal").textContent = `${total.toFixed(2)}`;
+}
+
+// ============================================
+// CAMBIAR CANTIDAD
+// ============================================
+function cambiarCantidad(index, cambio) {
+    const item = carrito[index];
+    const nuevaCantidad = item.cantidad + cambio;
+    
+    if (nuevaCantidad < 1) {
+        eliminarDelCarrito(index);
+        return;
+    }
+    
+    if (nuevaCantidad > item.stockMax) {
+        mostrarNotificacion("⚠️ No hay más stock disponible", "warning");
+        return;
+    }
+    
+    item.cantidad = nuevaCantidad;
+    actualizarVistaCarrito();
+}
+
+function actualizarCantidad(index, nuevaCantidad) {
+    nuevaCantidad = parseInt(nuevaCantidad);
+    
+    if (isNaN(nuevaCantidad) || nuevaCantidad < 1) {
+        carrito[index].cantidad = 1;
+    } else if (nuevaCantidad > carrito[index].stockMax) {
+        carrito[index].cantidad = carrito[index].stockMax;
+        mostrarNotificacion("⚠️ Cantidad ajustada al stock disponible", "warning");
+    } else {
+        carrito[index].cantidad = nuevaCantidad;
+    }
+    
+    actualizarVistaCarrito();
+}
+
+// ============================================
+// ELIMINAR DEL CARRITO
+// ============================================
+function eliminarDelCarrito(index) {
+    carrito.splice(index, 1);
+    actualizarVistaCarrito();
+}
+
+// ============================================
+// CONFIRMAR NUEVO PEDIDO
+// ============================================
+async function confirmarNuevoPedido() {
+    const mesaId = document.getElementById("nuevoPedidoMesa").value;
+    
+    // Validaciones
+    if (!mesaId) {
+        mostrarNotificacion("⚠️ Debe seleccionar una mesa", "warning");
+        return;
+    }
+    
+    if (carrito.length === 0) {
+        mostrarNotificacion("⚠️ Debe agregar al menos un producto", "warning");
+        return;
+    }
+    
+    // Preparar datos del pedido
+    const pedidoData = {
+        mesaId: parseInt(mesaId),
+        clienteId: null, // Opcional por ahora
+        items: carrito.map(item => ({
+            productoId: item.productoId,
+            cantidad: item.cantidad
+        }))
+    };
+    
+    try {
+        const response = await fetch("/api/pedidos", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(pedidoData)
+        });
+        
+        if (response.ok) {
+            mostrarNotificacion("✅ Pedido creado exitosamente", "success");
+            
+            // Cerrar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById("modal-nuevo-pedido"));
+            modal.hide();
+            
+            // Recargar pedidos
+            setTimeout(() => cargarPedidos(), 500);
+        } else {
+            const error = await response.text();
+            mostrarNotificacion(`❌ Error: ${error}`, "danger");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        mostrarNotificacion("❌ Error al crear el pedido", "danger");
     }
 }
 
@@ -434,3 +709,9 @@ function mostrarNotificacion(mensaje, tipo = "info") {
 // EXPONER FUNCIONES GLOBALES
 // ============================================
 window.cargarPedidos = cargarPedidos;
+window.abrirModalNuevoPedido = abrirModalNuevoPedido;
+window.agregarAlCarrito = agregarAlCarrito;
+window.cambiarCantidad = cambiarCantidad;
+window.actualizarCantidad = actualizarCantidad;
+window.eliminarDelCarrito = eliminarDelCarrito;
+window.confirmarNuevoPedido = confirmarNuevoPedido;
