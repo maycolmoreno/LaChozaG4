@@ -12,7 +12,6 @@ public interface PedidoRepositoryPort {
     
     List<Pedido> listarTodos();
     
-    // ⭐ AGREGAR ESTOS MÉTODOS
     List<Pedido> buscarPorMesaId(Long mesaId);
     
     List<Pedido> buscarPorEstado(String estado);

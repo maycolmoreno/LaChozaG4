@@ -1,15 +1,15 @@
 package com.lachozag4.pisip.infraestructura.persistencia.jpa.entidades;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import jakarta.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "productos")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductoEntity {
@@ -21,22 +21,32 @@ public class ProductoEntity {
     @Column(nullable = false, length = 100)
     private String nombre;
     
-    @Column(nullable = false)
-    private Double precio;
+    @Column(length = 500)
+    private String descripcion;
+    
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal precio;
     
     @Column(name = "stock_actual", nullable = false)
     private Integer stockActual;
     
-    @Column(length = 255)
-    private String descripcion;
-    
     @Column(nullable = false)
-    private Boolean activo = true;
+    private Boolean activo;
     
-    @Column(name = "imagen_url", length = 500)  // ⭐ NUEVO CAMPO
+    @Column(name = "imagen_url", length = 255)
     private String imagenUrl;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "categoria_id", nullable = false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "categoria_id")
     private CategoriaEntity categoria;
+    
+    @PrePersist
+    protected void onCreate() {
+        if (activo == null) {
+            activo = true;
+        }
+        if (stockActual == null) {
+            stockActual = 0;
+        }
+    }
 }

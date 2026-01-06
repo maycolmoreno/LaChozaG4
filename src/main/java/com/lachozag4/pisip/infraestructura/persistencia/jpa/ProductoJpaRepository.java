@@ -8,14 +8,10 @@ import java.util.List;
 
 @Repository
 public interface ProductoJpaRepository extends JpaRepository<ProductoEntity, Long> {
-
-    // Buscar productos por categoría (ej: Ceviches)
+    
+    List<ProductoEntity> findByActivoTrue();
+    
     List<ProductoEntity> findByCategoriaId(Long categoriaId);
-
-    // Buscar productos activos con stock disponible
-    List<ProductoEntity> findByActivoTrueAndStockActualGreaterThan(Integer stockMinimo);
-
-    // Buscar productos por nombre (buscador)
+    
     List<ProductoEntity> findByNombreContainingIgnoreCase(String nombre);
 }
-

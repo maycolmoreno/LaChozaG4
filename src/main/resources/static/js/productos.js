@@ -1,508 +1,365 @@
-// ============================================
-// VARIABLES GLOBALES
-// ============================================
-let productoSeleccionadoId = null;
-let pedidoActual = null;
+// Variables globales
+let productos = [];
+let categorias = [];
+let productoEditando = null;
 
-// ============================================
-// INICIALIZACIÓN
-// ============================================
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("DOM cargado, inicializando...");
+// Inicialización
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Iniciando aplicación de productos...');
+    cargarProductos();
+    cargarCategorias();
     
-    // Cargar productos si estamos en la página de listado
-    const contenedorProductos = document.getElementById("contenedor-productos");
-    if (contenedorProductos) {
-        console.log("Página de productos detectada");
-        cargarProductos();
+    // Event listeners
+    const btnNuevo = document.getElementById('btnNuevoProducto');
+    if (btnNuevo) {
+        btnNuevo.addEventListener('click', abrirModalNuevo);
     }
     
-    // Cargar categorías si estamos en el formulario
-    const selectCategoria = document.getElementById("prodCategoria");
-    if (selectCategoria) {
-        console.log("Formulario detectado, cargando categorías...");
-        cargarCategorias();
+    const formProducto = document.getElementById('formProducto');
+    if (formProducto) {
+        formProducto.addEventListener('submit', guardarProducto);
     }
     
-    // Inicializar formulario si existe
-    inicializarFormulario();
+    const buscar = document.getElementById('buscarProducto');
+    if (buscar) {
+        buscar.addEventListener('input', filtrarProductos);
+    }
+    
+    const filtro = document.getElementById('filtroCategoria');
+    if (filtro) {
+        filtro.addEventListener('change', filtrarProductos);
+    }
 });
 
-// ============================================
-// CARGA DE PRODUCTOS
-// ============================================
+// Cargar productos
 async function cargarProductos() {
-    const contenedor = document.getElementById("contenedor-productos");
-    
-    if (!contenedor) return;
-    
+    console.log('Cargando productos...');
     try {
-        contenedor.innerHTML = `
-            <div class="col-12 text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Cargando...</span>
-                </div>
-                <p class="mt-3">Cargando productos...</p>
-            </div>
-        `;
-
-        const response = await fetch("/api/productos");
+        const response = await fetch('/api/productos');
+        console.log('Response status:', response.status);
         
         if (!response.ok) {
-            throw new Error(`Error ${response.status}: ${response.statusText}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-
-        const productos = await response.json();
-
-        if (productos.length === 0) {
+        
+        productos = await response.json();
+        console.log('Productos cargados:', productos);
+        mostrarProductos(productos);
+    } catch (error) {
+        console.error('Error al cargar productos:', error);
+        const contenedor = document.getElementById('contenedor-productos');
+        if (contenedor) {
             contenedor.innerHTML = `
-                <div class="col-12 text-center py-5">
-                    <p class="text-muted fs-5">📋 No hay productos disponibles</p>
-                    <a href="/agregar-producto" class="btn btn-primary mt-3">
-                        ➕ Agregar primer producto
-                    </a>
-                </div>
-            `;
-            return;
-        }
-
-        // Agrupar productos por categoría
-        const productosPorCategoria = agruparPorCategoria(productos);
-        
-        contenedor.innerHTML = "";
-        
-        for (const [categoria, items] of Object.entries(productosPorCategoria)) {
-            contenedor.innerHTML += `
-                <div class="col-12 mb-4">
-                    <h2 class="categoria-titulo">${categoria}</h2>
-                    <div class="row g-3">
-                        ${items.map(producto => crearTarjetaProducto(producto)).join("")}
+                <div class="col-12">
+                    <div class="alert alert-danger" role="alert">
+                        <h4 class="alert-heading">❌ Error al cargar productos</h4>
+                        <p>${error.message}</p>
+                        <hr>
+                        <button class="btn btn-danger" onclick="cargarProductos()">
+                            🔄 Reintentar
+                        </button>
                     </div>
                 </div>
             `;
         }
-
-        // Agregar event listeners a los botones
-        agregarEventListenersProductos();
-
-    } catch (error) {
-        console.error("Error cargando productos:", error);
-        contenedor.innerHTML = `
-            <div class="col-12 text-center py-5">
-                <div class="alert alert-danger" role="alert">
-                    ❌ Error al cargar los productos: ${error.message}
-                    <br>
-                    <button onclick="cargarProductos()" class="btn btn-sm btn-outline-danger mt-3">
-                        🔄 Reintentar
-                    </button>
-                </div>
-            </div>
-        `;
     }
 }
 
-// ============================================
-// AGRUPAR PRODUCTOS POR CATEGORÍA
-// ============================================
-function agruparPorCategoria(productos) {
-    const grupos = {};
-    
-    productos.forEach(producto => {
-        const categoria = producto.categoria?.nombre || "Sin categoría";
-        if (!grupos[categoria]) {
-            grupos[categoria] = [];
-        }
-        grupos[categoria].push(producto);
-    });
-    
-    return grupos;
-}
-
-// ============================================
-// CREAR TARJETA DE PRODUCTO
-// ============================================
-function crearTarjetaProducto(producto) {
-    const imagenUrl = producto.imagenUrl || "/images/default-product.jpg";
-    const precio = parseFloat(producto.precio).toFixed(2);
-    const disponible = producto.disponible !== false && producto.activo !== false;
-    const stockBadge = producto.stockActual > 0 
-        ? `<span class="badge bg-success">Stock: ${producto.stockActual}</span>` 
-        : `<span class="badge bg-danger">Sin stock</span>`;
-    
-    return `
-        <div class="col-md-6 col-lg-4">
-            <div class="card producto-card h-100 shadow-sm ${!disponible ? 'opacity-50' : ''}">
-                <img src="${imagenUrl}" 
-                     class="card-img-top producto-imagen" 
-                     alt="${producto.nombre}"
-                     onerror="this.src='/images/default-product.jpg'">
-                <div class="card-body d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="card-title mb-0">${producto.nombre}</h5>
-                        ${stockBadge}
-                    </div>
-                    <p class="card-text text-muted small flex-grow-1">
-                        ${producto.descripcion || "Delicioso platillo de nuestra casa"}
-                    </p>
-                    ${!disponible ? '<p class="text-danger fw-bold">⚠️ No disponible</p>' : ''}
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <span class="precio-tag fw-bold text-success fs-5">$${precio}</span>
-                        <div class="btn-group">
-                            <button class="btn btn-primary btn-sm btn-pedir" 
-                                    data-id="${producto.id}"
-                                    data-nombre="${producto.nombre}"
-                                    data-precio="${precio}"
-                                    ${!disponible || producto.stockActual <= 0 ? 'disabled' : ''}>
-                                🛒 Pedir
-                            </button>
-                            <button class="btn btn-outline-secondary btn-sm btn-editar" 
-                                    data-id="${producto.id}">
-                                ✏️
-                            </button>
-                            <button class="btn btn-outline-danger btn-sm btn-eliminar" 
-                                    data-id="${producto.id}"
-                                    data-nombre="${producto.nombre}">
-                                🗑️
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-// ============================================
-// EVENT LISTENERS DE PRODUCTOS
-// ============================================
-function agregarEventListenersProductos() {
-    // Botones de pedir
-    document.querySelectorAll(".btn-pedir").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const id = btn.dataset.id;
-            const nombre = btn.dataset.nombre;
-            const precio = btn.dataset.precio;
-            abrirModalPedido(id, nombre, precio);
-        });
-    });
-
-    // Botones de editar
-    document.querySelectorAll(".btn-editar").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const id = btn.dataset.id;
-            window.location.href = `/editar-producto/${id}`;
-        });
-    });
-
-    // Botones de eliminar
-    document.querySelectorAll(".btn-eliminar").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const id = btn.dataset.id;
-            const nombre = btn.dataset.nombre;
-            confirmarEliminarProducto(id, nombre);
-        });
-    });
-}
-
-// ============================================
-// MODAL DE PEDIDO
-// ============================================
-function abrirModalPedido(id, nombre, precio) {
-    pedidoActual = { id, nombre, precio };
-    
-    document.getElementById("producto-info").textContent = 
-        `${nombre} - $${precio}`;
-    
-    document.getElementById("modal-pedido").style.display = "flex";
-}
-
-function cerrarModal() {
-    document.getElementById("modal-pedido").style.display = "none";
-    pedidoActual = null;
-}
-
-async function confirmarEnvioPedido() {
-    if (!pedidoActual) return;
-
-    const mesa = document.getElementById("select-mesa").value;
-    
-    const pedido = {
-        productoId: pedidoActual.id,
-        mesa: parseInt(mesa),
-        cantidad: 1,
-        fecha: new Date().toISOString()
-    };
-
-    try {
-        const response = await fetch("/api/pedidos", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(pedido)
-        });
-
-        if (response.ok) {
-            mostrarNotificacion(
-                `✅ Pedido enviado a la Mesa ${mesa}`, 
-                "success"
-            );
-            cerrarModal();
-        } else {
-            const error = await response.text();
-            mostrarNotificacion(`❌ Error: ${error}`, "danger");
-        }
-    } catch (error) {
-        console.error("Error enviando pedido:", error);
-        mostrarNotificacion(
-            "⚠️ Sistema de pedidos no disponible aún", 
-            "warning"
-        );
-        cerrarModal();
-    }
-}
-
-// ============================================
-// ELIMINAR PRODUCTO
-// ============================================
-function confirmarEliminarProducto(id, nombre) {
-    if (confirm(`¿Está seguro de eliminar "${nombre}"?\n\nEsta acción no se puede deshacer.`)) {
-        eliminarProducto(id);
-    }
-}
-
-async function eliminarProducto(id) {
-    try {
-        const response = await fetch(`/api/productos/${id}`, {
-            method: "DELETE"
-        });
-
-        if (response.ok || response.status === 204) {
-            mostrarNotificacion("✅ Producto eliminado correctamente", "success");
-            cargarProductos();
-        } else if (response.status === 404) {
-            mostrarNotificacion("⚠️ El producto ya no existe", "warning");
-            cargarProductos();
-        } else {
-            const error = await response.text();
-            mostrarNotificacion(`❌ Error: ${error}`, "danger");
-        }
-    } catch (error) {
-        console.error("Error eliminando producto:", error);
-        mostrarNotificacion("❌ Error de conexión", "danger");
-    }
-}
-
-// ============================================
-// FORMULARIO DE PRODUCTO (agregar/editar)
-// ============================================
-function inicializarFormulario() {
-    const form = document.getElementById("formProducto");
-    
-    if (!form) return;
-    
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const nombre = document.getElementById("prodNombre").value.trim();
-        const precio = parseFloat(document.getElementById("prodPrecio").value);
-        const categoriaId = document.getElementById("prodCategoria").value;
-        const imagenUrl = document.getElementById("prodImagen")?.value.trim() || "";
-        const descripcion = document.getElementById("prodDescripcion")?.value.trim() || "";
-        const stockActual = parseInt(document.getElementById("prodStock")?.value) || 0;
-
-        // Validaciones
-        if (!nombre || nombre.length < 3) {
-            mostrarNotificacion("El nombre debe tener al menos 3 caracteres", "warning");
-            return;
-        }
-
-        if (!precio || precio <= 0) {
-            mostrarNotificacion("El precio debe ser mayor a 0", "warning");
-            return;
-        }
-
-        if (!categoriaId) {
-            mostrarNotificacion("Debe seleccionar una categoría", "warning");
-            return;
-        }
-
-        const producto = {
-            nombre,
-            precio,
-            descripcion,
-            imagenUrl,
-            stockActual,
-            disponible: true,
-            categoria: {
-                id: parseInt(categoriaId)
-            }
-        };
-
-        const btnSubmit = e.target.querySelector('button[type="submit"]');
-        const textoOriginal = btnSubmit.innerHTML;
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
-
-        try {
-            const esEdicion = productoSeleccionadoId != null;
-            
-            const url = esEdicion 
-                ? `/api/productos/${productoSeleccionadoId}`
-                : "/api/productos";
-
-            const method = esEdicion ? "PUT" : "POST";
-
-            const response = await fetch(url, {
-                method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(producto)
-            });
-
-            if (response.ok || response.status === 201) {
-                const accion = esEdicion ? "actualizado" : "creado";
-                mostrarNotificacion(`✅ Producto ${accion} correctamente`, "success");
-                
-                setTimeout(() => {
-                    window.location.href = "/producto";
-                }, 1500);
-            } else {
-                const errorText = await response.text();
-                mostrarNotificacion(`❌ Error: ${errorText}`, "danger");
-            }
-
-        } catch (error) {
-            console.error("Error:", error);
-            mostrarNotificacion("❌ Error de conexión con el servidor", "danger");
-        } finally {
-            btnSubmit.disabled = false;
-            btnSubmit.innerHTML = textoOriginal;
-        }
-    });
-    
-    // Vista previa de imagen
-    const inputImagen = document.getElementById("prodImagen");
-    if (inputImagen) {
-        inputImagen.addEventListener("input", function(e) {
-            const url = e.target.value;
-            const preview = document.getElementById("preview-imagen");
-            const img = document.getElementById("img-preview");
-            
-            if (url) {
-                img.src = url;
-                preview.style.display = "block";
-                
-                img.onerror = function() {
-                    preview.style.display = "none";
-                };
-            } else {
-                preview.style.display = "none";
-            }
-        });
-    }
-}
-
-// ============================================
-// CARGAR CATEGORÍAS DINÁMICAMENTE
-// ============================================
+// Cargar categorías
 async function cargarCategorias() {
-    const select = document.getElementById("prodCategoria");
+    console.log('Cargando categorías...');
+    try {
+        const response = await fetch('/api/categorias');
+        console.log('Response categorías status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        categorias = await response.json();
+        console.log('Categorías cargadas:', categorias);
+        
+        // Llenar select de categorías
+        const selectCategoria = document.getElementById('productoCategoria');
+        const filtroCategoria = document.getElementById('filtroCategoria');
+        
+        if (selectCategoria) {
+            selectCategoria.innerHTML = '<option value="">Seleccione una categoría</option>';
+            categorias.forEach(cat => {
+                selectCategoria.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
+            });
+        }
+        
+        if (filtroCategoria) {
+            filtroCategoria.innerHTML = '<option value="">Todas las categorías</option>';
+            categorias.forEach(cat => {
+                filtroCategoria.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
+            });
+        }
+    } catch (error) {
+        console.error('Error al cargar categorías:', error);
+    }
+}
+
+// Mostrar productos
+function mostrarProductos(productos) {
+    const contenedor = document.getElementById('contenedor-productos');
     
-    if (!select) {
-        console.log("No se encontró el select de categorías");
+    if (!contenedor) {
+        console.error('No se encontró el contenedor de productos');
         return;
     }
     
-    console.log("Cargando categorías desde /api/categorias...");
-    
-    try {
-        const response = await fetch("/api/categorias");
-        
-        console.log("Response status:", response.status);
-        
-        if (!response.ok) {
-            throw new Error(`Error ${response.status}: ${response.statusText}`);
-        }
-        
-        const categorias = await response.json();
-        
-        console.log("Categorías recibidas:", categorias);
-        
-        // Guardar la opción por defecto
-        const defaultOption = '<option value="">-- Seleccione una categoría --</option>';
-        
-        // Limpiar y agregar opciones
-        select.innerHTML = defaultOption;
-        
-        if (categorias.length === 0) {
-            select.innerHTML = defaultOption + '<option value="" disabled>No hay categorías disponibles</option>';
-            mostrarNotificacion("⚠️ No hay categorías creadas. Créalas primero.", "warning");
-            return;
-        }
-        
-        categorias.forEach(cat => {
-            const option = document.createElement("option");
-            option.value = cat.id;
-            option.textContent = cat.nombre;
-            select.appendChild(option);
-        });
-        
-        console.log("✅ Categorías cargadas exitosamente:", categorias.length);
-        
-    } catch (error) {
-        console.error("Error cargando categorías:", error);
-        mostrarNotificacion(`⚠️ Error al cargar categorías: ${error.message}`, "warning");
-        select.innerHTML = '<option value="">Error al cargar categorías</option>';
+    if (productos.length === 0) {
+        contenedor.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No hay productos para mostrar</h4>
+                <p class="text-muted">Comienza agregando tu primer producto</p>
+                <button class="btn btn-primary btn-lg" onclick="abrirModalNuevo()">
+                    ➕ Agregar primer producto
+                </button>
+            </div>
+        `;
+        return;
     }
-}
-
-// ============================================
-// SISTEMA DE NOTIFICACIONES (TOAST)
-// ============================================
-function mostrarNotificacion(mensaje, tipo = "info") {
-    const iconos = {
-        success: "✅",
-        danger: "❌",
-        warning: "⚠️",
-        info: "ℹ️"
-    };
-
-    const toastHTML = `
-        <div class="toast align-items-center text-white bg-${tipo} border-0" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">
-                    ${iconos[tipo] || ""} ${mensaje}
+    
+    contenedor.innerHTML = productos.map(producto => `
+        <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
+            <div class="card h-100 shadow-sm hover-shadow">
+                ${producto.imagenUrl ? `
+                    <img src="${producto.imagenUrl}" class="card-img-top" alt="${producto.nombre}" 
+                         style="height: 200px; object-fit: cover;"
+                         onerror="this.onerror=null; this.src='/images/default-product.jpg';">
+                ` : `
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                         style="height: 200px;">
+                        <i class="fas fa-utensils fa-3x text-muted"></i>
+                    </div>
+                `}
+                <div class="card-body">
+                    <h5 class="card-title text-truncate" title="${producto.nombre}">
+                        ${producto.nombre}
+                    </h5>
+                    <p class="card-text text-muted small" style="height: 60px; overflow: hidden;">
+                        ${producto.descripcion || 'Sin descripción'}
+                    </p>
+                    <div class="mb-2">
+                        <span class="badge ${producto.disponible ? 'bg-success' : 'bg-danger'}">
+                            ${producto.disponible ? '✓ Disponible' : '✗ No disponible'}
+                        </span>
+                        ${producto.categoria ? `
+                            <span class="badge bg-info">${producto.categoria.nombre}</span>
+                        ` : ''}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <small class="text-muted d-block">Precio</small>
+                            <span class="text-success fs-5 fw-bold">$${producto.precio.toFixed(2)}</span>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted d-block">Stock</small>
+                            <span class="${producto.stockActual > 0 ? 'text-success' : 'text-danger'} fw-bold">
+                                ${producto.stockActual}
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" 
-                        data-bs-dismiss="toast"></button>
+                <div class="card-footer bg-white border-top-0">
+                    <div class="btn-group w-100" role="group">
+                        <button class="btn btn-sm btn-outline-primary" onclick="editarProducto(${producto.id})"
+                                title="Editar producto">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="eliminarProducto(${producto.id}, '${producto.nombre.replace(/'/g, "\\'")}')"
+                                title="Eliminar producto">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
-    `;
+    `).join('');
+}
+
+// Filtrar productos
+function filtrarProductos() {
+    const busqueda = document.getElementById('buscarProducto')?.value.toLowerCase() || '';
+    const categoriaId = document.getElementById('filtroCategoria')?.value || '';
     
-    let toastContainer = document.getElementById("toast-container");
-    if (!toastContainer) {
-        toastContainer = document.createElement("div");
-        toastContainer.id = "toast-container";
-        toastContainer.className = "toast-container position-fixed top-0 end-0 p-3";
-        toastContainer.style.zIndex = "9999";
-        document.body.appendChild(toastContainer);
+    let productosFiltrados = [...productos];
+    
+    // Filtrar por búsqueda
+    if (busqueda) {
+        productosFiltrados = productosFiltrados.filter(p => 
+            p.nombre.toLowerCase().includes(busqueda) ||
+            (p.descripcion && p.descripcion.toLowerCase().includes(busqueda))
+        );
     }
     
-    toastContainer.insertAdjacentHTML("beforeend", toastHTML);
-    const toastElement = toastContainer.lastElementChild;
+    // Filtrar por categoría
+    if (categoriaId) {
+        productosFiltrados = productosFiltrados.filter(p => 
+            p.categoria && p.categoria.id == categoriaId
+        );
+    }
     
-    if (typeof bootstrap !== "undefined") {
-        const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
-        toast.show();
-        toastElement.addEventListener("hidden.bs.toast", () => toastElement.remove());
-    } else {
-        toastElement.style.display = "block";
-        setTimeout(() => toastElement.remove(), 3000);
+    mostrarProductos(productosFiltrados);
+}
+
+// Abrir modal para nuevo producto
+function abrirModalNuevo() {
+    productoEditando = null;
+    document.getElementById('modalProductoTitle').textContent = '➕ Nuevo Producto';
+    document.getElementById('formProducto').reset();
+    document.getElementById('productoDisponible').checked = true;
+    
+    const modal = new bootstrap.Modal(document.getElementById('modalProducto'));
+    modal.show();
+}
+
+// Editar producto
+async function editarProducto(id) {
+    console.log('Editando producto:', id);
+    try {
+        const response = await fetch(`/api/productos/${id}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        productoEditando = await response.json();
+        console.log('Producto a editar:', productoEditando);
+        
+        document.getElementById('modalProductoTitle').textContent = '✏️ Editar Producto';
+        document.getElementById('productoNombre').value = productoEditando.nombre;
+        document.getElementById('productoDescripcion').value = productoEditando.descripcion || '';
+        document.getElementById('productoPrecio').value = productoEditando.precio;
+        document.getElementById('productoStock').value = productoEditando.stockActual;
+        document.getElementById('productoCategoria').value = productoEditando.categoria?.id || '';
+        document.getElementById('productoDisponible').checked = productoEditando.disponible;
+        document.getElementById('productoImagenUrl').value = productoEditando.imagenUrl || '';
+        
+        const modal = new bootstrap.Modal(document.getElementById('modalProducto'));
+        modal.show();
+    } catch (error) {
+        console.error('Error al cargar el producto:', error);
+        alert('❌ Error al cargar el producto: ' + error.message);
     }
 }
 
-// ============================================
-// EXPONER FUNCIONES GLOBALES
-// ============================================
-window.cerrarModal = cerrarModal;
-window.confirmarEnvioPedido = confirmarEnvioPedido;
-window.cargarProductos = cargarProductos;
-window.cargarCategorias = cargarCategorias;
+// Guardar producto
+async function guardarProducto(e) {
+    e.preventDefault();
+    
+    console.log('Guardando producto...');
+    
+    const categoriaId = document.getElementById('productoCategoria').value;
+    
+    if (!categoriaId) {
+        alert('⚠️ Debe seleccionar una categoría');
+        return;
+    }
+    
+    const categoria = categorias.find(c => c.id == categoriaId);
+    
+    const producto = {
+        nombre: document.getElementById('productoNombre').value.trim(),
+        descripcion: document.getElementById('productoDescripcion').value.trim(),
+        precio: parseFloat(document.getElementById('productoPrecio').value),
+        stockActual: parseInt(document.getElementById('productoStock').value),
+        categoria: categoria,
+        disponible: document.getElementById('productoDisponible').checked,
+        imagenUrl: document.getElementById('productoImagenUrl').value.trim() || null
+    };
+    
+    console.log('Datos del producto:', producto);
+    
+    try {
+        const url = productoEditando 
+            ? `/api/productos/${productoEditando.id}` 
+            : '/api/productos';
+        
+        const method = productoEditando ? 'PUT' : 'POST';
+        
+        console.log(`${method} ${url}`);
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(producto)
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // Cerrar modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('modalProducto'));
+        modal.hide();
+        
+        // Recargar productos
+        await cargarProductos();
+        
+        // Mostrar mensaje de éxito
+        mostrarNotificacion(
+            productoEditando ? '✓ Producto actualizado exitosamente' : '✓ Producto creado exitosamente',
+            'success'
+        );
+    } catch (error) {
+        console.error('Error al guardar el producto:', error);
+        mostrarNotificacion('❌ Error al guardar el producto: ' + error.message, 'danger');
+    }
+}
+
+// Eliminar producto
+async function eliminarProducto(id, nombre) {
+    if (!confirm(`¿Está seguro de eliminar el producto "${nombre}"?\n\nEsta acción no se puede deshacer.`)) {
+        return;
+    }
+    
+    console.log('Eliminando producto:', id);
+    
+    try {
+        const response = await fetch(`/api/productos/${id}`, {
+            method: 'DELETE'
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        await cargarProductos();
+        mostrarNotificacion('✓ Producto eliminado exitosamente', 'success');
+    } catch (error) {
+        console.error('Error al eliminar el producto:', error);
+        mostrarNotificacion('❌ Error al eliminar el producto: ' + error.message, 'danger');
+    }
+}
+
+// Mostrar notificación (puedes mejorar esto con toasts de Bootstrap)
+function mostrarNotificacion(mensaje, tipo) {
+    alert(mensaje);
+    // TODO: Implementar con toasts de Bootstrap para mejor UX
+}
+
+// Agregar estilos para hover en las cards
+const style = document.createElement('style');
+style.textContent = `
+    .hover-shadow {
+        transition: all 0.3s ease;
+    }
+    .hover-shadow:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+    }
+`;
+document.head.appendChild(style);

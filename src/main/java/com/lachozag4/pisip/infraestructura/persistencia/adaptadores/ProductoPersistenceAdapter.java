@@ -5,18 +5,24 @@ import com.lachozag4.pisip.dominio.entidades.Producto;
 import com.lachozag4.pisip.infraestructura.persistencia.jpa.ProductoJpaRepository;
 import com.lachozag4.pisip.infraestructura.persistencia.jpa.entidades.ProductoEntity;
 import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.ProductoMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class ProductoPersistenceAdapter implements ProductoRepositoryPort {
     
     private final ProductoJpaRepository productoJpaRepository;
     
-    public ProductoPersistenceAdapter(ProductoJpaRepository productoJpaRepository) {
-        this.productoJpaRepository = productoJpaRepository;
+    @Override
+    public Producto guardar(Producto producto) {
+        ProductoEntity entity = ProductoMapper.aEntity(producto);
+        ProductoEntity guardado = productoJpaRepository.save(entity);
+        return ProductoMapper.aDominio(guardado);
     }
     
     @Override
@@ -27,25 +33,9 @@ public class ProductoPersistenceAdapter implements ProductoRepositoryPort {
     
     @Override
     public List<Producto> listarTodos() {
-        return productoJpaRepository.findAll()
-                .stream()
+        return productoJpaRepository.findAll().stream()
                 .map(ProductoMapper::aDominio)
-                .toList();
-    }
-    
-    @Override
-    public List<Producto> listarActivos() {
-        return productoJpaRepository.findByActivoTrueAndStockActualGreaterThan(0)
-                .stream()
-                .map(ProductoMapper::aDominio)
-                .toList();
-    }
-    
-    @Override
-    public Producto guardar(Producto producto) {
-        ProductoEntity entity = ProductoMapper.aEntity(producto);
-        ProductoEntity guardado = productoJpaRepository.save(entity);
-        return ProductoMapper.aDominio(guardado);
+                .collect(Collectors.toList());
     }
     
     @Override
@@ -59,18 +49,23 @@ public class ProductoPersistenceAdapter implements ProductoRepositoryPort {
     }
     
     @Override
-    public List<Producto> buscarPorCategoriaId(Long categoriaId) {
-        return productoJpaRepository.findByCategoriaId(categoriaId)
-                .stream()
+    public List<Producto> listarActivos() {
+        return productoJpaRepository.findByActivoTrue().stream()
                 .map(ProductoMapper::aDominio)
-                .toList();
+                .collect(Collectors.toList());
     }
     
     @Override
     public List<Producto> buscarPorNombre(String nombre) {
-        return productoJpaRepository.findByNombreContainingIgnoreCase(nombre)
-                .stream()
+        return productoJpaRepository.findByNombreContainingIgnoreCase(nombre).stream()
                 .map(ProductoMapper::aDominio)
-                .toList();
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    public List<Producto> listarPorCategoria(Long categoriaId) {
+        return productoJpaRepository.findByCategoriaId(categoriaId).stream()
+                .map(ProductoMapper::aDominio)
+                .collect(Collectors.toList());
     }
 }
