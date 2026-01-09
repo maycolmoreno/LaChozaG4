@@ -1,24 +1,34 @@
 package com.lachozag4.pisip.dominio.entidades;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import java.util.List;
+import java.io.Serializable;
 
-// ❌ SIN anotaciones JPA (@Entity, @Table, @OneToMany, @JsonIgnore, etc.)
-
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class Categoria {
+public class Categoria implements Serializable {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	private final int idcategoria;
+    private final String nombre;
+    private final String descripcion;
+    private final Boolean  activo = true;
+	public Categoria(int idcategoria, String nombre, String descripcion) {
+		this.idcategoria = idcategoria;
+		this.nombre = nombre;
+		this.descripcion = descripcion;
+	}
+	public int getIdcategoria() {
+		return idcategoria;
+	}
+	public String getNombre() {
+		return nombre;
+	}
+	public String getDescripcion() {
+		return descripcion;
+	}
+	public Boolean getActivo() {
+		return activo;
+	}
     
-    private Long id;
-    private String nombre;
-    private String descripcion;
-    private List<Producto> productos;  // Simple List, NO @OneToMany
-    
-    // Lógica de negocio (opcional)
-    public boolean esNombreValido() {
-        return nombre != null && nombre.length() >= 3 && nombre.length() <= 50;
-    }
 }

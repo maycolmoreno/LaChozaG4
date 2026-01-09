@@ -32,6 +32,11 @@ public class PedidoEntity {
 
     @Column(nullable = false)
     private String estado; // Ejemplo: PENDIENTE, PAGADO, CANCELADO
+    
+
+    @Column(name = "observacion", length = 500)
+    private String observacion;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id")

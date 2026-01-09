@@ -1,42 +1,55 @@
 package com.lachozag4.pisip.dominio.entidades;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.io.Serializable;
 
-// ❌ SIN anotaciones JPA (@Entity, @Table, @Column, @ManyToOne, etc.)
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class Producto {
+
+
+public class Producto implements Serializable {
     
-    private Long id;
-    private String nombre;
-    private Double precio;
-    private Integer stockActual;
-    private String descripcion;
-    private Categoria categoria;  // Objeto completo, NO @ManyToOne
-    private Boolean disponible;
-    private String imagenUrl;  // ⭐ NUEVO CAMPO
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private final int idproducto;
+    private final String nombre;
+    private final Double precio;
+    private final Integer stockActual;
+    private final String descripcion;
+    private final boolean activo;
     
-    /* ===== Lógica de dominio ===== */
+	public Producto(int idproducto, String nombre, Double precio, Integer stockActual, String descripcion,
+			boolean activo) {
+		this.idproducto = idproducto;
+		this.nombre = nombre;
+		this.precio = precio;
+		this.stockActual = stockActual;
+		this.descripcion = descripcion;
+		this.activo = activo;
+	}
+
+	public int getIdproducto() {
+		return idproducto;
+	}
+
+	public String getNombre() {
+		return nombre;
+	}
+
+	public Double getPrecio() {
+		return precio;
+	}
+
+	public Integer getStockActual() {
+		return stockActual;
+	}
+
+	public String getDescripcion() {
+		return descripcion;
+	}
+
+	public boolean isActivo() {
+		return activo;
+	}
     
-    public boolean tieneStockDisponible(int cantidadSolicitada) {
-        return this.stockActual != null && this.stockActual >= cantidadSolicitada;
-    }
-    
-    public void reducirStock(int cantidad) {
-        if (tieneStockDisponible(cantidad)) {
-            this.stockActual -= cantidad;
-        }
-    }
-    
-    public String getImagenUrlODefecto() {
-        return (imagenUrl != null && !imagenUrl.isBlank()) 
-            ? imagenUrl 
-            : "/images/default-product.jpg";
-    }
 }

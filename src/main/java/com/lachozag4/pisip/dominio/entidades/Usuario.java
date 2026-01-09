@@ -1,39 +1,47 @@
 package com.lachozag4.pisip.dominio.entidades;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.io.Serializable;
 
-@Entity
-@Table(name = "usuarios") // Se usa "usuarios" porque "user" es palabra reservada en PostgreSQL
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class Usuario {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
 
-	@Column(nullable = false, unique = true)
-	private String username;
+public class Usuario implements Serializable {
 
-	@Column(nullable = false)
-	private String password;
-
-	@Column(nullable = false)
-	private String nombreCompleto;
-
-	@Column(nullable = false)
-	private String rol; // EJEMPLOS: 'ADMIN', 'CAMARERO', 'COCINA'
-
-	private Boolean activo = true;
-
+	
 	/**
-	 * Lógica de Dominio: Verifica si el usuario tiene permisos de administrador
+	 * 
 	 */
-	public boolean esAdministrador() {
-		return "ADMIN".equalsIgnoreCase(this.rol);
+	private static final long serialVersionUID = 1L;
+	private final int idusuario;	
+	private final String username;	
+	private final String password;	
+	private final String nombreCompleto;	
+	private final String rol; // EJEMPLOS: 'ADMIN', 'CAMARERO', 'COCINA'
+	private final Boolean activo = true;
+	public Usuario(int idusuario, String username, String password, String nombreCompleto, String rol) {
+		this.idusuario = idusuario;
+		this.username = username;
+		this.password = password;
+		this.nombreCompleto = nombreCompleto;
+		this.rol = rol;
 	}
+	public int getIdusuario() {
+		return idusuario;
+	}
+	public String getUsername() {
+		return username;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public String getNombreCompleto() {
+		return nombreCompleto;
+	}
+	public String getRol() {
+		return rol;
+	}
+	public Boolean getActivo() {
+		return activo;
+	}
+	
+	
 }
