@@ -1,48 +1,55 @@
 package com.lachozag4.pisip.dominio.entidades;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.io.Serializable;
 
-@Entity
-@Table(name = "productos")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class Producto {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @Column(nullable = false)
-    private String nombre;
 
-    private Double precio;
+public class Producto implements Serializable {
+    
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private final int idproducto;
+    private final String nombre;
+    private final Double precio;
+    private final Integer stockActual;
+    private final String descripcion;
+    private final boolean activo;
+    
+	public Producto(int idproducto, String nombre, Double precio, Integer stockActual, String descripcion,
+			boolean activo) {
+		this.idproducto = idproducto;
+		this.nombre = nombre;
+		this.precio = precio;
+		this.stockActual = stockActual;
+		this.descripcion = descripcion;
+		this.activo = activo;
+	}
 
-    @Column(name = "stock_actual")
-    private Integer stockActual;
+	public int getIdproducto() {
+		return idproducto;
+	}
 
-    private String descripcion;
+	public String getNombre() {
+		return nombre;
+	}
 
-    @ManyToOne
-    @JoinColumn(name = "categoria_id", nullable = false)
-    private Categoria categoria;
+	public Double getPrecio() {
+		return precio;
+	}
 
-    private Boolean disponible;
+	public Integer getStockActual() {
+		return stockActual;
+	}
 
-    /* ===== Lógica de dominio ===== */
+	public String getDescripcion() {
+		return descripcion;
+	}
 
-    public boolean tieneStockDisponible(int cantidadSolicitada) {
-        return this.stockActual != null && this.stockActual >= cantidadSolicitada;
-    }
-
-    public void reducirStock(int cantidad) {
-        if (tieneStockDisponible(cantidad)) {
-            this.stockActual -= cantidad;
-        }
-    }
+	public boolean isActivo() {
+		return activo;
+	}
+    
 }

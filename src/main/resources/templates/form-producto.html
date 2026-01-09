@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<!-- ====================================
+     FRAGMENTO: form-producto
+     ==================================== -->
+<div th:fragment="contenido">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>PISIP - Gestionar Producto</title>
+</head>
+
+<body>
+
+	<!-- ====================================
+	     HEADER
+	     ==================================== -->
+	<header class="bg-dark text-white text-center py-4 mb-4">
+		<h1>🍽️ PISIP - Gestión de Productos</h1>
+		<p class="mb-0">Cevichería "La Choza"</p>
+	</header>
+
+	<!-- ====================================
+	     NAVEGACIÓN
+	     ==================================== -->
+	<nav class="container mb-4">
+		<a th:href="@{/}" class="btn btn-outline-secondary">🏠 Inicio</a>
+		<a th:href="@{/producto}" class="btn btn-primary">📋 Ver Menú</a>
+		<a th:href="@{/categoria}" class="btn btn-outline-primary">🏷️ Categorías</a>
+	</nav>
+
+	<!-- ====================================
+	     FORMULARIO
+	     ==================================== -->
+	<main class="container">
+		<div class="row justify-content-center">
+			<div class="col-md-10 col-lg-8">
+				<div class="card shadow-lg">
+					<div class="card-header bg-primary text-white text-center py-3">
+						<h3 class="mb-0" th:text="${producto != null ? '✏️ Editar Producto' : '➕ Nuevo Producto'}">
+							➕ Nuevo Producto
+						</h3>
+					</div>
+					
+					<div class="card-body p-4">
+						<form id="formProducto">
+							
+							<div class="row">
+								<!-- Nombre del producto -->
+								<div class="col-md-6 mb-3">
+									<label for="prodNombre" class="form-label fw-semibold">
+										📝 Nombre del Producto <span class="text-danger">*</span>
+									</label>
+									<input type="text" 
+									       class="form-control" 
+									       id="prodNombre" 
+									       th:value="${producto?.nombre}"
+									       placeholder="Ej: Ceviche de Pescado"
+									       minlength="3"
+									       maxlength="100"
+									       required>
+								</div>
+
+								<!-- Precio -->
+								<div class="col-md-3 mb-3">
+									<label for="prodPrecio" class="form-label fw-semibold">
+										💰 Precio <span class="text-danger">*</span>
+									</label>
+									<div class="input-group">
+										<span class="input-group-text">$</span>
+										<input type="number" 
+										       class="form-control" 
+										       id="prodPrecio"
+										       th:value="${producto?.precio}"
+										       placeholder="0.00"
+										       step="0.01"
+										       min="0.01"
+										       required>
+									</div>
+								</div>
+
+								<!-- Stock -->
+								<div class="col-md-3 mb-3">
+									<label for="prodStock" class="form-label fw-semibold">
+										📦 Stock
+									</label>
+									<input type="number" 
+									       class="form-control" 
+									       id="prodStock"
+									       th:value="${producto?.stockActual}"
+									       placeholder="0"
+									       min="0"
+									       value="0">
+								</div>
+							</div>
+
+							<!-- Categoría -->
+							<div class="mb-3">
+								<label for="prodCategoria" class="form-label fw-semibold">
+									🏷️ Categoría <span class="text-danger">*</span>
+								</label>
+								<select class="form-select" id="prodCategoria" required>
+									<option value="">-- Seleccione una categoría --</option>
+									<!-- Las categorías se cargarán dinámicamente desde la API -->
+								</select>
+								<small class="text-muted">
+									Las categorías se cargan desde la base de datos
+								</small>
+							</div>
+
+							<!-- Descripción -->
+							<div class="mb-3">
+								<label for="prodDescripcion" class="form-label fw-semibold">
+									📄 Descripción
+								</label>
+								<textarea class="form-control" 
+								          id="prodDescripcion"
+								          rows="3"
+								          maxlength="255"
+								          placeholder="Descripción breve del producto..."
+								          th:text="${producto?.descripcion}"></textarea>
+								<small class="text-muted">Opcional: Describe el platillo (máx. 255 caracteres)</small>
+							</div>
+
+							<!-- URL de imagen -->
+							<div class="mb-4">
+								<label for="prodImagen" class="form-label fw-semibold">
+									🖼️ URL de la Imagen
+								</label>
+								<input type="url" 
+								       class="form-control" 
+								       id="prodImagen"
+								       th:value="${producto?.imagenUrl}"
+								       placeholder="https://ejemplo.com/imagen.jpg"
+								       maxlength="500">
+								<small class="text-muted">
+									Opcional: Ingrese la URL de una imagen del producto
+								</small>
+								
+								<!-- Vista previa de imagen -->
+								<div id="preview-imagen" class="mt-3" style="display: none;">
+									<img id="img-preview" 
+									     src="" 
+									     alt="Vista previa" 
+									     class="img-thumbnail"
+									     style="max-height: 200px;">
+								</div>
+							</div>
+
+							<!-- Botones -->
+							<div class="d-flex gap-2 justify-content-between">
+								<a th:href="@{/producto}" class="btn btn-secondary flex-fill">
+									❌ Cancelar
+								</a>
+								<button type="submit" class="btn btn-success flex-fill">
+									<span th:text="${producto != null ? '💾 Actualizar Producto' : '💾 Guardar Producto'}">
+										💾 Guardar Producto
+									</span>
+								</button>
+							</div>
+
+						</form>
+					</div>
+				</div>
+
+				<!-- Información adicional -->
+				<div class="alert alert-info mt-4" role="alert">
+					<strong>ℹ️ Información:</strong>
+					<ul class="mb-0 mt-2">
+						<li>Los campos marcados con <span class="text-danger">*</span> son obligatorios</li>
+						<li>El precio debe ser mayor a 0</li>
+						<li>El nombre debe tener entre 3 y 100 caracteres</li>
+						<li>La imagen debe ser una URL válida (opcional)</li>
+						<li>Las categorías se cargan automáticamente desde la base de datos</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<!-- ====================================
+	     FOOTER
+	     ==================================== -->
+	<footer class="container text-center py-4 mt-5">
+		<p class="text-muted mb-0">
+			© 2024 PISIP - Cevichería "La Choza" | Sistema de Menú Digital
+		</p>
+	</footer>
+
+	<!-- ====================================
+	     SCRIPT PARA ESTABLECER PRODUCTO ID
+	     ==================================== -->
+	<script th:inline="javascript">
+		// Si estamos editando, establecer el ID del producto
+		const productoData = /*[[${producto}]]*/ null;
+		if (productoData && productoData.id) {
+			productoSeleccionadoId = productoData.id;
+			
+			// Pre-seleccionar la categoría
+			const categoriaId = productoData.categoria?.id;
+			if (categoriaId) {
+				setTimeout(() => {
+					const selectCategoria = document.getElementById("prodCategoria");
+					if (selectCategoria) {
+						selectCategoria.value = categoriaId;
+					}
+				}, 500); // Esperar a que se carguen las categorías
+			}
+		}
+	</script>
+
+</body>
+
+</div>
+</html>

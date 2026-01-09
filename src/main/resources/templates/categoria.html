@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="contenido">
+<div th:fragment="contenido">
+	<h2 class="mb-4">Gestión de Categorías</h2>
+
+	<form id="formCategoria" class="mb-4 card p-4 shadow-sm">
+		<div class="mb-3">
+			<label class="form-label">Nombre de la categoría</label>
+			<input type="text" class="form-control" id="nombre" placeholder="Ej: Mariscos" required>
+		</div>
+		<div class="mb-3">
+			<label class="form-label">Descripción</label>
+			<textarea class="form-control" id="descripcion" rows="2" placeholder="Breve descripción..."></textarea>
+		</div>
+		<button type="submit" class="btn btn-primary">Guardar Categoría</button>
+	</form>
+
+	<table class="table table-striped">
+		<thead class="table-dark">
+			<tr>
+				<th>ID</th>
+				<th>Nombre</th>
+				<th>Descripción</th>
+			</tr>
+		</thead>
+		<tbody id="tablaCategorias"></tbody>
+	</table>
+</div>
+<script>
+	// Función para guardar
+	document.getElementById('formCategoria').addEventListener('submit', async (e) => {
+		e.preventDefault();
+
+		const nuevaCategoria = {
+			nombre: document.getElementById('nombre').value,
+			descripcion: document.getElementById('descripcion').value // Captura la descripción
+		};
+
+		const response = await fetch('/api/categorias', {
+			method: 'POST',
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify(nuevaCategoria)
+		});
+
+		if (response.ok) {
+			alert('¡Categoría guardada!');
+			document.getElementById('formCategoria').reset();
+			cargarCategorias(); // Refresca la tabla
+		}
+	});
+
+	// Función para cargar y mostrar la descripción en la tabla
+	async function cargarCategorias() {
+		const res = await fetch('/api/categorias');
+		const data = await res.json();
+		document.getElementById('tablaCategorias').innerHTML = data.map(c => `
+	              <tr>
+	                  <td>${c.id}</td>
+	                  <td><strong>${c.nombre}</strong></td>
+	                  <td>${c.descripcion || '<span class="text-muted">Sin descripción</span>'}</td>
+	              </tr>
+	          `).join('');
+	}
+
+	cargarCategorias();
+</script>
+</div>>

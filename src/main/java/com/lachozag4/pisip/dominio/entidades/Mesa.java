@@ -1,42 +1,43 @@
 package com.lachozag4.pisip.dominio.entidades;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.io.Serializable;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class Mesa {
+public class Mesa implements Serializable {
 
-    private Long id;
-    private Integer numero;
-    private Integer capacidad;
-    private String estado; // "LIBRE", "OCUPADA", "MANTENIMIENTO"
-    private String ubicacion; // "Terraza", "Planta Baja", "VIP"
-
-    /**
-     * Lógica de negocio: Verifica si la mesa puede recibir comensales.
-     */
-    public boolean estaDisponible() {
-        return "LIBRE".equalsIgnoreCase(this.estado);
-    }
-
-    /**
-     * Lógica de negocio: Cambia el estado al asignar un pedido.
-     */
-    public void ocupar() {
-        if (estaDisponible()) {
-            this.estado = "OCUPADA";
-        }
-    }
-
-    /**
-     * Lógica de negocio: Libera la mesa tras el pago.
-     */
-    public void liberar() {
-        this.estado = "LIBRE";
-    }
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private final int idmesa;
+	private final Integer numero;
+	private final Integer capacidad;
+	private final boolean estado; // "LIBRE", "OCUPADA"
+	private final String ubicacion; // "Salon 1", "Salon 2"
+	public Mesa(int idmesa, Integer numero, Integer capacidad, boolean estado, String ubicacion) {
+		
+		this.idmesa = idmesa;
+		this.numero = numero;
+		this.capacidad = capacidad;
+		this.estado = estado;
+		this.ubicacion = ubicacion;
+	}
+	public int getIdmesa() {
+		return idmesa;
+	}
+	public Integer getNumero() {
+		return numero;
+	}
+	public Integer getCapacidad() {
+		return capacidad;
+	}
+	public boolean isEstado() {
+		return estado;
+	}
+	public String getUbicacion() {
+		return ubicacion;
+	}
+	
+	
+	
+	
 }

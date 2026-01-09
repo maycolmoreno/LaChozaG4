@@ -14,19 +14,19 @@ import lombok.Setter;
 @AllArgsConstructor
 public class MesaEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false, unique = true)
-    private Integer numero;
+	@Column(nullable = false, unique = true)
+	private Integer numero;
 
-    @Column(nullable = false)
-    private Integer capacidad;
+	@Column(nullable = false)
+	private Integer capacidad;
 
-    @Column(nullable = false, length = 20)
-    private String estado; // Ejemplo: "LIBRE", "OCUPADA", "RESERVADA"
+	@Column(nullable = false, length = 20)
+	private String estado; // Ejemplo: "LIBRE", "OCUPADA", "RESERVADA"
 
-    @Column(length = 100)
-    private String ubicacion; // Ejemplo: "Terraza", "Salón Principal", "VIP"
+	@Column(length = 100)
+	private String ubicacion; // Ejemplo: "Terraza", "Salón Principal", "VIP"
 }

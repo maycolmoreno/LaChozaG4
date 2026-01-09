@@ -1,27 +1,20 @@
 package com.lachozag4.pisip.presentacion.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@Setter
 public class PedidoRequestDTO {
+    private Long mesaId;
+    private Long clienteId;
+    private List<ItemDTO> items;
 
-    private Long mesaId;      // ID de la mesa donde se sientan los clientes
-    private Long clienteId;   // ID del cliente (para la factura)
-    private List<ItemPedidoDTO> items; // Lista de ceviches y cantidades
-
-    /**
-     * Clase interna para representar cada línea del pedido
-     */
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ItemPedidoDTO {
-        private Long productoId; // ID del Ceviche
-        private Integer cantidad; // ¿Cuántos platos de este tipo?
+    @Getter
+    @Setter
+    public static class ItemDTO {
+        private Long productoId;
+        private Integer cantidad;
     }
 }
