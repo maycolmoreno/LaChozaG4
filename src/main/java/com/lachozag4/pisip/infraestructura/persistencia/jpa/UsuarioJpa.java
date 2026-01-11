@@ -1,11 +1,13 @@
 package com.lachozag4.pisip.infraestructura.persistencia.jpa;
 
 import java.io.Serializable;
+import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -26,6 +28,11 @@ public class UsuarioJpa implements Serializable {
 	private String password;	
 	private String nombreCompleto;	
 	private String rol; // EJEMPLOS: 'ADMIN', 'CAMARERO', 'COCINA'
-	private Boolean activo = true;
+	private Boolean estado;
+	
+
+@OneToMany(mappedBy = "FkUsuario")
+private List<PedidoJpa> pedidos;
+
 
 }

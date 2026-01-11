@@ -9,5 +9,6 @@ import com.lachozag4.pisip.infraestructura.persistencia.jpa.CategoriaJpa;
 public interface ICategoriaJpaMapper {
 
 	Categoria toDomain(CategoriaJpa entity);
+
 	CategoriaJpa toEntity(Categoria categoria);
 }
