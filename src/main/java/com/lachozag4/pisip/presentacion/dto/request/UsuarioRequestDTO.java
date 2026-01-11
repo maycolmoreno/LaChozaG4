@@ -16,6 +16,6 @@ public class UsuarioRequestDTO {
 	@NotBlank
 	private String rol; // EJEMPLOS: 'ADMIN', 'CAMARERO', 'COCINA'
 	@NotBlank
-	private Boolean activo = true;
+	private boolean estado;
 
 }

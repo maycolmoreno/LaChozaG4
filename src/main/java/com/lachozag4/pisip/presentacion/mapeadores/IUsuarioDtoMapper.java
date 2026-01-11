@@ -8,7 +8,8 @@ import com.lachozag4.pisip.presentacion.dto.response.UsuarioResponseDTO;
 
 @Mapper(componentModel = "spring")
 public interface IUsuarioDtoMapper {
-	Usuario toDomain (UsuarioRequestDTO dto);
+	Usuario toDomain(UsuarioRequestDTO dto);
+
 	UsuarioResponseDTO toResponseDTO(Usuario usuario);
 
 }

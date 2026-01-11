@@ -6,7 +6,7 @@ public class UsuarioResponseDTO {
 	private String password;
 	private String nombreCompleto;
 	private String rol; // EJEMPLOS: 'ADMIN', 'CAMARERO', 'COCINA'
-	private Boolean activo = true;
+	private Boolean estado;
 
 	public int getIdusuario() {
 		return idusuario;
@@ -48,12 +48,13 @@ public class UsuarioResponseDTO {
 		this.rol = rol;
 	}
 
-	public Boolean getActivo() {
-		return activo;
+	public Boolean getEstado() {
+		return estado;
 	}
 
-	public void setActivo(Boolean activo) {
-		this.activo = activo;
+	public void setEstado(Boolean estado) {
+		this.estado = estado;
 	}
 
+	
 }

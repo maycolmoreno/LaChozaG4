@@ -11,7 +11,7 @@ public class Mesa implements Serializable {
 	private final int idmesa;
 	private final Integer numero;
 	private final Integer capacidad;
-	private final boolean estado; // "LIBRE", "OCUPADA"
+	private final Boolean estado; // "LIBRE", "OCUPADA"
 	private final String ubicacion; // "Salon 1", "Salon 2"
 	public Mesa(int idmesa, Integer numero, Integer capacidad, boolean estado, String ubicacion) {
 		

@@ -12,11 +12,13 @@ public class Categoria implements Serializable {
 	private final int idcategoria;
     private final String nombre;
     private final String descripcion;
-    private final Boolean  activo = true;
-	public Categoria(int idcategoria, String nombre, String descripcion) {
+    private final Boolean  estado;
+	public Categoria(int idcategoria, String nombre, String descripcion, Boolean estado) {
+		super();
 		this.idcategoria = idcategoria;
 		this.nombre = nombre;
 		this.descripcion = descripcion;
+		this.estado = estado;
 	}
 	public int getIdcategoria() {
 		return idcategoria;
@@ -27,8 +29,10 @@ public class Categoria implements Serializable {
 	public String getDescripcion() {
 		return descripcion;
 	}
-	public Boolean getActivo() {
-		return activo;
+	public Boolean getEstado() {
+		return estado;
 	}
+	
+    
     
 }

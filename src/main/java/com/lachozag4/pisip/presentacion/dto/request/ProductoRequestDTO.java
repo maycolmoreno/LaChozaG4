@@ -16,6 +16,6 @@ public class ProductoRequestDTO {
 	@NotBlank
 	private String descripcion;
 	@NotBlank
-	private boolean activo;
+	private boolean estado;
 
 }
