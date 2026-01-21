@@ -8,32 +8,32 @@ import lombok.Data;
 
 @Data
 public class ClienteRequestDTO {
-	
-	private  int idcliente;
 
-@NotBlank(message = "La identificación es obligatoria")
-    @Size(min = 10, max = 13, message = "La identificación debe tener entre 10 y 13 caracteres")
+	private int idcliente;
 
-	private  String identificacion; // Cédula o RUC
+	@NotBlank(message = "La identificación es obligatoria")
+	@Size(min = 10, max = 13, message = "La identificación debe tener entre 10 y 13 caracteres")
 
-@NotBlank(message = "El nombre es obligatorio")
-    @Size(max = 120, message = "El nombre no debe superar 120 caracteres")
+	private String identificacion; // Cédula o RUC
 
-	private  String nombre;
+	@NotBlank(message = "El nombre es obligatorio")
+	@Size(max = 120, message = "El nombre no debe superar 120 caracteres")
 
-@NotBlank(message = "La dirección es obligatoria")
-    @Size(max = 200, message = "La dirección no debe superar 200 caracteres")
+	private String nombre;
 
-	private  String direccion;
+	@NotBlank(message = "La dirección es obligatoria")
+	@Size(max = 200, message = "La dirección no debe superar 200 caracteres")
 
-@NotBlank(message = "El teléfono es obligatorio")
-    @Pattern(regexp = "\\d{7,10}", message = "El teléfono debe contener entre 7 y 10 dígitos")
+	private String direccion;
 
-	private  String telefono;
+	@NotBlank(message = "El teléfono es obligatorio")
+	@Pattern(regexp = "\\d{7,10}", message = "El teléfono debe contener entre 7 y 10 dígitos")
 
-@NotBlank(message = "El email es obligatorio")
-    @Email(message = "Debe ser un email válido")
+	private String telefono;
 
-	private  String email;
+	@NotBlank(message = "El email es obligatorio")
+	@Email(message = "Debe ser un email válido")
+
+	private String email;
 
 }

@@ -1,18 +1,16 @@
 package com.lachozag4.pisip.infraestructura.persistencia.jpa;
 
 import java.io.Serializable;
-import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name="categoria")
+@Table(name = "categoria")
 @Data
 public class CategoriaJpa implements Serializable {
 
@@ -24,10 +22,10 @@ public class CategoriaJpa implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 
 	private int idcategoria;
-    private String nombre;
-    private String descripcion;
-    private Boolean estado;
-    
-    @OneToMany(mappedBy = "fkCategoria")
-    private List<ProductoJpa> producto;
+	private String nombre;
+	private String descripcion;
+	private Boolean estado;
+
+	// CategoriaJpa
+
 }

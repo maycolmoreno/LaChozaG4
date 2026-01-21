@@ -106,7 +106,7 @@
 							<artifactId>lombok</artifactId>
 						</path>
 						<path>
-						<!-- https://mvnrepository.com/artifact/org.mapstruct/mapstruct-processor -->
+							<!-- https://mvnrepository.com/artifact/org.mapstruct/mapstruct-processor -->
 							
 							    <groupId>org.mapstruct</groupId>
 							    <artifactId>mapstruct-processor</artifactId>

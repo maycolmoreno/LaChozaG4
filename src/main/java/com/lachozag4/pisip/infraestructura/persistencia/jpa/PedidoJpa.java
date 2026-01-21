@@ -4,7 +4,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,23 +29,24 @@ public class PedidoJpa implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int idpedido;
-	private LocalDateTime fecha = LocalDateTime.now();
+	private LocalDateTime fecha;
 	private boolean estado;
 	private String observaciones;
 
-	@ManyToOne
+	// UsuarioJpa
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "FkUsuario")
 	private UsuarioJpa FkUsuario;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "Fkmesa")
 	private MesaJpa Fkmesa;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "Fkcliente")
 	private ClienteJpa Fkcliente;
 	
-	@OneToMany(mappedBy = "Fkpedidodet")
+	@OneToMany(mappedBy = "Fkpedidodet", cascade = CascadeType.ALL)
 	private List<PedidoDetalleJpa> pedidos;
 
 }

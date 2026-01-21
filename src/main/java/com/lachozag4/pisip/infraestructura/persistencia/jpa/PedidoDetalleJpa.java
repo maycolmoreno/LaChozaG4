@@ -12,7 +12,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name="pedidodetalle")
+@Table(name = "pedidodetalle")
 @Data
 public class PedidoDetalleJpa implements Serializable {
 
@@ -23,14 +23,15 @@ public class PedidoDetalleJpa implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int idpedidodetalle;
-    private Integer cantidad;  // >= 1
-    
-    @ManyToOne
+	private Integer cantidad; // >= 1
+
+	// PedidoJpa
+	@ManyToOne
 	@JoinColumn(name = "Fkproducto")
 	private ProductoJpa Fkproducto;
-    
-    @ManyToOne
+	// PedidoDetalleJpa
+	@ManyToOne
 	@JoinColumn(name = "Fkpedidodet")
 	private PedidoJpa Fkpedidodet;
-    
+
 }

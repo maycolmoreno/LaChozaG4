@@ -12,11 +12,12 @@ public class Pedido implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 	private final int idpedido;
-    private final LocalDateTime fecha = LocalDateTime.now();
+    private final LocalDateTime fecha;
     private final boolean estado;
     private final String observaciones;
-	public Pedido(int idpedido, boolean estado, String observaciones) {
+	public Pedido(int idpedido, LocalDateTime fecha, boolean estado, String observaciones) {
 		this.idpedido = idpedido;
+		this.fecha = fecha;
 		this.estado = estado;
 		this.observaciones = observaciones;
 	}
@@ -32,9 +33,12 @@ public class Pedido implements Serializable {
 	public String getObservaciones() {
 		return observaciones;
 	}
+	@Override
+	public String toString() {
+		return "Pedido [idpedido=" + idpedido + ", fecha=" + fecha + ", estado=" + estado + ", observaciones="
+				+ observaciones + "]";
+	}
+	
 	
     
-    
-    
-	
 }

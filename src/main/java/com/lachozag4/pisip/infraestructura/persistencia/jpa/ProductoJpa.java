@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -31,9 +32,11 @@ public class ProductoJpa implements Serializable {
 	private String descripcion;
 	private Boolean estado;
 
-	@ManyToOne
+	// CategoriaJpa
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "fkCategoria")
 	private CategoriaJpa fkCategoria;
+	
 	
 	@OneToMany(mappedBy = "Fkproducto")
 	private List<PedidoDetalleJpa> pedidosdetalle;
