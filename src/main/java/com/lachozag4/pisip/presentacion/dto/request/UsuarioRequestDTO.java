@@ -1,21 +1,22 @@
 package com.lachozag4.pisip.presentacion.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class UsuarioRequestDTO {
-	@NotBlank
+	
 	private int idusuario;	
-	@NotBlank
+	@NotBlank(message = "El username es obligatorio")
 	private String username;
-	@NotBlank
+	@NotBlank(message = "La contraseña es obligatoria")
 	private String password;	
-	@NotBlank
+	@NotBlank(message = "El nombre completo es obligatorio")
 	private String nombreCompleto;	
-	@NotBlank
+	@NotBlank(message = "El rol es obligatorio")
 	private String rol; // EJEMPLOS: 'ADMIN', 'CAMARERO', 'COCINA'
-	@NotBlank
-	private boolean estado;
+	@NotNull(message = "El estado es obligatorio")
+    private Boolean estado;
 
 }

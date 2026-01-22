@@ -31,8 +31,7 @@ public class ProductoControlador {
 		this.mapper = mapper;
 	}
 	@PostMapping
-	@ResponseStatus(HttpStatus.CREATED)
-
+	@ResponseStatus(value = HttpStatus.CREATED)
 	public ProductoResponseDTO crear(@Valid @RequestBody ProductoRequestDTO request) {
 		return mapper.toResponseDTO(productoUseCase.crear(mapper.toDomain(request)));
 

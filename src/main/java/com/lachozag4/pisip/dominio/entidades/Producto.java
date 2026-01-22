@@ -2,6 +2,8 @@ package com.lachozag4.pisip.dominio.entidades;
 
 import java.io.Serializable;
 
+import com.lachozag4.pisip.infraestructura.persistencia.jpa.CategoriaJpa;
+
 public class Producto implements Serializable {
 
 	/**
@@ -15,14 +17,26 @@ public class Producto implements Serializable {
 	private final String descripcion;
 	private final boolean estado;
 
+	private CategoriaJpa fkCategoria;
+
 	public Producto(int idproducto, String nombre, Double precio, Integer stockActual, String descripcion,
-			boolean estado) {
+			boolean estado, CategoriaJpa fkCategoria) {
+		super();
 		this.idproducto = idproducto;
 		this.nombre = nombre;
 		this.precio = precio;
 		this.stockActual = stockActual;
 		this.descripcion = descripcion;
 		this.estado = estado;
+		this.fkCategoria = fkCategoria;
+	}
+
+	public CategoriaJpa getFkCategoria() {
+		return fkCategoria;
+	}
+
+	public void setFkCategoria(CategoriaJpa fkCategoria) {
+		this.fkCategoria = fkCategoria;
 	}
 
 	public int getIdproducto() {
