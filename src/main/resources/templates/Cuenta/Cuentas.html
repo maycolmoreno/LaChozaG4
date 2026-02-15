@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{Masterplantilla/Master}">
+
+<head>
+    <title>Cuentas abiertas</title>
+</head>
+
+<body>
+<div layout:fragment="contenidopaginas">
+    <!-- Alertas de mensajes flash -->
+    <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <span th:text="${mensajeExito}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <span th:text="${mensajeError}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+        <div>
+            <h1 class="mb-0">Historial de cuentas</h1>
+            <small class="text-muted">
+                <span th:text="${#lists.size(cuentas)}"></span> cuenta(s) encontrada(s)
+            </small>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <form th:action="@{/cuentas}" method="get" class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Desde</label>
+                    <input type="date" name="fechaDesde" class="form-control" th:value="${fechaDesde}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Hasta</label>
+                    <input type="date" name="fechaHasta" class="form-control" th:value="${fechaHasta}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label d-block">Estado</label>
+                    <div class="btn-group w-100" role="group" aria-label="Filtro estado cuentas">
+                        <a th:href="@{/cuentas(fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}"
+                           class="btn btn-outline-secondary btn-sm"
+                           th:classappend="${filtroEstado} == 'TODAS' ? ' active' : ''">Todas</a>
+                        <a th:href="@{/cuentas(estado='ABIERTA', fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}"
+                           class="btn btn-outline-warning btn-sm"
+                           th:classappend="${filtroEstado} == 'ABIERTA' ? ' active' : ''">Abiertas</a>
+                        <a th:href="@{/cuentas(estado='PAGADA', fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}"
+                           class="btn btn-outline-success btn-sm"
+                           th:classappend="${filtroEstado} == 'PAGADA' ? ' active' : ''">Pagadas</a>
+                        <a th:href="@{/cuentas(estado='ANULADA', fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}"
+                           class="btn btn-outline-secondary btn-sm"
+                           th:classappend="${filtroEstado} == 'ANULADA' ? ' active' : ''">Anuladas</a>
+                    </div>
+                </div>
+                <div class="col-md-3 text-end mt-2 mt-md-0">
+                    <button type="submit" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-search"></i> Aplicar filtros
+                    </button>
+                    <a th:href="@{/cuentas}" class="btn btn-outline-secondary btn-sm">Limpiar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Mesa</th>
+                <th>Cliente</th>
+                <th>Fecha apertura</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="c : ${cuentas}">
+                <td th:text="${c.idcuenta}"></td>
+                <td th:text="${c.mesa != null} ? ${c.mesa.numero} : '-' "></td>
+                <td th:text="${c.cliente != null} ? ${c.cliente.nombre} : '-' "></td>
+                <td th:text="${c.fechaApertura != null} ? ${#temporals.format(c.fechaApertura, 'dd/MM/yyyy HH:mm')} : '-' "></td>
+                <td th:text="${#numbers.formatDecimal(c.total, 1, 2)}"></td>
+                <td>
+                    <span th:if="${c.estado == 'ABIERTA'}" class="badge bg-warning text-dark">Abierta</span>
+                    <span th:if="${c.estado == 'PAGADA'}" class="badge bg-success">Pagada</span>
+                    <span th:if="${c.estado == 'ANULADA'}" class="badge bg-secondary">Anulada</span>
+                </td>
+                <td>
+                    <form th:action="@{'/cuentas/cobrar/' + ${c.idcuenta}}" method="post" style="display:inline" th:if="${c.estado == 'ABIERTA'}">
+                        <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('¿Cobrar esta cuenta?');">
+                            <i class="bi bi-cash"></i> Cobrar
+                        </button>
+                    </form>
+                    <form th:action="@{'/cuentas/anular/' + ${c.idcuenta}}" method="post" style="display:inline" th:if="${c.estado == 'ABIERTA'}">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Anular esta cuenta?');">
+                            <i class="bi bi-x-circle"></i> Anular
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(cuentas)}">
+                <td colspan="7" class="text-center">No hay cuentas para los criterios seleccionados</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

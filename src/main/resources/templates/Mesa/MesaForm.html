@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{Masterplantilla/Master}">
+
+<head>
+    <title>Mesa - Formulario</title>
+</head>
+
+<body>
+    <div layout:fragment="contenidopaginas">
+        <div class="card">
+            <div class="card-header">
+                <h3 th:text="${mesa.idmesa == null} ? 'Nueva Mesa' : 'Editar Mesa'"></h3>
+            </div>
+            <div class="card-body">
+                <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span th:text="${mensajeError}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <form th:action="@{/mesa/guardar}" th:object="${mesa}" method="post" class="needs-validation" novalidate>
+                    <input type="hidden" th:field="*{idmesa}" />
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="numero" class="form-label">Número de Mesa</label>
+                            <input type="number" class="form-control" id="numero" 
+                                   th:field="*{numero}" min="1" required />
+                            <div class="invalid-feedback">El número de mesa es obligatorio.</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="capacidad" class="form-label">Capacidad</label>
+                            <input type="number" class="form-control" id="capacidad" 
+                                   th:field="*{capacidad}" min="1" required />
+                            <div class="invalid-feedback">La capacidad es obligatoria.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="estado" 
+                               th:field="*{estado}" />
+                        <label class="form-check-label" for="estado">Disponible</label>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-save"></i> Guardar
+                        </button>
+                        <a th:href="@{/mesa}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1187 @@
+/* ==============================================================
+   LA CHOZA – CSS ÚNICO (LIMPIO + RESPONSIVE)
+   ============================================================== */
+
+/* =======================
+   1. VARIABLES GLOBALES
+======================= */
+:root {
+    /* Paleta pastel corporativa */
+    --naranja: #FF9F68;          /* naranja pastel principal */
+    --naranja-oscuro: #F26522;   /* acento más intenso */
+    --naranja-choza: #F26522;    /* color institucional unificado */
+    --naranja-suave: #FFE3D0;    /* fondos suaves */
+    --verde: #7DBE31;
+    --rojo: #E74C3C;
+    --negro: #1f1f1f;
+    --gris-fondo: #F5F7FB;
+    --gris-texto: #444;
+    --blanco: #fff;
+
+    --radius: 14px;
+    --transition: all .25s ease;
+    --shadow: 0 12px 30px rgba(15,23,42,.06);
+}
+
+/* Utilidades de color naranja institucional */
+.bg-naranja-choza {
+    background-color: var(--naranja-choza) !important;
+    color: #fff !important;
+}
+
+.text-naranja-choza {
+    color: var(--naranja-choza) !important;
+}
+
+.border-naranja-choza {
+    border-color: var(--naranja-choza) !important;
+}
+
+.btn-naranja-choza {
+    background-color: var(--naranja-choza) !important;
+    color: #fff !important;
+    border: none;
+    transition: background 0.2s;
+}
+
+.btn-naranja-choza:hover,
+.btn-naranja-choza:focus {
+    background-color: #d9541a !important;
+    color: #fff !important;
+}
+
+/* =======================
+   2. RESET BÁSICO
+======================= */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--gris-fondo);
+    font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+    color: var(--gris-texto);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* =======================
+   3. LAYOUT
+======================= */
+
+/* TOPBAR */
+.topbar {
+    background: var(--naranja-choza);
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+}
+
+.navbar-header {
+    background: var(--naranja-choza);
+}
+
+/* SIDEBAR */
+.left-sidebar {
+    background: #fff;
+    box-shadow: 2px 0 12px rgba(0,0,0,.06);
+}
+
+.sidebar-item {
+    margin: 4px 10px;
+    border-radius: 10px;
+}
+
+.sidebar-link {
+    padding: 12px 15px;
+    color: var(--gris-texto);
+    transition: var(--transition);
+}
+
+.sidebar-link i {
+    color: var(--naranja-choza);
+}
+
+.sidebar-link:hover {
+    background: var(--naranja-suave);
+    color: var(--naranja-choza);
+}
+
+.sidebar-link:hover i {
+    color: var(--naranja-choza);
+}
+
+.sidebar-item.selected > .sidebar-link,
+.sidebar-link.active {
+    background: var(--naranja-choza);
+    color: #fff;
+    border-left: 4px solid var(--naranja-choza);
+}
+
+.sidebar-item.selected > .sidebar-link i,
+.sidebar-link.active i {
+    color: #fff;
+}
+
+.sidebar-nav ul .nav-small-cap {
+    color: #999 !important;
+}
+
+/* =======================
+   4. CARDS
+======================= */
+.card {
+    border: 1px solid rgba(242,101,34,.18);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    background: var(--blanco);
+    transition: var(--transition);
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(242,101,34,.12);
+}
+
+.card-header {
+    background: var(--naranja-choza) !important;
+    color: #fff !important;
+    border-bottom: none;
+    border-radius: var(--radius) var(--radius) 0 0 !important;
+}
+
+.card-header h5,
+.card-header h6,
+.card-header .mb-0 {
+    color: #fff !important;
+}
+
+.card-header .text-muted {
+    color: rgba(255,255,255,.75) !important;
+}
+
+/* =======================
+   5. TABLAS
+======================= */
+.table {
+    border-collapse: separate;
+    border-spacing: 0 6px;
+    background: transparent;
+}
+
+.table thead th {
+    background: #fff;
+    color: var(--gris-texto);
+    border: none;
+    border-bottom: 2px solid var(--naranja-choza);
+    font-weight: 700;
+    font-size: .85rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.table tbody tr {
+    background: #fff;
+    transition: var(--transition);
+}
+
+.table tbody tr:hover {
+    background: var(--naranja-suave);
+}
+
+/* =======================
+   6. FORMULARIOS
+======================= */
+.form-control,
+.form-select {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--naranja);
+    box-shadow: 0 0 0 4px rgba(242,101,34,.15);
+}
+
+/* =======================
+   7. BOTONES
+======================= */
+.btn {
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.btn-primary { background: var(--naranja); color: #fff; }
+.btn-success { background: var(--verde); color: #fff; }
+.btn-danger  { background: var(--rojo);  color: #fff; }
+.btn-warning { background: #FFB347; color: #fff; }
+
+/* Overrides de Bootstrap para unificar el naranja institucional */
+.btn-orange,
+.btn-orange.disabled,
+.btn-orange:disabled,
+.btn-warning,
+.btn-warning.disabled,
+.btn-warning:disabled {
+    background-color: var(--naranja-choza) !important;
+    border-color: var(--naranja-choza) !important;
+    color: #fff !important;
+}
+
+.btn-orange:hover,
+.btn-orange:focus,
+.btn-orange:active,
+.btn-orange.active,
+.btn-warning:hover,
+.btn-warning:focus,
+.btn-warning:active,
+.btn-warning.active {
+    background-color: #d9541a !important;
+    border-color: #d9541a !important;
+    color: #fff !important;
+}
+
+.btn-outline-orange,
+.btn-outline-warning {
+    color: var(--naranja-choza) !important;
+    border-color: var(--naranja-choza) !important;
+}
+
+.btn-outline-orange:hover,
+.btn-outline-orange:focus,
+.btn-outline-orange:active,
+.btn-outline-orange.active,
+.btn-outline-warning:hover,
+.btn-outline-warning:focus,
+.btn-outline-warning:active,
+.btn-outline-warning.active {
+    background-color: var(--naranja-choza) !important;
+    border-color: var(--naranja-choza) !important;
+    color: #fff !important;
+}
+
+/* =======================
+   8. BADGES
+======================= */
+.badge.bg-success { background: var(--verde); }
+.badge.bg-warning { background: #FFB347; }
+
+/* Badges y labels con naranja institucional */
+.badge.bg-warning,
+.badge-warning,
+.label-warning,
+.round.round-warning,
+.list-group-item-orange,
+.list-group-item-warning {
+    background-color: var(--naranja-choza) !important;
+    border-color: var(--naranja-choza) !important;
+    color: #fff !important;
+}
+
+/* =======================
+   9. SCROLLBAR
+======================= */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--naranja);
+    border-radius: 10px;
+}
+
+/* Utilidades de color tipo Bootstrap, apuntando al naranja institucional */
+.bg-orange,
+.bg-warning {
+    background-color: var(--naranja-choza) !important;
+}
+
+.text-orange,
+.text-warning {
+    color: var(--naranja-choza) !important;
+}
+
+.border-orange,
+.border-warning {
+    border-color: var(--naranja-choza) !important;
+}
+
+.link-orange,
+.link-warning {
+    color: var(--naranja-choza) !important;
+}
+
+.link-orange:hover,
+.link-orange:focus,
+.link-warning:hover,
+.link-warning:focus {
+    color: #d9541a !important;
+}
+
+/* =======================
+   10. PÁGINAS ESPECIALES
+======================= */
+
+/* LOGIN */
+body.login {
+    background: var(--gris-fondo);
+}
+
+.login-card {
+    max-width: 420px;
+    margin: auto;
+}
+
+/* POS */
+.pos-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1.6fr 1.1fr;
+    gap: 20px;
+}
+
+.carrito-card {
+    border-radius: 18px;
+}
+
+.carrito-card .card-header {
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+}
+
+.productos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+}
+
+.producto-card {
+    border-radius: 18px;
+}
+
+/* =======================
+   11. RESPONSIVE
+======================= */
+@media (max-width: 991px) {
+    /* Sidebar como menú lateral oculto en móviles */
+    .left-sidebar {
+        position: fixed;
+        top: 56px;
+        /* altura aproximada del topbar */
+        left: -260px;
+        width: 260px;
+        height: calc(100% - 56px);
+        z-index: 1040;
+    }
+
+    body.sidebar-open .left-sidebar {
+        left: 0;
+    }
+
+    /* El contenido ocupa todo el ancho en móviles */
+    .page-wrapper {
+        margin-left: 0 !important;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Tablas desplazables horizontalmente en pantallas pequeñas */
+    .table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* POS a una sola columna */
+    .pos-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Márgenes y padding más contenidos */
+    .container-fluid {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .card {
+        border-radius: 10px;
+    }
+}
+
+/* =======================
+   12. PRINT
+======================= */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+}
+
+/* =======================
+   11.1 MÓDULO COCINA
+======================= */
+
+.page-title {
+    font-weight: 700;
+    color: var(--negro);
+}
+
+.page-title i {
+    color: var(--naranja);
+}
+
+/* Grid de órdenes */
+.ordenes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+/* Card de pedido */
+.orden-card {
+    border-left: 6px solid var(--naranja);
+}
+
+/* Cabecera */
+.orden-card .card-header {
+    background: transparent;
+    border-bottom: 1px solid #eee;
+}
+
+/* Mesa */
+.mesa-numero {
+    font-weight: 700;
+    color: var(--naranja);
+}
+
+/* Tiempo */
+.tiempo-pedido {
+    font-size: 0.9rem;
+    color: var(--gris-texto);
+}
+
+/* Producto */
+.producto-item {
+    padding: 6px 0;
+    border-bottom: 1px dashed #eee;
+}
+
+.producto-item:last-child {
+    border-bottom: none;
+}
+
+/* Cantidad */
+.cantidad-badge {
+    background: var(--naranja);
+    color: #fff;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin-right: 10px;
+}
+
+/* Observaciones */
+.observaciones-alert {
+    background: #fff3cd;
+    border-left: 5px solid #ffc107;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+}
+
+/* Botón completar */
+.btn-completar {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+/* Sin órdenes */
+.sin-ordenes {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--verde);
+}
+
+.sin-ordenes i {
+    font-size: 4rem;
+    margin-bottom: 15px;
+}
+
+/* Auto refresh */
+.refresh-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--blanco);
+    padding: 8px 15px;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    font-size: 0.85rem;
+}
+
+/* =======================
+   11.2 MÓDULO PRODUCTOS
+======================= */
+
+.page-header h1 {
+    font-weight: 800;
+}
+
+.page-header p {
+    margin: 0;
+    color: var(--gris-texto);
+}
+
+.btn-add-product {
+    background: var(--naranja);
+    color: #fff;
+    font-weight: 700;
+    border-radius: 12px;
+}
+
+.btn-add-product:hover {
+    background: #e55b1d;
+}
+
+/* Filtros */
+.filter-bar {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    background: var(--blanco);
+    padding: 15px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+}
+
+.stats-badge {
+    background: var(--naranja-suave);
+    color: var(--naranja);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+}
+
+/* Categorías */
+.categoria-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.btn-categoria {
+    border-radius: 20px;
+    font-weight: 600;
+    background: #f1f1f1;
+}
+
+.btn-categoria.active {
+    background: var(--naranja);
+    color: #fff;
+}
+
+/* Espaciado extra entre tarjetas de catálogo */
+.producto-item {
+    padding: 0 0.75rem 1.5rem;
+}
+
+/* Tarjeta de producto en catálogo */
+.product-card {
+    background: var(--blanco);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.product-card:hover {
+    transform: translateY(-6px);
+}
+
+.product-image-wrapper {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-status {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.status-active {
+    background: var(--verde);
+    color: #fff;
+}
+
+.status-inactive {
+    background: var(--rojo);
+    color: #fff;
+}
+
+.product-body {
+    padding: 15px;
+}
+
+.product-title {
+    font-weight: 700;
+}
+
+.product-description {
+    font-size: 0.9rem;
+    color: var(--gris-texto);
+}
+
+.product-price {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--naranja);
+}
+
+/* Stock */
+.product-stock {
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.stock-ok {
+    color: var(--verde);
+}
+
+.stock-low {
+    color: #ff9800;
+}
+
+.stock-out {
+    color: var(--rojo);
+}
+
+/* Acciones */
+.product-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-edit {
+    background: var(--naranja);
+    color: #fff;
+}
+
+.btn-delete {
+    background: var(--rojo);
+    color: #fff;
+}
+
+/* Estado vacío */
+.empty-state {
+    text-align: center;
+    padding: 60px;
+    color: var(--gris-texto);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--naranja);
+}
+
+/* =======================
+   11.3 PUNTO DE VENTA (POS)
+======================= */
+
+.productos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+}
+
+.producto-card {
+    background: var(--blanco);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.producto-card:hover {
+    transform: scale(1.05);
+}
+
+.producto-agotado {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.producto-stock-bajo {
+    border: 2px solid #ff9800;
+}
+
+.producto-img {
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gris-fondo);
+    position: relative;
+}
+
+.producto-img img {
+    max-width: 80%;
+    max-height: 80%;
+    object-fit: contain;
+}
+
+.producto-info {
+    padding: 10px;
+    text-align: center;
+}
+
+.producto-nombre {
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.producto-precio {
+    color: var(--naranja);
+    font-weight: 800;
+}
+
+/* Animación al agregar */
+.producto-agregado {
+    animation: pulse 0.3s ease;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+
+/* =======================
+   CARRITO
+======================= */
+
+.carrito-card {
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.carrito-items {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.carrito-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.carrito-item-info {
+    font-size: 0.9rem;
+}
+
+.carrito-item-nombre {
+    font-weight: 700;
+}
+
+.carrito-item-precio {
+    color: var(--gris-texto);
+}
+
+.carrito-item-acciones {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.carrito-item-cantidad {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cantidad-valor {
+    font-weight: 700;
+}
+
+.carrito-item-subtotal {
+    font-weight: 800;
+    color: var(--naranja);
+}
+
+.carrito-vacio {
+    text-align: center;
+    padding: 30px;
+    color: var(--gris-texto);
+}
+
+.carrito-vacio i {
+    font-size: 3rem;
+    color: var(--naranja);
+}
+
+/* Teclado numérico POS (cantidad rápida) */
+.pos-keypad {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.pos-keypad button {
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 6px 0;
+}
+
+.pos-keypad-display {
+    text-align: right;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    border: 1px solid #e2e6ea;
+}
+
+/* =======================
+   13. OVERRIDES DEL TEMPLATE (SIN AZULES)
+======================= */
+
+/* Gráficos tipo campaign (antes usaban #27a9e3 y #7460ee) */
+.campaign .ct-series-a .ct-line,
+.campaign .ct-series-a .ct-point {
+    stroke: var(--naranja) !important;
+}
+
+.campaign .ct-series-b .ct-area {
+    fill: var(--verde) !important;
+}
+
+.campaign .ct-series-b .ct-line,
+.campaign .ct-series-b .ct-point {
+    stroke: var(--verde) !important;
+}
+
+/* Burbujas de chat que eran celestes */
+.chat-list .chat-item.odd .box {
+    background: var(--naranja) !important;
+}
+
+/* Píldoras de navegación que marcaban activo en azul */
+.nav-pills.custom-pills .nav-link.active {
+    color: var(--naranja) !important;
+    border-bottom-color: var(--naranja) !important;
+}
+
+/* Overlay de imágenes que resaltaba en azul */
+.el-element-overlay .el-card-item .el-overlay-1 .el-info .el-item .el-link:hover {
+    background: var(--naranja) !important;
+    border-color: var(--naranja) !important;
+}
+
+/* Datepicker del template (cabecera y día seleccionado en naranja) */
+.dtp > .dtp-content > .dtp-date-view > header.dtp-header {
+    background: var(--naranja) !important;
+}
+
+.dtp div.dtp-date,
+.dtp div.dtp-time,
+.dtp table.dtp-picker-days tr > td > a.selected {
+    background: var(--naranja) !important;
+}
+
+/* =======================
+   14. OVERRIDES SIDEBAR (NAV LATERAL)
+   ======================= */
+
+/* Fondo lateral blanco */
+#main-wrapper .left-sidebar {
+    background: #fff !important;
+}
+
+/* Quitar fondo oscuro heredado del UL interno del template */
+#main-wrapper .left-sidebar[data-sidebarbg=skin5],
+#main-wrapper .left-sidebar[data-sidebarbg=skin5] ul {
+    background: #fff !important;
+}
+
+/* Links del menú en gris oscuro */
+#main-wrapper .sidebar-nav ul .sidebar-item .sidebar-link {
+    color: var(--gris-texto) !important;
+    opacity: 1 !important;
+}
+
+/* Iconos del menú en naranja */
+#main-wrapper .sidebar-nav ul .sidebar-item .sidebar-link i {
+    color: var(--naranja-choza) !important;
+}
+
+/* Hover con fondo naranja suave */
+#main-wrapper .sidebar-nav ul .sidebar-item .sidebar-link:hover {
+    background: var(--naranja-suave) !important;
+    color: var(--naranja-choza) !important;
+}
+
+#main-wrapper .sidebar-nav ul .sidebar-item .sidebar-link:hover i {
+    color: var(--naranja-choza) !important;
+}
+
+/* Ítem seleccionado / activo con fondo naranja */
+#main-wrapper .sidebar-nav ul .sidebar-item.selected > .sidebar-link,
+#main-wrapper .sidebar-nav ul .sidebar-item .sidebar-link.active {
+    background: var(--naranja-choza) !important;
+    color: #fff !important;
+    opacity: 1 !important;
+    border-left: 4px solid var(--naranja-choza);
+}
+
+#main-wrapper .sidebar-nav ul .sidebar-item.selected > .sidebar-link i,
+#main-wrapper .sidebar-nav ul .sidebar-item .sidebar-link.active i {
+    color: #fff !important;
+}
+
+/* Nav small cap en sidebar */
+#main-wrapper .sidebar-nav ul .nav-small-cap {
+    color: #999 !important;
+}
+
+/* Create button en sidebar */
+#main-wrapper .left-sidebar .create-btn,
+#main-wrapper .left-sidebar[data-sidebarbg=skin5] .create-btn {
+    background: var(--naranja-choza) !important;
+    color: #fff !important;
+}
+
+/* =======================
+   15. OVERRIDES TOPBAR (HEADER NAV)
+   ======================= */
+
+/* Topbar completamente naranja institucional */
+#main-wrapper .topbar[data-navbarbg=skin5],
+#main-wrapper .topbar .navbar-collapse[data-navbarbg=skin5] {
+    background: var(--naranja-choza) !important;
+}
+
+/* Header de logo en naranja institucional */
+#main-wrapper .topbar .navbar-header[data-logobg=skin5] {
+    background: var(--naranja-choza) !important;
+}
+
+/* Collapse (vista móvil) también naranja */
+#navbarSupportedContent {
+    background: var(--naranja-choza) !important;
+}
+
+/* Links del topbar en blanco */
+.topbar .navbar-nav .nav-link {
+    color: #fff !important;
+}
+
+.topbar .navbar-nav .nav-link:hover {
+    color: rgba(255,255,255,.8) !important;
+}
+
+/* Toggler y iconos del topbar en blanco */
+.topbar .nav-toggler,
+.topbar .topbartoggler,
+.topbar .sidebartoggler {
+    color: #fff !important;
+}
+
+/* Texto de usuario en topbar */
+.topbar .pro-pic span {
+    color: #fff !important;
+}
+
+/* =======================
+   16. COLORES PRIMARIOS DEL TEMPLATE -> NARANJA COMO ACENTO
+   ======================= */
+
+/* Textos y links "primarios" (acento naranja) */
+.text-primary,
+.text-purple,
+.link-primary,
+.link-purple {
+    color: var(--naranja-choza) !important;
+}
+
+/* Bordes primarios */
+.border-primary,
+.border-purple {
+    border-color: var(--naranja-choza) !important;
+}
+
+/* Fondos primarios → naranja institucional */
+.bg-primary,
+.bg-purple {
+    background-color: var(--naranja-choza) !important;
+    color: #fff !important;
+}
+
+/* Badge primaria y barra de progreso sí usan el acento fuerte */
+.badge-primary,
+.progress-bar {
+    background-color: var(--naranja) !important;
+    border-color: var(--naranja) !important;
+}
+
+/* Botones primarios/púrpura del template (naranja solo en CTAs) */
+.btn-primary,
+.btn-purple {
+    background-color: var(--naranja) !important;
+    border-color: var(--naranja) !important;
+}
+
+.btn-primary:hover,
+.btn-purple:hover {
+    background-color: var(--naranja-oscuro) !important;
+    border-color: var(--naranja-oscuro) !important;
+}
+
+/* Paginación activa y list-group activos con fondo suave y borde naranja */
+.page-item.active .page-link,
+.list-group-item.active {
+    background-color: var(--naranja-suave) !important;
+    border-color: var(--naranja) !important;
+    color: var(--gris-texto) !important;
+}
+
+/* =======================
+   17. KPI CARDS (DASHBOARD)
+======================= */
+.kpi-card {
+    border: none !important;
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+
+.kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0,0,0,.08);
+}
+
+.kpi-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.kpi-icon i {
+    font-size: 1.5rem;
+    color: #fff;
+}
+
+/* Dashboard card-headers blancos (no usa el naranja global de .card-header) */
+.kpi-card .card-header,
+.card.border-0 .card-header.bg-white {
+    background: #fff !important;
+    color: var(--gris-texto) !important;
+    border-radius: var(--radius) var(--radius) 0 0 !important;
+}
+
+.card.border-0 .card-header.bg-white h5,
+.card.border-0 .card-header.bg-white h6 {
+    color: var(--gris-texto) !important;
+}
+
+/* =======================
+   18. TOASTS
+======================= */
+.toast-container .toast {
+    background: #fff;
+    border-radius: 12px;
+    animation: slideInRight .35s ease;
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(40px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+/* =======================
+   19. PWA – STANDALONE MODE
+======================= */
+
+/* Safe area para notch / barra de estado en modo standalone */
+@supports (padding-top: env(safe-area-inset-top)) {
+    .topbar {
+        padding-top: env(safe-area-inset-top);
+    }
+    .page-wrapper {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* Cuando la app corre como PWA instalada */
+@media (display-mode: standalone) {
+    /* Quitar scroll horizontal */
+    body { overflow-x: hidden; }
+
+    /* Ajustar topbar para que no quede bajo la barra de estado */
+    .topbar {
+        padding-top: env(safe-area-inset-top, 0px);
+    }
+
+    /* Hacer los botones más grandes para dedo (touch target mínimo 44px) */
+    .sidebar-link,
+    .btn,
+    .nav-link,
+    .dropdown-item {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Pull-to-refresh feeling (evitar el overscroll del browser) */
+    html {
+        overscroll-behavior-y: contain;
+    }
+}
+
+/* Mejoras responsive para pantallas < 576px (móviles) */
+@media (max-width: 575.98px) {
+    .page-breadcrumb { padding: .5rem 1rem; }
+    .page-title { font-size: 1.15rem; }
+    .container-fluid { padding: 0 .75rem; }
+    .card { margin-bottom: .75rem; }
+    .card-body { padding: .75rem; }
+
+    /* Tablas scrollables en horizontal */
+    .table-responsive { -webkit-overflow-scrolling: touch; }
+
+    /* KPI cards en 2 columnas */
+    .kpi-card { min-width: 0; }
+
+    /* Formularios más táctiles */
+    .form-control, .form-select {
+        font-size: 16px !important; /* Previene zoom automático en iOS */
+        min-height: 44px;
+    }
+}
+

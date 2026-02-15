@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{Masterplantilla/Master}">
+
+<head>
+    <title>Pedidos - Kanban</title>
+</head>
+
+<body>
+    <div layout:fragment="contenidopaginas">
+        <!-- Alertas de mensajes flash -->
+        <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span th:text="${mensajeExito}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${mensajeError}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Alerta de pedidos listos para entrega -->
+        <div th:if="${pedidosListosParaEntrega != null and pedidosListosParaEntrega > 0}"
+             class="alert border-0 shadow-sm alert-dismissible fade show mb-3" role="alert"
+             id="alerta-por-entregar"
+             style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white; border-radius: 14px;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-bell-fill fs-3 me-3 kb-bell-shake"></i>
+                    <div>
+                        <strong class="fs-5">
+                            <span th:text="${pedidosListosParaEntrega}"></span>
+                            pedido(s) listo(s) para entregar
+                        </strong>
+                        <br>
+                        <small>La cocina ha completado estas órdenes. Llévalas a la mesa.</small>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+            <div>
+                <h1 class="mb-0"><i class="bi bi-kanban"></i> Pedidos</h1>
+                <small class="text-muted">
+                    <span th:text="${totalPedidos}"></span> pedido(s) en total
+                </small>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <!-- Toggle vista -->
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-secondary btn-sm active" id="btnVistaKanban" onclick="toggleVista('kanban')">
+                        <i class="bi bi-kanban"></i> Kanban
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnVistaTabla" onclick="toggleVista('tabla')">
+                        <i class="bi bi-table"></i> Tabla
+                    </button>
+                </div>
+                <a th:href="@{/pedidos/nuevo}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle"></i> Nuevo Pedido
+                </a>
+            </div>
+        </div>
+
+        <!-- ======================== VISTA KANBAN ======================== -->
+        <div id="vistaKanban" class="kb-board">
+
+            <!-- COLUMNA: PENDIENTE -->
+            <div class="kb-column">
+                <div class="kb-column-header kb-header-pendiente">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-clock-history"></i>
+                        <span>Pendiente</span>
+                    </div>
+                    <span class="kb-count" th:text="${#lists.size(pedidosPorEstado['PENDIENTE'])}">0</span>
+                </div>
+                <div class="kb-column-body">
+                    <div th:if="${#lists.isEmpty(pedidosPorEstado['PENDIENTE'])}" class="kb-empty">
+                        <i class="bi bi-inbox"></i>
+                        <small>Sin pedidos pendientes</small>
+                    </div>
+                    <div th:each="ped : ${pedidosPorEstado['PENDIENTE']}" class="kb-card kb-card-pendiente">
+                        <div class="kb-card-top">
+                            <span class="kb-card-id">#<span th:text="${ped.idpedido}"></span></span>
+                            <span class="kb-card-time">
+                                <i class="bi bi-clock"></i>
+                                <span th:text="${#temporals.format(ped.fecha, 'HH:mm')}"></span>
+                            </span>
+                        </div>
+                        <div class="kb-card-mesa">
+                            <i class="bi bi-grid-3x3-gap-fill"></i>
+                            Mesa <span th:text="${ped.mesa != null ? ped.mesa.numero : '-'}"></span>
+                        </div>
+                        <div class="kb-card-cliente">
+                            <i class="bi bi-person"></i>
+                            <span th:text="${ped.cliente != null ? ped.cliente.nombre : 'Sin cliente'}"></span>
+                        </div>
+                        <div class="kb-card-total">
+                            $<span th:text="${#numbers.formatDecimal(ped.total, 1, 2)}"></span>
+                        </div>
+                        <div th:if="${ped.observaciones != null and !ped.observaciones.isEmpty()}" class="kb-card-obs">
+                            <i class="bi bi-chat-left-text"></i>
+                            <span th:text="${ped.observaciones}"></span>
+                        </div>
+                        <div class="kb-card-actions">
+                            <a th:href="@{/pedidos/detalle/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-ver" title="Ver detalle">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a th:href="@{/pedidos/editar/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-editar" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form th:action="@{'/pedidos/enviar-cocina/' + ${ped.idpedido}}" method="post" style="display:inline">
+                                <button type="submit" class="kb-btn kb-btn-cocina" title="Enviar a Cocina"
+                                        onclick="return confirm('¿Enviar este pedido a cocina?')">
+                                    <i class="bi bi-fire"></i>
+                                </button>
+                            </form>
+                            <a th:href="@{/pedidos/eliminar/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-cancelar" title="Cancelar"
+                               onclick="return confirm('¿Cancelar este pedido? Se restaurará el stock.')">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA: EN COCINA -->
+            <div class="kb-column">
+                <div class="kb-column-header kb-header-cocina">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-fire"></i>
+                        <span>En Cocina</span>
+                    </div>
+                    <span class="kb-count" th:text="${#lists.size(pedidosPorEstado['EN_COCINA'])}">0</span>
+                </div>
+                <div class="kb-column-body">
+                    <div th:if="${#lists.isEmpty(pedidosPorEstado['EN_COCINA'])}" class="kb-empty">
+                        <i class="bi bi-fire"></i>
+                        <small>Sin pedidos en cocina</small>
+                    </div>
+                    <div th:each="ped : ${pedidosPorEstado['EN_COCINA']}" class="kb-card kb-card-cocina">
+                        <div class="kb-card-top">
+                            <span class="kb-card-id">#<span th:text="${ped.idpedido}"></span></span>
+                            <span class="kb-card-time">
+                                <i class="bi bi-clock"></i>
+                                <span th:text="${#temporals.format(ped.fecha, 'HH:mm')}"></span>
+                            </span>
+                        </div>
+                        <div class="kb-card-mesa">
+                            <i class="bi bi-grid-3x3-gap-fill"></i>
+                            Mesa <span th:text="${ped.mesa != null ? ped.mesa.numero : '-'}"></span>
+                        </div>
+                        <div class="kb-card-cliente">
+                            <i class="bi bi-person"></i>
+                            <span th:text="${ped.cliente != null ? ped.cliente.nombre : 'Sin cliente'}"></span>
+                        </div>
+                        <div class="kb-card-total">
+                            $<span th:text="${#numbers.formatDecimal(ped.total, 1, 2)}"></span>
+                        </div>
+                        <div th:if="${ped.observaciones != null and !ped.observaciones.isEmpty()}" class="kb-card-obs">
+                            <i class="bi bi-chat-left-text"></i>
+                            <span th:text="${ped.observaciones}"></span>
+                        </div>
+                        <div class="kb-card-actions">
+                            <a th:href="@{/pedidos/detalle/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-ver" title="Ver detalle">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <form th:action="@{'/pedidos/finalizar/' + ${ped.idpedido}}" method="post" style="display:inline">
+                                <button type="submit" class="kb-btn kb-btn-listo" title="Marcar como Listo"
+                                        onclick="return confirm('¿Marcar pedido como listo para entrega?')">
+                                    <i class="bi bi-check2-square"></i>
+                                </button>
+                            </form>
+                            <a th:href="@{/pedidos/eliminar/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-cancelar" title="Cancelar"
+                               onclick="return confirm('¿Cancelar este pedido? Se restaurará el stock.')">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA: LISTO PARA ENTREGA -->
+            <div class="kb-column">
+                <div class="kb-column-header kb-header-listo">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-bell-fill"></i>
+                        <span>Por Entregar</span>
+                    </div>
+                    <span class="kb-count" th:text="${#lists.size(pedidosPorEstado['LISTO_PARA_ENTREGA'])}">0</span>
+                </div>
+                <div class="kb-column-body">
+                    <div th:if="${#lists.isEmpty(pedidosPorEstado['LISTO_PARA_ENTREGA'])}" class="kb-empty">
+                        <i class="bi bi-bell"></i>
+                        <small>Sin pedidos por entregar</small>
+                    </div>
+                    <div th:each="ped : ${pedidosPorEstado['LISTO_PARA_ENTREGA']}" class="kb-card kb-card-listo kb-pulse">
+                        <div class="kb-card-top">
+                            <span class="kb-card-id">#<span th:text="${ped.idpedido}"></span></span>
+                            <span class="kb-card-time">
+                                <i class="bi bi-clock"></i>
+                                <span th:text="${#temporals.format(ped.fecha, 'HH:mm')}"></span>
+                            </span>
+                        </div>
+                        <div class="kb-card-mesa">
+                            <i class="bi bi-grid-3x3-gap-fill"></i>
+                            Mesa <span th:text="${ped.mesa != null ? ped.mesa.numero : '-'}"></span>
+                        </div>
+                        <div class="kb-card-cliente">
+                            <i class="bi bi-person"></i>
+                            <span th:text="${ped.cliente != null ? ped.cliente.nombre : 'Sin cliente'}"></span>
+                        </div>
+                        <div class="kb-card-total">
+                            $<span th:text="${#numbers.formatDecimal(ped.total, 1, 2)}"></span>
+                        </div>
+                        <div th:if="${ped.observaciones != null and !ped.observaciones.isEmpty()}" class="kb-card-obs">
+                            <i class="bi bi-chat-left-text"></i>
+                            <span th:text="${ped.observaciones}"></span>
+                        </div>
+                        <div class="kb-card-actions">
+                            <a th:href="@{/pedidos/detalle/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-ver" title="Ver detalle">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <form th:action="@{'/pedidos/entregar/' + ${ped.idpedido}}" method="post" style="display:inline">
+                                <button type="submit" class="kb-btn kb-btn-entregar" title="Entregar"
+                                        onclick="return confirm('¿Marcar pedido como entregado?')">
+                                    <i class="bi bi-truck"></i>
+                                </button>
+                            </form>
+                            <a th:href="@{/pedidos/eliminar/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-cancelar" title="Cancelar"
+                               onclick="return confirm('¿Cancelar este pedido? Se restaurará el stock.')">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA: COMPLETADO -->
+            <div class="kb-column">
+                <div class="kb-column-header kb-header-completado">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>Completado</span>
+                    </div>
+                    <span class="kb-count" th:text="${#lists.size(pedidosPorEstado['COMPLETADO'])}">0</span>
+                </div>
+                <div class="kb-column-body">
+                    <div th:if="${#lists.isEmpty(pedidosPorEstado['COMPLETADO'])}" class="kb-empty">
+                        <i class="bi bi-check-circle"></i>
+                        <small>Sin pedidos completados</small>
+                    </div>
+                    <div th:each="ped : ${pedidosPorEstado['COMPLETADO']}" class="kb-card kb-card-completado">
+                        <div class="kb-card-top">
+                            <span class="kb-card-id">#<span th:text="${ped.idpedido}"></span></span>
+                            <span class="kb-card-time">
+                                <i class="bi bi-clock"></i>
+                                <span th:text="${#temporals.format(ped.fecha, 'HH:mm')}"></span>
+                            </span>
+                        </div>
+                        <div class="kb-card-mesa">
+                            <i class="bi bi-grid-3x3-gap-fill"></i>
+                            Mesa <span th:text="${ped.mesa != null ? ped.mesa.numero : '-'}"></span>
+                        </div>
+                        <div class="kb-card-cliente">
+                            <i class="bi bi-person"></i>
+                            <span th:text="${ped.cliente != null ? ped.cliente.nombre : 'Sin cliente'}"></span>
+                        </div>
+                        <div class="kb-card-total">
+                            $<span th:text="${#numbers.formatDecimal(ped.total, 1, 2)}"></span>
+                        </div>
+                        <div class="kb-card-actions">
+                            <a th:href="@{/pedidos/detalle/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-ver" title="Ver detalle">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <!-- Cobrar -->
+                            <form th:if="${pedidosConCobrar != null
+                                         and pedidosConCobrar.contains(ped.idpedido)
+                                         and ped.mesa != null
+                                         and ped.cliente != null
+                                         and cuentasPorMesa != null
+                                         and cuentasPorMesa[ped.mesa.idmesa + '-' + ped.cliente.idcliente] != null}"
+                                  th:action="@{'/cuentas/cobrar/' + ${cuentasPorMesa[ped.mesa.idmesa + '-' + ped.cliente.idcliente].idcuenta} + '?origen=pedidos'}"
+                                  method="post" style="display:inline">
+                                <button type="submit" class="kb-btn kb-btn-cobrar" title="Cobrar cuenta"
+                                        onclick="return confirm('¿Cobrar la cuenta de esta mesa?')">
+                                    <i class="bi bi-cash-coin"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA: CANCELADO -->
+            <div class="kb-column">
+                <div class="kb-column-header kb-header-cancelado">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-x-circle-fill"></i>
+                        <span>Cancelado</span>
+                    </div>
+                    <span class="kb-count" th:text="${#lists.size(pedidosPorEstado['CANCELADO'])}">0</span>
+                </div>
+                <div class="kb-column-body">
+                    <div th:if="${#lists.isEmpty(pedidosPorEstado['CANCELADO'])}" class="kb-empty">
+                        <i class="bi bi-x-circle"></i>
+                        <small>Sin pedidos cancelados</small>
+                    </div>
+                    <div th:each="ped : ${pedidosPorEstado['CANCELADO']}" class="kb-card kb-card-cancelado">
+                        <div class="kb-card-top">
+                            <span class="kb-card-id">#<span th:text="${ped.idpedido}"></span></span>
+                            <span class="kb-card-time">
+                                <i class="bi bi-clock"></i>
+                                <span th:text="${#temporals.format(ped.fecha, 'HH:mm')}"></span>
+                            </span>
+                        </div>
+                        <div class="kb-card-mesa">
+                            <i class="bi bi-grid-3x3-gap-fill"></i>
+                            Mesa <span th:text="${ped.mesa != null ? ped.mesa.numero : '-'}"></span>
+                        </div>
+                        <div class="kb-card-cliente">
+                            <i class="bi bi-person"></i>
+                            <span th:text="${ped.cliente != null ? ped.cliente.nombre : 'Sin cliente'}"></span>
+                        </div>
+                        <div class="kb-card-total kb-total-tachado">
+                            $<span th:text="${#numbers.formatDecimal(ped.total, 1, 2)}"></span>
+                        </div>
+                        <div class="kb-card-actions">
+                            <a th:href="@{/pedidos/detalle/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-ver" title="Ver detalle">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================== VISTA TABLA (oculta por defecto) ======================== -->
+        <div id="vistaTabla" style="display: none;">
+            <!-- Filtros y búsqueda -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <form th:action="@{/pedidos}" method="get" class="row g-2 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label">Buscar</label>
+                            <input type="text" name="q" class="form-control"
+                                   placeholder="ID, cliente, mesa, usuario..."
+                                   th:value="${q}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Desde</label>
+                            <input type="date" name="fechaDesde" class="form-control"
+                                   th:value="${fechaDesde}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Hasta</label>
+                            <input type="date" name="fechaHasta" class="form-control"
+                                   th:value="${fechaHasta}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label d-block">Estado</label>
+                            <div class="btn-group w-100" role="group">
+                                <a th:href="@{/pedidos(q=${q}, fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}"
+                                   class="btn btn-outline-secondary btn-sm"
+                                   th:classappend="${filtroEstado} == 'TODOS' ? ' active' : ''">Todos</a>
+                                <a th:href="@{/pedidos(estado='PENDIENTE', q=${q}, fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}"
+                                   class="btn btn-outline-warning btn-sm"
+                                   th:classappend="${filtroEstado} == 'PENDIENTE' ? ' active' : ''">Pend</a>
+                                <a th:href="@{/pedidos(estado='EN_COCINA', q=${q}, fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}"
+                                   class="btn btn-outline-primary btn-sm"
+                                   th:classappend="${filtroEstado} == 'EN_COCINA' ? ' active' : ''">Cocina</a>
+                                <a th:href="@{/pedidos(estado='LISTO_PARA_ENTREGA', q=${q}, fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}"
+                                   class="btn btn-outline-info btn-sm"
+                                   th:classappend="${filtroEstado} == 'LISTO_PARA_ENTREGA' ? ' active' : ''">Listo</a>
+                                <a th:href="@{/pedidos(estado='COMPLETADO', q=${q}, fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}"
+                                   class="btn btn-outline-success btn-sm"
+                                   th:classappend="${filtroEstado} == 'COMPLETADO' ? ' active' : ''">Comp</a>
+                                <a th:href="@{/pedidos(estado='CANCELADO', q=${q}, fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}"
+                                   class="btn btn-outline-secondary btn-sm"
+                                   th:classappend="${filtroEstado} == 'CANCELADO' ? ' active' : ''">Canc</a>
+                            </div>
+                        </div>
+                        <div class="col-12 text-end mt-2">
+                            <button type="submit" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-search"></i> Aplicar filtros
+                            </button>
+                            <a th:href="@{/pedidos}" class="btn btn-outline-secondary btn-sm">Limpiar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Mesa</th>
+                            <th>Cliente</th>
+                            <th>Usuario</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="ped : ${pedidos}">
+                            <td th:text="${ped.idpedido}"></td>
+                            <td th:text="${#temporals.format(ped.fecha, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td th:text="${ped.mesa != null} ? ${ped.mesa.numero} : '-'"></td>
+                            <td th:text="${ped.cliente != null} ? ${ped.cliente.nombre} : '-'"></td>
+                            <td th:text="${ped.usuario != null} ? ${ped.usuario.nombreCompleto} : '-'"></td>
+                            <td th:text="${#numbers.formatDecimal(ped.total, 1, 2)}"></td>
+                            <td>
+                                <span th:if="${ped.estado == 'PENDIENTE'}" class="badge bg-warning text-dark">Pendiente</span>
+                                <span th:if="${ped.estado == 'EN_COCINA'}" class="badge bg-primary">En Cocina</span>
+                                <span th:if="${ped.estado == 'LISTO_PARA_ENTREGA'}" class="badge bg-info text-dark">
+                                    <i class="bi bi-bell-fill"></i> Por Entregar
+                                </span>
+                                <span th:if="${ped.estado == 'COMPLETADO'}" class="badge bg-success">Completado</span>
+                                <span th:if="${ped.estado == 'CANCELADO'}" class="badge bg-secondary">Cancelado</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/pedidos/detalle/{id}(id=${ped.idpedido})}" class="btn btn-info btn-sm">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a th:if="${ped.estado == 'PENDIENTE'}"
+                                   th:href="@{/pedidos/editar/{id}(id=${ped.idpedido})}" class="btn btn-warning btn-sm">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form th:if="${ped.estado == 'PENDIENTE'}" th:action="@{'/pedidos/enviar-cocina/' + ${ped.idpedido}}" method="post" style="display:inline">
+                                    <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('¿Enviar a cocina?')">
+                                        <i class="bi bi-fire"></i>
+                                    </button>
+                                </form>
+                                <a th:if="${ped.estado != 'COMPLETADO' and ped.estado != 'CANCELADO'}"
+                                   th:href="@{/pedidos/eliminar/{id}(id=${ped.idpedido})}" class="btn btn-danger btn-sm"
+                                   onclick="return confirm('¿Cancelar este pedido?')">
+                                    <i class="bi bi-x-lg"></i>
+                                </a>
+                                <form th:if="${ped.estado == 'EN_COCINA'}" th:action="@{'/pedidos/finalizar/' + ${ped.idpedido}}" method="post" style="display:inline">
+                                    <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('¿Marcar como listo?')">
+                                        <i class="bi bi-check2-square"></i>
+                                    </button>
+                                </form>
+                                <form th:if="${ped.estado == 'LISTO_PARA_ENTREGA'}" th:action="@{'/pedidos/entregar/' + ${ped.idpedido}}" method="post" style="display:inline">
+                                    <button type="submit" class="btn btn-info btn-sm" onclick="return confirm('¿Entregar pedido?')">
+                                        <i class="bi bi-truck"></i>
+                                    </button>
+                                </form>
+                                <form th:if="${pedidosConCobrar != null
+                                             and pedidosConCobrar.contains(ped.idpedido)
+                                             and ped.mesa != null
+                                             and ped.cliente != null
+                                             and cuentasPorMesa != null
+                                             and cuentasPorMesa[ped.mesa.idmesa + '-' + ped.cliente.idcliente] != null}"
+                                      th:action="@{'/cuentas/cobrar/' + ${cuentasPorMesa[ped.mesa.idmesa + '-' + ped.cliente.idcliente].idcuenta} + '?origen=pedidos'}"
+                                      method="post" style="display:inline">
+                                    <button type="submit" class="btn btn-outline-success btn-sm" onclick="return confirm('¿Cobrar?')">
+                                        <i class="bi bi-cash-coin"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(pedidos)}">
+                            <td colspan="8" class="text-center">No hay pedidos registrados</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            <nav th:if="${totalPaginas} > 1" aria-label="Paginación pedidos" class="mt-3">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${page} == 0 ? ' disabled' : ''">
+                        <a class="page-link"
+                           th:href="@{/pedidos(page=${page - 1}, size=${size}, estado=${filtroEstado}, q=${q}, fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}">Anterior</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPaginas - 1)}"
+                        th:classappend="${i} == ${page} ? ' active' : ''">
+                        <a class="page-link"
+                           th:text="${i + 1}"
+                           th:href="@{/pedidos(page=${i}, size=${size}, estado=${filtroEstado}, q=${q}, fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${page} >= ${totalPaginas - 1} ? ' disabled' : ''">
+                        <a class="page-link"
+                           th:href="@{/pedidos(page=${page + 1}, size=${size}, estado=${filtroEstado}, q=${q}, fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}">Siguiente</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- ======================== ESTILOS KANBAN ======================== -->
+        <style>
+            /* Board */
+            .kb-board {
+                display: flex;
+                gap: 16px;
+                overflow-x: auto;
+                padding-bottom: 16px;
+                min-height: 70vh;
+                align-items: flex-start;
+            }
+
+            /* Columna */
+            .kb-column {
+                min-width: 280px;
+                max-width: 320px;
+                flex: 1 1 280px;
+                background: #f0f2f5;
+                border-radius: 16px;
+                display: flex;
+                flex-direction: column;
+                max-height: calc(100vh - 200px);
+            }
+
+            .kb-column-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 14px 16px;
+                font-weight: 700;
+                font-size: 0.95rem;
+                border-radius: 16px 16px 0 0;
+                color: #fff;
+                letter-spacing: 0.3px;
+            }
+
+            .kb-column-body {
+                padding: 10px;
+                overflow-y: auto;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .kb-column-body::-webkit-scrollbar { width: 5px; }
+            .kb-column-body::-webkit-scrollbar-track { background: transparent; }
+            .kb-column-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,.15); border-radius: 10px; }
+
+            .kb-count {
+                background: rgba(255,255,255,.25);
+                padding: 2px 10px;
+                border-radius: 20px;
+                font-size: 0.8rem;
+                font-weight: 800;
+            }
+
+            /* Colores por estado */
+            .kb-header-pendiente   { background: linear-gradient(135deg, #f59e0b, #d97706); }
+            .kb-header-cocina      { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+            .kb-header-listo       { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+            .kb-header-completado  { background: linear-gradient(135deg, #22c55e, #16a34a); }
+            .kb-header-cancelado   { background: linear-gradient(135deg, #6b7280, #4b5563); }
+
+            /* Tarjeta */
+            .kb-card {
+                background: #fff;
+                border-radius: 12px;
+                padding: 14px;
+                box-shadow: 0 2px 8px rgba(0,0,0,.06);
+                border-left: 5px solid transparent;
+                transition: transform .15s ease, box-shadow .15s ease;
+                cursor: default;
+            }
+            .kb-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0,0,0,.1);
+            }
+
+            /* Bordes por estado */
+            .kb-card-pendiente   { border-left-color: #f59e0b; }
+            .kb-card-cocina      { border-left-color: #3b82f6; }
+            .kb-card-listo       { border-left-color: #06b6d4; background: #f0fdfa; }
+            .kb-card-completado  { border-left-color: #22c55e; opacity: 0.85; }
+            .kb-card-cancelado   { border-left-color: #6b7280; opacity: 0.6; }
+
+            .kb-card-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 8px;
+            }
+            .kb-card-id {
+                font-weight: 800;
+                font-size: 1rem;
+                color: #1e293b;
+            }
+            .kb-card-time {
+                font-size: 0.78rem;
+                color: #64748b;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+            .kb-card-mesa {
+                font-weight: 600;
+                font-size: 0.88rem;
+                color: #334155;
+                margin-bottom: 4px;
+            }
+            .kb-card-mesa i { color: var(--naranja-choza); }
+            .kb-card-cliente {
+                font-size: 0.82rem;
+                color: #64748b;
+                margin-bottom: 6px;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+            .kb-card-total {
+                font-weight: 700;
+                font-size: 1.05rem;
+                color: #16a34a;
+                margin-bottom: 6px;
+            }
+            .kb-total-tachado {
+                text-decoration: line-through;
+                color: #9ca3af;
+            }
+            .kb-card-obs {
+                font-size: 0.78rem;
+                color: #92400e;
+                background: #fef3c7;
+                padding: 6px 8px;
+                border-radius: 8px;
+                margin-bottom: 8px;
+                display: flex;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            /* Acciones */
+            .kb-card-actions {
+                display: flex;
+                gap: 6px;
+                flex-wrap: wrap;
+                padding-top: 8px;
+                border-top: 1px solid #f1f5f9;
+            }
+            .kb-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                border: none;
+                cursor: pointer;
+                font-size: 0.85rem;
+                transition: all .15s ease;
+                text-decoration: none;
+                color: #fff;
+            }
+            .kb-btn:hover { transform: scale(1.12); filter: brightness(1.1); color: #fff; }
+
+            .kb-btn-ver       { background: #6366f1; color: #fff; }
+            .kb-btn-editar    { background: #f59e0b; color: #fff; }
+            .kb-btn-cocina    { background: #3b82f6; color: #fff; }
+            .kb-btn-listo     { background: #06b6d4; color: #fff; }
+            .kb-btn-entregar  { background: #0d9488; color: #fff; }
+            .kb-btn-cobrar    { background: #22c55e; color: #fff; }
+            .kb-btn-cancelar  { background: #ef4444; color: #fff; }
+
+            /* Empty state */
+            .kb-empty {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 30px 10px;
+                color: #94a3b8;
+                text-align: center;
+            }
+            .kb-empty i { font-size: 2rem; margin-bottom: 8px; opacity: .4; }
+
+            /* Animación pulse para "Por Entregar" */
+            .kb-pulse {
+                animation: kbPulse 2s ease-in-out infinite;
+            }
+            @keyframes kbPulse {
+                0%, 100% { box-shadow: 0 2px 8px rgba(6,182,212,.15); }
+                50% { box-shadow: 0 4px 20px rgba(6,182,212,.35); }
+            }
+
+            /* Bell shake */
+            .kb-bell-shake {
+                animation: bellShake 0.5s ease-in-out infinite alternate;
+            }
+            @keyframes bellShake {
+                0% { transform: rotate(-10deg); }
+                100% { transform: rotate(10deg); }
+            }
+
+            /* Responsive */
+            @media (max-width: 992px) {
+                .kb-board {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+                .kb-column {
+                    min-width: 100%;
+                    max-width: 100%;
+                    max-height: none;
+                }
+            }
+        </style>
+
+        <!-- JS toggle vista -->
+        <script>
+            function toggleVista(tipo) {
+                var kanban = document.getElementById('vistaKanban');
+                var tabla = document.getElementById('vistaTabla');
+                var btnKanban = document.getElementById('btnVistaKanban');
+                var btnTabla = document.getElementById('btnVistaTabla');
+
+                if (tipo === 'tabla') {
+                    kanban.style.display = 'none';
+                    tabla.style.display = 'block';
+                    btnKanban.classList.remove('active');
+                    btnTabla.classList.add('active');
+                    localStorage.setItem('pedidosVista', 'tabla');
+                } else {
+                    kanban.style.display = 'flex';
+                    tabla.style.display = 'none';
+                    btnKanban.classList.add('active');
+                    btnTabla.classList.remove('active');
+                    localStorage.setItem('pedidosVista', 'kanban');
+                }
+            }
+
+            // Restaurar preferencia de vista
+            document.addEventListener('DOMContentLoaded', function() {
+                var vista = localStorage.getItem('pedidosVista');
+                if (vista === 'tabla') {
+                    toggleVista('tabla');
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>

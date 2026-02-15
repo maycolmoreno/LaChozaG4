@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>La Choza - Sistema</title>
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" th:href="@{/assets/images/favicon.svg}" />
+
+<!-- PWA -->
+<link rel="manifest" th:href="@{/manifest.json}" />
+<meta name="theme-color" content="#F26522" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="La Choza" />
+<link rel="apple-touch-icon" th:href="@{/assets/images/icons/icon-192x192.png}" />
+
+<!-- Google Fonts: Inter -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- CSS principal del template: href directo + th:href para context-path -->
+<link rel="stylesheet" href="/dist/css/style.min.css" th:href="@{/dist/css/style.min.css}" />
+
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<link rel="stylesheet" href="/css/custom-modern.css" th:href="@{/css/custom-modern.css}" />
+</head>
+
+<body>
+	<div class="preloader">
+		<div class="lds-ripple">
+			<div class="lds-pos"></div>
+			<div class="lds-pos"></div>
+		</div>
+	</div>
+
+	<div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5"
+		data-sidebartype="full" data-sidebar-position="absolute"
+		data-header-position="absolute" data-boxed-layout="full">
+
+		<header class="topbar" data-navbarbg="skin5">
+			   <nav class="navbar top-navbar navbar-expand-md navbar-dark">
+			   <div class="navbar-header" data-logobg="skin5">
+				   <a class="navbar-brand d-flex align-items-center" th:href="@{/}">
+					   <b class="logo-icon ps-2"> <img
+						   th:src="@{/assets/images/logolachoza.jpg}" alt="logo"
+						   style="width: 35px; border-radius: 5px; border: 2px solid var(--naranja-choza);" />
+					</b> <span class="logo-text ms-2 fw-bold">La Choza</span>
+					</a> <a class="nav-toggler waves-effect waves-light d-block d-md-none"
+						href="javascript:void(0)"><i class="bi bi-list fs-3"></i></a>
+				</div>
+				<div class="navbar-collapse collapse" id="navbarSupportedContent"
+					data-navbarbg="skin5">
+					<ul class="navbar-nav float-start me-auto">
+						<li class="nav-item d-none d-lg-block"><a
+							class="nav-link sidebartoggler waves-effect waves-light"
+							href="javascript:void(0)" data-sidebartype="mini-sidebar"><i
+								class="bi bi-list fs-4"></i></a></li>
+						
+							
+					</ul>
+					<ul class="navbar-nav float-end">
+						<li class="nav-item dropdown"><a
+							class="nav-link dropdown-toggle text-white pro-pic" href="#"
+							data-bs-toggle="dropdown"> <img
+								th:src="@{/assets/images/users/1.jpg}" alt="user"
+								class="rounded-circle" width="31"> <span class="ms-2"
+								sec:authentication="name">Usuario</span>
+						</a>
+							<ul class="dropdown-menu dropdown-menu-end user-dd animated">
+								<form th:action="@{/logout}" method="post" class="m-0">
+									<button type="submit" class="dropdown-item text-danger">
+										<i class="bi bi-power me-2"></i> Cerrar Sesión
+									</button>
+								</form>
+							</ul></li>
+					</ul>
+				</div>
+			</nav>
+		</header>
+
+		<!-- ========== LEFT SIDEBAR ========== -->
+		<aside class="left-sidebar" data-sidebarbg="skin5">
+			<div class="scroll-sidebar">
+				<nav class="sidebar-nav">
+					<ul id="sidebarnav" class="pt-4">
+
+						<!-- ===== ADMIN ===== -->
+						<li class="sidebar-item" sec:authorize="hasRole('ADMIN')"><a
+							th:href="@{/}" class="sidebar-link"> <i
+								class="bi bi-speedometer2"></i> <span class="hide-menu">Dashboard</span>
+						</a></li>
+
+						<li class="sidebar-item" sec:authorize="hasRole('ADMIN')"><a
+							th:href="@{/usuario}" class="sidebar-link"> <i
+								class="bi bi-people-fill"></i> <span class="hide-menu">Usuarios</span>
+						</a></li>
+
+						<li class="sidebar-item" sec:authorize="hasRole('ADMIN')"><a
+							th:href="@{/categoria}" class="sidebar-link"> <i
+								class="bi bi-tags-fill"></i> <span class="hide-menu">Categorías</span>
+						</a></li>
+
+						<li class="sidebar-item" sec:authorize="hasRole('ADMIN')"><a
+							th:href="@{/cliente}" class="sidebar-link"> <i
+								class="bi bi-person-badge-fill"></i> <span class="hide-menu">Clientes</span>
+						</a></li>
+
+						<li class="sidebar-item" sec:authorize="hasRole('ADMIN')"><a
+							th:href="@{/mesa}" class="sidebar-link"> <i
+								class="bi bi-grid-3x3-gap-fill"></i> <span class="hide-menu">Mesas</span>
+						</a></li>
+
+						<li class="sidebar-item" sec:authorize="hasRole('ADMIN')"><a
+							th:href="@{/producto}" class="sidebar-link"> <i
+								class="bi bi-box-seam-fill"></i> <span class="hide-menu">Productos</span>
+						</a></li>
+
+						<!-- ===== OPERACIONES ===== -->
+						<li class="sidebar-item"
+							sec:authorize="hasAnyRole('ADMIN','CAMARERO')"><a
+							th:href="@{/pedidos}" class="sidebar-link"> <i
+								class="bi bi-receipt-cutoff"></i> <span class="hide-menu">Pedidos</span>
+						</a></li>
+
+						<li class="sidebar-item"
+							sec:authorize="hasAnyRole('ADMIN','CAMARERO')"><a
+							th:href="@{/pedidos/nuevo}" class="sidebar-link"> <i
+								class="bi bi-cart-plus-fill"></i> <span class="hide-menu">Punto
+									de Venta</span>
+						</a></li>
+
+						<li class="sidebar-item"
+							sec:authorize="hasAnyRole('ADMIN','CAMARERO')"><a
+							th:href="@{/cuentas}" class="sidebar-link"> <i
+								class="bi bi-cash-stack"></i> <span class="hide-menu">Cuentas</span>
+						</a></li>
+
+						<!-- ===== COCINA ===== -->
+						<li class="sidebar-item"
+							sec:authorize="hasAnyRole('ADMIN','COCINA')"><a
+							th:href="@{/cocina}" class="sidebar-link"> <i
+								class="bi bi-fire"></i> <span class="hide-menu">Órdenes
+									Cocina</span>
+						</a></li>
+
+						<!-- ===== REPORTES (SI LOS TIENES) ===== -->
+						<li class="sidebar-item" sec:authorize="hasRole('ADMIN')"><a
+							th:href="@{/reportes}" class="sidebar-link"> <i
+								class="bi bi-bar-chart-fill"></i> <span class="hide-menu">Reportes</span>
+						</a></li>
+
+						<!-- ===== CERRAR SESIÓN (ACCESIBLE TAMBIÉN EN MÓVIL) ===== -->
+						<li class="sidebar-item">
+							<form th:action="@{/logout}" method="post" class="m-0">
+								<button type="submit" class="sidebar-link w-100 text-start btn btn-link p-0">
+									<i class="bi bi-power"></i> <span class="hide-menu">Cerrar sesión</span>
+								</button>
+							</form>
+						</li>
+
+					</ul>
+				</nav>
+			</div>
+		</aside>
+
+
+		<div class="page-wrapper">
+			<div class="page-breadcrumb">
+				<div class="row">
+					<div class="col-12">
+						<h4 class="page-title" layout:fragment="titulo_pagina">Panel</h4>
+					</div>
+				</div>
+			</div>
+			<div class="container-fluid">
+				<div layout:fragment="contenidopaginas"></div>
+			</div>
+			<footer class="footer text-center">La Choza © 2026</footer>
+		</div>
+	</div>
+
+	<!-- Toast container global -->
+	<div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999;"></div>
+
+	<script th:src="@{/assets/libs/jquery/dist/jquery.min.js}"></script>
+	<script th:src="@{/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js}"></script>
+	<script th:src="@{/dist/js/sidebarmenu.js}"></script>
+	<script th:src="@{/dist/js/custom.min.js}"></script>
+	<!-- Chart.js via CDN -->
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+	<script th:src="@{/js/app.js}"></script>
+
+	<!-- Service Worker PWA -->
+	<script>
+	if ('serviceWorker' in navigator) {
+		window.addEventListener('load', function() {
+			navigator.serviceWorker.register('/sw.js')
+				.then(function(reg) { console.log('SW registrado:', reg.scope); })
+				.catch(function(err) { console.log('SW error:', err); });
+		});
+	}
+	</script>
+
+	<!-- Toast automático para flash messages de Spring -->
+	<script th:inline="javascript">
+	(function(){
+		var msg = /*[[${mensajeExito}]]*/ null;
+		var err = /*[[${mensajeError}]]*/ null;
+		if(msg) window.showToast(msg, 'success');
+		if(err) window.showToast(err, 'danger');
+	})();
+	</script>
+</body>
+</html>
