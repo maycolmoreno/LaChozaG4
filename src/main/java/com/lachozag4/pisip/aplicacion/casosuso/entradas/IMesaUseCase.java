@@ -8,10 +8,22 @@ public interface IMesaUseCase {
 
 	Mesa crear(Mesa mesa);
 
-	Mesa obtenerPorId(int id);
+	Mesa obtenerPorId(int idmesa);
 
 	List<Mesa> listar();
 
-	void eliminar(int id);
+	Mesa actualizar(int idmesa, Mesa mesa);
+
+	void eliminar(int idmesa);
+
+	/**
+	 * Lista mesas disponibles (sin pedidos activos)
+	 */
+	List<Mesa> listarDisponibles();
+
+	/**
+	 * Lista mesas ocupadas (con pedidos activos)
+	 */
+	List<Mesa> listarOcupadas();
 
 }

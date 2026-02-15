@@ -5,44 +5,69 @@ import java.util.Optional;
 
 import com.lachozag4.pisip.dominio.entidades.Mesa;
 import com.lachozag4.pisip.dominio.repositorios.IMesaRepositorio;
-import com.lachozag4.pisip.infraestructura.persistencia.jpa.MesaJpa;
 import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.IMesaJpaMapper;
 import com.lachozag4.pisip.infraestructura.repositorios.IMesaJpaRepositorio;
 
 public class MesaRepositorioImpl implements IMesaRepositorio {
 
-	private final IMesaJpaRepositorio jparepository;
-	private final IMesaJpaMapper entityMapper;
+	private final IMesaJpaRepositorio jpaRepository;
+	private final IMesaJpaMapper mapper;
 
-	public MesaRepositorioImpl(IMesaJpaRepositorio jparepository, IMesaJpaMapper entityMapper) {
-		this.jparepository = jparepository;
-		this.entityMapper = entityMapper;
+	public MesaRepositorioImpl(IMesaJpaRepositorio jpaRepository, IMesaJpaMapper mapper) {
+		this.jpaRepository = jpaRepository;
+		this.mapper = mapper;
 	}
 
 	@Override
 	public Mesa guardar(Mesa mesa) {
-		MesaJpa entity = entityMapper.toEntity(mesa);
-		MesaJpa guardado = jparepository.save(entity);
-		return entityMapper.toDomain(guardado);
+		return mapper.toDomain(jpaRepository.save(mapper.toEntity(mesa)));
 	}
 
 	@Override
-	public Optional<Mesa> BuscarPorId(int id) {
-		// TODO Auto-generated method stub
-		return jparepository.findById(id).map(entityMapper::toDomain);
+	public Optional<Mesa> buscarPorId(int idmesa) {
+		return jpaRepository.findById(idmesa).map(mapper::toDomain);
 	}
 
 	@Override
-	public List<Mesa> listarTodos() {
-		// TODO Auto-generated method stub
-		return jparepository.findAll().stream().map(entityMapper::toDomain).toList();
+	public Optional<Mesa> buscarPorNumero(int numero) {
+		return jpaRepository.findByNumero(numero).map(mapper::toDomain);
 	}
 
 	@Override
-	public void eliminar(int id) {
-		// TODO Auto-generated method stub
-		jparepository.deleteById(id);
+	public List<Mesa> listarDisponibles() {
+		return jpaRepository.findByEstadoTrue().stream().map(mapper::toDomain).toList();
+	}
 
+	@Override
+	public List<Mesa> listarTodas() {
+		return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
+	}
+
+	@Override
+	public Mesa actualizar(Mesa mesa) {
+		return guardar(mesa);
+	}
+
+	@Override
+	public boolean existePorId(int idmesa) {
+		return jpaRepository.existsById(idmesa);
+	}
+
+	@Override
+	public List<Mesa> listarMesasSinPedidosActivos() {
+		return jpaRepository.findMesasSinPedidosActivos().stream().map(mapper::toDomain).toList();
+	}
+
+	@Override
+	public List<Mesa> listarMesasOcupadas() {
+		return jpaRepository.findMesasConPedidosActivos().stream().map(mapper::toDomain).toList();
+	}
+
+	@Override
+	public void eliminar(int idmesa) {
+		if (existePorId(idmesa)) {
+			jpaRepository.deleteById(idmesa);
+		}
 	}
 
 }

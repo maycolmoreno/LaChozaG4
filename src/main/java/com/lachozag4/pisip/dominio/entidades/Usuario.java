@@ -4,24 +4,25 @@ import java.io.Serializable;
 
 public class Usuario implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
+
 	private final int idusuario;
 	private final String username;
 	private final String password;
 	private final String nombreCompleto;
-	private final String rol; // EJEMPLOS: 'ADMIN', 'CAMARERO', 'COCINA'
-	private final Boolean estado;
+	private final String rol;
+	private final boolean estado;
+	private final boolean requiereCambioPassword;
 
-	public Usuario(int idusuario, String username, String password, String nombreCompleto, String rol, Boolean estado) {
+	public Usuario(int idusuario, String username, String password, String nombreCompleto, String rol, boolean estado,
+			boolean requiereCambioPassword) {
 		this.idusuario = idusuario;
 		this.username = username;
 		this.password = password;
 		this.nombreCompleto = nombreCompleto;
 		this.rol = rol;
 		this.estado = estado;
+		this.requiereCambioPassword = requiereCambioPassword;
 	}
 
 	public int getIdusuario() {
@@ -44,8 +45,22 @@ public class Usuario implements Serializable {
 		return rol;
 	}
 
-	public Boolean getEstado() {
+	public boolean getEstado() {
 		return estado;
 	}
 
+	public boolean isRequiereCambioPassword() {
+		return requiereCambioPassword;
+	}
+
+	@Override
+	public String toString() {
+		return "Usuario{" +
+				"idusuario=" + idusuario +
+				", username='" + username + '\'' +
+				", nombreCompleto='" + nombreCompleto + '\'' +
+				", rol='" + rol + '\'' +
+				", estado=" + estado +
+				'}';
+	}
 }

@@ -7,17 +7,19 @@ import lombok.Data;
 
 @Data
 public class CategoriaRequestDTO {
+	@NotNull
+	private int idcategoria;
 
 	@NotBlank(message = "El nombre es obligatorio")
-	@Size(max = 100, message = "El nombre no debe superar 100 caracteres")
-
+	@Size(max = 255, message = "El nombre debe tener como máximo 255 caracteres")
 	private String nombre;
 
+	private boolean estado;
+	
 	@NotBlank(message = "La descripción es obligatoria")
-	@Size(max = 500, message = "La descripción no debe superar 500 caracteres")
-
+	@Size(max = 255, message = "La descripción debe tener como máximo 255 caracteres")
 	private String descripcion;
-	@NotNull(message = "El estado es obligatorio")
-	private Boolean estado;
+
+	
 
 }

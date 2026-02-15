@@ -1,41 +1,51 @@
 package com.lachozag4.pisip.infraestructura.persistencia.jpa;
 
 import java.io.Serializable;
-import java.util.List;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "producto")
+@Table(name = "producto", uniqueConstraints = { @UniqueConstraint(columnNames = { "nombre", "idcategoria" }) })
 @Data
+@NoArgsConstructor
 public class ProductoJpa implements Serializable {
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int idproducto;
+
+	@Column(nullable = false, length = 200)
 	private String nombre;
-	private Double precio;
-	private Integer stockActual;
+
+	@Column(nullable = false)
+	private double precio;
+
+	@Column(nullable = false)
+	private int stockActual;
+
+	@Column(length = 500)
 	private String descripcion;
-	private Boolean estado;
+
+	@Column(name = "imagen_url", length = 500)
+	private String imagenUrl;
+
+	@Column(nullable = false)
+	private boolean estado;
 
 	@ManyToOne
-	@JoinColumn(name = "fkCategoria")
-	private CategoriaJpa fkCategoria;
-	
-	@OneToMany(mappedBy = "Fkproducto")
-	private List<PedidoDetalleJpa> pedidosdetalle;
+	@JoinColumn(name = "fkCategoriaId", nullable = false)
+	private CategoriaJpa fkCategoriaId;
 
 }

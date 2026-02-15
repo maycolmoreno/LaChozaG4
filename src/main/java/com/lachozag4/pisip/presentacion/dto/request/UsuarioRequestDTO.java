@@ -5,17 +5,17 @@ import lombok.Data;
 
 @Data
 public class UsuarioRequestDTO {
-	@NotBlank
-	private int idusuario;	
-	@NotBlank
+	
+	private int idusuario;
+	@NotBlank(message = "El username es obligatorio")
 	private String username;
-	@NotBlank
+	@NotBlank(message = "La contraseña es obligatoria")
 	private String password;	
-	@NotBlank
+	@NotBlank(message = "El nombre completo es obligatorio")
 	private String nombreCompleto;	
-	@NotBlank
+	@NotBlank(message = "El rol es obligatorio")
 	private String rol; // EJEMPLOS: 'ADMIN', 'CAMARERO', 'COCINA'
-	@NotBlank
 	private boolean estado;
+	private boolean requiereCambioPassword;
 
 }

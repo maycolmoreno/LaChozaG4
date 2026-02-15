@@ -5,45 +5,54 @@ import java.util.Optional;
 
 import com.lachozag4.pisip.dominio.entidades.PedidoDetalle;
 import com.lachozag4.pisip.dominio.repositorios.IPedidoDetalleRepositorio;
-import com.lachozag4.pisip.infraestructura.persistencia.jpa.PedidoDetalleJpa;
 import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.IPedidoDetalleJpaMapper;
 import com.lachozag4.pisip.infraestructura.repositorios.IPedidoDetalleJpaRepositorio;
 
 public class PedidoDetalleRepositorioImpl implements IPedidoDetalleRepositorio {
 
-	private final IPedidoDetalleJpaRepositorio jparepository;
-	private final IPedidoDetalleJpaMapper entityMapper;
+	private final IPedidoDetalleJpaRepositorio jpaRepository;
+	private final IPedidoDetalleJpaMapper mapper;
 
-	public PedidoDetalleRepositorioImpl(IPedidoDetalleJpaRepositorio jparepository,
-			IPedidoDetalleJpaMapper entityMapper) {
-		this.jparepository = jparepository;
-		this.entityMapper = entityMapper;
+	public PedidoDetalleRepositorioImpl(IPedidoDetalleJpaRepositorio jpaRepository, IPedidoDetalleJpaMapper mapper) {
+		this.jpaRepository = jpaRepository;
+		this.mapper = mapper;
 	}
 
 	@Override
-	public PedidoDetalle guardar(PedidoDetalle pedidoDetalle) {
-		PedidoDetalleJpa entity = entityMapper.toEntity(pedidoDetalle);
-		PedidoDetalleJpa guardado = jparepository.save(entity);
-		return entityMapper.toDomain(guardado);
+	public PedidoDetalle guardar(PedidoDetalle detalle) {
+		return mapper.toDomain(jpaRepository.save(mapper.toEntity(detalle)));
 	}
 
 	@Override
-	public Optional<PedidoDetalle> BuscarPorId(int id) {
-		// TODO Auto-generated method stub
-		return jparepository.findById(id).map(entityMapper::toDomain);
+	public Optional<PedidoDetalle> buscarPorId(int id) {
+		return jpaRepository.findById(id).map(mapper::toDomain);
 	}
 
 	@Override
 	public List<PedidoDetalle> listarTodos() {
-		// TODO Auto-generated method stub
-		return jparepository.findAll().stream().map(entityMapper::toDomain).toList();
+		return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
+	}
+
+	@Override
+	public List<PedidoDetalle> listarPorPedido(int idPedido) {
+		return jpaRepository.findByFkPedido_Idpedido(idPedido).stream().map(mapper::toDomain).toList();
+	}
+	@Override
+	public PedidoDetalle actualizar(PedidoDetalle detalle) {
+		return guardar(detalle);
+	}
+
+	@Override
+	public boolean existePorId(int id) {
+		return jpaRepository.existsById(id);
 	}
 
 	@Override
 	public void eliminar(int id) {
-		// TODO Auto-generated method stub
-		jparepository.deleteById(id);
-
+		if (existePorId(id)) {
+			jpaRepository.deleteById(id);
+		}
 	}
-
 }
+
+
