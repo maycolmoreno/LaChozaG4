@@ -7,7 +7,10 @@ import com.lachozag4.pisip.infraestructura.persistencia.jpa.MesaJpa;
 
 @Mapper(componentModel = "spring")
 public interface IMesaJpaMapper {
-	Mesa toDomain(MesaJpa entity);
-	MesaJpa toEntity(Mesa mesa);
+
+    Mesa toDomain(MesaJpa mesaJpa);
+
+    MesaJpa toEntity(Mesa mesa);
 
 }
+

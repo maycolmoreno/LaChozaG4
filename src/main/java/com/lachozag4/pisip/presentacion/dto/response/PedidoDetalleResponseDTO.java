@@ -1,23 +1,19 @@
 package com.lachozag4.pisip.presentacion.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.Data;
+
+@Data
 public class PedidoDetalleResponseDTO {
+
 	private int idpedidodetalle;
-	private Integer cantidad; // >= 1
 
-	public int getIdpedidodetalle() {
-		return idpedidodetalle;
-	}
+	@JsonProperty("producto")
+	private ProductoResponseDTO fkProducto;
+	private int cantidad;
+	private double precioUnitario;
 
-	public void setIdpedidodetalle(int idpedidodetalle) {
-		this.idpedidodetalle = idpedidodetalle;
-	}
-
-	public Integer getCantidad() {
-		return cantidad;
-	}
-
-	public void setCantidad(Integer cantidad) {
-		this.cantidad = cantidad;
-	}
-
+	// ✅ Subtotal calculado
+	private double subtotal;
 }

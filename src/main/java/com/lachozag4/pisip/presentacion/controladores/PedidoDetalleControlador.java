@@ -1,17 +1,11 @@
 package com.lachozag4.pisip.presentacion.controladores;
 
+import java.net.URI;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.IPedidoDetalleUseCase;
 import com.lachozag4.pisip.presentacion.dto.request.PedidoDetalleRequestDTO;
@@ -19,35 +13,83 @@ import com.lachozag4.pisip.presentacion.dto.response.PedidoDetalleResponseDTO;
 import com.lachozag4.pisip.presentacion.mapeadores.IPedidoDetalleDtoMapper;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
-@RequestMapping("api/pedidodetalle")
+@RequestMapping("/api/pedidos/{idPedido}/detalles")
+@RequiredArgsConstructor
+@Validated
 public class PedidoDetalleControlador {
 
-	private final IPedidoDetalleUseCase pedidodetalleUseCase;
-	private final IPedidoDetalleDtoMapper mapper;
+    private final IPedidoDetalleUseCase detalleUseCase;
+    private final IPedidoDetalleDtoMapper mapper;
 
-	public PedidoDetalleControlador(IPedidoDetalleUseCase pedidodetalleUseCase, IPedidoDetalleDtoMapper mapper) {
-		this.pedidodetalleUseCase = pedidodetalleUseCase;
-		this.mapper = mapper;
-	}
+    // GET /api/pedidos/{idPedido}/detalles
+    @GetMapping
+    public ResponseEntity<List<PedidoDetalleResponseDTO>> listarPorPedido(@PathVariable int idPedido) {
+        var detalles = detalleUseCase.listarPorPedido(idPedido);
+        return ResponseEntity.ok(mapper.toResponseDTOList(detalles));
+    }
 
-	@PostMapping
-	@ResponseStatus(HttpStatus.CREATED)
+    // GET /api/pedidos/{idPedido}/detalles/{idDetalle}
+    @GetMapping("/{idDetalle}")
+    public ResponseEntity<PedidoDetalleResponseDTO> obtener(
+            @PathVariable int idPedido,
+            @PathVariable int idDetalle) {
 
-	public PedidoDetalleResponseDTO crear(@Valid @RequestBody PedidoDetalleRequestDTO request) {
-		return mapper.toResponseDTO(pedidodetalleUseCase.crear(mapper.toDomain(request)));
+        var detalle = detalleUseCase.obtenerPorId(idPedido, idDetalle);
+        return ResponseEntity.ok(mapper.toResponseDTO(detalle));
+    }
 
-	}
-	@GetMapping
-	public List<PedidoDetalleResponseDTO> listar() {
-		return pedidodetalleUseCase.listar().stream().map(mapper::toResponseDTO).toList();
-	}
+    // POST /api/pedidos/{idPedido}/detalles
+    @PostMapping
+    public ResponseEntity<PedidoDetalleResponseDTO> crear(
+            @PathVariable int idPedido,
+            @Valid @RequestBody PedidoDetalleRequestDTO request) {
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> eliminar(@PathVariable int id) {
-		pedidodetalleUseCase.eliminar(id);
-		return ResponseEntity.noContent().build();
-	}
+        var creado = detalleUseCase.crear(
+                idPedido,
+                request.getIdProducto(),
+                request.getCantidad(),
+                request.getPrecioUnitario()
+        );
 
+        var dto = mapper.toResponseDTO(creado);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{idDetalle}")
+                .buildAndExpand(dto.getIdpedidodetalle())
+                .toUri();
+
+        return ResponseEntity.created(location).body(dto);
+    }
+
+    // PUT /api/pedidos/{idPedido}/detalles/{idDetalle}
+    @PutMapping("/{idDetalle}")
+    public ResponseEntity<PedidoDetalleResponseDTO> actualizar(
+            @PathVariable int idPedido,
+            @PathVariable int idDetalle,
+            @Valid @RequestBody PedidoDetalleRequestDTO request) {
+
+        var actualizado = detalleUseCase.actualizar(
+                idPedido,
+                idDetalle,
+                request.getIdProducto(),
+                request.getCantidad(),
+                request.getPrecioUnitario()
+        );
+
+        return ResponseEntity.ok(mapper.toResponseDTO(actualizado));
+    }
+
+    // DELETE /api/pedidos/{idPedido}/detalles/{idDetalle}
+    @DeleteMapping("/{idDetalle}")
+    public ResponseEntity<Void> eliminar(
+            @PathVariable int idPedido,
+            @PathVariable int idDetalle) {
+
+        detalleUseCase.eliminar(idPedido, idDetalle);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -8,10 +8,12 @@ public interface IClienteUseCase {
 	
 	Cliente crear(Cliente cliente);
 
-	Cliente obtenerPorId(int id);
+	Cliente obtenerPorId(int idcliente);
 
 	List<Cliente> listar();
 
-	void eliminar(int id);
+	void eliminar(int idcliente);
+
+	Cliente actualizar(int idcliente, Cliente cliente);
 
 }

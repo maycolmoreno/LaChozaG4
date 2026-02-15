@@ -9,16 +9,17 @@ public class Categoria implements Serializable {
 	private final int idcategoria;
 	private final String nombre;
 	private final String descripcion;
-	private final Boolean estado;
+	private final boolean estado;
 
-	public Categoria(int idcategoria, String nombre, String descripcion, Boolean estado) {
+	public Categoria(int idcategoria, String nombre, String descripcion, boolean estado) {
+
 		this.idcategoria = idcategoria;
 		this.nombre = nombre;
 		this.descripcion = descripcion;
 		this.estado = estado;
 	}
 
-	public int getidcategoria() {
+	public int getIdcategoria() {
 		return idcategoria;
 	}
 
@@ -30,8 +31,18 @@ public class Categoria implements Serializable {
 		return descripcion;
 	}
 
-	public Boolean getEstado() {
+	public boolean getEstado() {
 		return estado;
+	}
+
+	@Override
+	public String toString() {
+		return "Categoria{" +
+				"idcategoria=" + idcategoria +
+				", nombre='" + nombre + '\'' +
+				", descripcion='" + descripcion + '\'' +
+				", estado=" + estado +
+				'}';
 	}
 
 }

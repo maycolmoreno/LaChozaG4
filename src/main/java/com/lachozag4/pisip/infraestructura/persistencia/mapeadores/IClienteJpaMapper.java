@@ -9,7 +9,8 @@ import com.lachozag4.pisip.infraestructura.persistencia.jpa.ClienteJpa;
 
 @Mapper(componentModel = "spring")
 public interface IClienteJpaMapper {
-	Cliente toDomain(ClienteJpa entity);
-	ClienteJpa toEntity(Cliente cliente);
 
+    Cliente toDomain(ClienteJpa entity);
+
+    ClienteJpa toEntity(Cliente domain);
 }

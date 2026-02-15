@@ -13,4 +13,5 @@ public interface ICategoriaDtoMapper {
 	Categoria toDomain(CategoriaRequestDTO dto);
 
 	CategoriaResponseDTO toResponseDTO(Categoria categoria);
+
 }

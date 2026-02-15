@@ -8,10 +8,14 @@ public interface ICategoriaUseCase {
 
 	Categoria crear(Categoria categoria);
 
-	Categoria obtenerPorId(int id);
+    Categoria buscarPorId(int id);
 
-	List<Categoria> listar();
+    List<Categoria> listarTodos();
 
-	void eliminar(int id);
+    List<Categoria> listarActivas();
 
+	Categoria actualizar(int id, Categoria categoria);
+
+
+    void eliminar(int id);
 }

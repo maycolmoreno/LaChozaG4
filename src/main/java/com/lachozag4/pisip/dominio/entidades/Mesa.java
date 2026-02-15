@@ -4,40 +4,45 @@ import java.io.Serializable;
 
 public class Mesa implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
+
 	private final int idmesa;
-	private final Integer numero;
-	private final Integer capacidad;
-	private final Boolean estado; // "LIBRE", "OCUPADA"
-	private final String ubicacion; // "Salon 1", "Salon 2"
-	public Mesa(int idmesa, Integer numero, Integer capacidad, boolean estado, String ubicacion) {
-		
+	private final int numero;
+	private final int capacidad;
+	private final boolean estado;
+
+	public Mesa(int idmesa, int numero, int capacidad, boolean estado) {
+
 		this.idmesa = idmesa;
 		this.numero = numero;
 		this.capacidad = capacidad;
 		this.estado = estado;
-		this.ubicacion = ubicacion;
 	}
+
 	public int getIdmesa() {
 		return idmesa;
 	}
-	public Integer getNumero() {
+
+	public int getNumero() {
 		return numero;
 	}
-	public Integer getCapacidad() {
+
+	public int getCapacidad() {
 		return capacidad;
 	}
-	public boolean isEstado() {
+
+	public boolean getEstado() {
 		return estado;
 	}
-	public String getUbicacion() {
-		return ubicacion;
+
+	@Override
+	public String toString() {
+		return "Mesa{" +
+				"idmesa=" + idmesa +
+				", numero=" + numero +
+				", capacidad=" + capacidad +
+				", estado=" + estado +
+				'}';
 	}
-	
-	
-	
-	
+
 }

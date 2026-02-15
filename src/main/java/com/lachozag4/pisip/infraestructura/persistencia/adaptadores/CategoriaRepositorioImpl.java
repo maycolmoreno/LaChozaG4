@@ -5,44 +5,53 @@ import java.util.Optional;
 
 import com.lachozag4.pisip.dominio.entidades.Categoria;
 import com.lachozag4.pisip.dominio.repositorios.ICategoriaRepositorio;
-import com.lachozag4.pisip.infraestructura.persistencia.jpa.CategoriaJpa;
 import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.ICategoriaJpaMapper;
 import com.lachozag4.pisip.infraestructura.repositorios.ICategoriaJpaRepositorio;
 
 public class CategoriaRepositorioImpl implements ICategoriaRepositorio {
 
-	private final ICategoriaJpaRepositorio jparepository;
-	private final ICategoriaJpaMapper entityMapper;
+	private final ICategoriaJpaRepositorio jpaRepository;
+	private final ICategoriaJpaMapper mapper;
 
-	public CategoriaRepositorioImpl(ICategoriaJpaRepositorio jparepository, ICategoriaJpaMapper entity) {
-		this.jparepository = jparepository;
-		this.entityMapper = entity;
+	public CategoriaRepositorioImpl(ICategoriaJpaRepositorio jpaRepository, ICategoriaJpaMapper mapper) {
+		this.jpaRepository = jpaRepository;
+		this.mapper = mapper;
 	}
 
 	@Override
 	public Categoria guardar(Categoria categoria) {
-		CategoriaJpa entity = entityMapper.toEntity(categoria);
-		CategoriaJpa guardado = jparepository.save(entity);
-		return entityMapper.toDomain(guardado);
+		return mapper.toDomain(jpaRepository.save(mapper.toEntity(categoria)));
 	}
 
 	@Override
-	public Optional<Categoria> BuscarPorId(int id) {
-		// TODO Auto-generated method stub
-		return jparepository.findById(id).map(entityMapper::toDomain);
+	public Optional<Categoria> buscarPorId(int idcategoria) {
+		return jpaRepository.findById(idcategoria).map(mapper::toDomain);
 	}
 
 	@Override
-	public List<Categoria> listarTodos() {
-		// TODO Auto-generated method stub
-		return jparepository.findAll().stream().map(entityMapper::toDomain).toList();
+	public Optional<Categoria> buscarPorNombre(String nombre) {
+		return jpaRepository.findByNombre(nombre).map(mapper::toDomain);
 	}
 
 	@Override
-	public void eliminar(int id) {
-		// TODO Auto-generated method stub
-		jparepository.deleteById(id);
-
+	public List<Categoria> listarActivas() {
+		return jpaRepository.findByEstadoTrue().stream().map(mapper::toDomain).toList();
 	}
 
+	@Override
+	public List<Categoria> listarTodas() {
+		return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
+	}
+
+	@Override
+	public Categoria actualizar(Categoria categoria) {
+		return guardar(categoria);
+	}
+
+	@Override
+	public void eliminar(int idcategoria) {
+
+		jpaRepository.deleteById(idcategoria);
+
+	}
 }

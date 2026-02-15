@@ -1,71 +1,42 @@
 package com.lachozag4.pisip.presentacion.dto.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.Data;
+
+/**
+ * DTO de respuesta para Pedido
+ * 
+ * CAMBIOS:
+ * - ✅ Incluye lista de detalles
+ * - ✅ Incluye objetos relacionados completos
+ * - ✅ Campos calculados (total, cantidad productos)
+ */
+@Data
 public class PedidoResponseDTO {
+    
+    private int idpedido;
+    private LocalDateTime fecha;
+    private String estado;
+    private String observaciones;
+    
+    // Relaciones (expuestas al cliente como usuario/mesa/cliente)
+    @JsonProperty("usuario")
+    private UsuarioResponseDTO fkUsuario;
 
-	private int idpedido;
-	private LocalDateTime fecha;
-	private boolean estado;
-	private String observaciones;
-	private UsuarioResponseDTO FkUsuario;
-	private MesaResponseDTO Fkmesa;
-	private ClienteResponseDTO Fkcliente;
+    @JsonProperty("mesa")
+    private MesaResponseDTO fkMesa;
 
-	// Getters y Setters
-	public int getIdpedido() {
-		return idpedido;
-	}
-
-	public void setIdpedido(int idpedido) {
-		this.idpedido = idpedido;
-	}
-
-	public LocalDateTime getFecha() {
-		return fecha;
-	}
-
-	public void setFecha(LocalDateTime fecha) {
-		this.fecha = fecha;
-	}
-
-	public boolean isEstado() {
-		return estado;
-	}
-
-	public void setEstado(boolean estado) {
-		this.estado = estado;
-	}
-
-	public String getObservaciones() {
-		return observaciones;
-	}
-
-	public void setObservaciones(String observaciones) {
-		this.observaciones = observaciones;
-	}
-
-	public UsuarioResponseDTO getFkUsuario() {
-		return FkUsuario;
-	}
-
-	public void setFkUsuario(UsuarioResponseDTO fkUsuario) {
-		FkUsuario = fkUsuario;
-	}
-
-	public MesaResponseDTO getFkmesa() {
-		return Fkmesa;
-	}
-
-	public void setFkmesa(MesaResponseDTO fkmesa) {
-		Fkmesa = fkmesa;
-	}
-
-	public ClienteResponseDTO getFkcliente() {
-		return Fkcliente;
-	}
-
-	public void setFkcliente(ClienteResponseDTO fkcliente) {
-		Fkcliente = fkcliente;
-	}
+    @JsonProperty("cliente")
+    private ClienteResponseDTO fkCliente;
+    
+    // ✅ Lista de detalles
+    private List<PedidoDetalleResponseDTO> detalle;
+    
+    // ✅ Campos calculados
+    private double total;
+    private int cantidadProductos;
 }

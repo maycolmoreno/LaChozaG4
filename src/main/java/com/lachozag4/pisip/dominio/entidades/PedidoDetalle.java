@@ -1,49 +1,68 @@
-
 package com.lachozag4.pisip.dominio.entidades;
 
 import java.io.Serializable;
 
-import com.lachozag4.pisip.infraestructura.persistencia.jpa.PedidoJpa;
-import com.lachozag4.pisip.infraestructura.persistencia.jpa.ProductoJpa;
-
-
 public class PedidoDetalle implements Serializable {
 
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
+
 	private final int idpedidodetalle;
-    private final Integer cantidad;  // >= 1
-    private ProductoJpa Fkproducto;
-    private PedidoJpa Fkpedidodet;
-	public PedidoDetalle(int idpedidodetalle, Integer cantidad, ProductoJpa fkproducto, PedidoJpa fkpedidodet) {
-		
+	private Producto fkProducto;
+	private Pedido fkPedido; // ✅ Solo ID, no objeto completo (evita ciclos)
+	private final int cantidad;
+	private final double precioUnitario;
+
+	public PedidoDetalle(int idpedidodetalle, Producto fkProducto, Pedido fkPedido, int cantidad,
+			double precioUnitario) {
 		this.idpedidodetalle = idpedidodetalle;
+		this.fkProducto = fkProducto;
+		this.fkPedido = fkPedido;
 		this.cantidad = cantidad;
-		Fkproducto = fkproducto;
-		Fkpedidodet = fkpedidodet;
+		this.precioUnitario = precioUnitario;
 	}
-	public ProductoJpa getFkproducto() {
-		return Fkproducto;
-	}
-	public void setFkproducto(ProductoJpa fkproducto) {
-		Fkproducto = fkproducto;
-	}
-	public PedidoJpa getFkpedidodet() {
-		return Fkpedidodet;
-	}
-	public void setFkpedidodet(PedidoJpa fkpedidodet) {
-		Fkpedidodet = fkpedidodet;
-	}
+
+	// Getters
 	public int getIdpedidodetalle() {
 		return idpedidodetalle;
 	}
-	public Integer getCantidad() {
+
+	public Producto getProducto() {
+		return fkProducto;
+	}
+
+	public Producto getFkProducto() {
+		return fkProducto;
+	}
+
+	public void setFkProducto(Producto fkProducto) {
+		this.fkProducto = fkProducto;
+	}
+
+	public Pedido getFkPedido() {
+		return fkPedido;
+	}
+
+	public void setFkPedido(Pedido fkPedido) {
+		this.fkPedido = fkPedido;
+	}
+
+	public int getCantidad() {
 		return cantidad;
 	}
-    
-    
-    
- }
 
+	public double getPrecioUnitario() {
+		return precioUnitario;
+	}
+
+	// ✅ Métodos de negocio
+	public double calcularSubtotal() {
+		return cantidad * precioUnitario;
+	}
+
+	@Override
+	public String toString() {
+		return "PedidoDetalle [idpedidodetalle=" + idpedidodetalle + ", fkProducto=" + fkProducto + ", fkPedido="
+				+ fkPedido + ", cantidad=" + cantidad + ", precioUnitario=" + precioUnitario + "]";
+	}
+
+}

@@ -1,16 +1,18 @@
 package com.lachozag4.pisip.aplicacion.casosuso.entradas;
 
 import java.util.List;
-
 import com.lachozag4.pisip.dominio.entidades.PedidoDetalle;
 
 public interface IPedidoDetalleUseCase {
-	PedidoDetalle crear(PedidoDetalle pedidoDetalle);
 
-	PedidoDetalle obtenerPorId(int id);
+    List<PedidoDetalle> listarPorPedido(int idPedido);
 
-	List<PedidoDetalle> listar();
+    PedidoDetalle obtenerPorId(int idPedido, int idDetalle);
 
-	void eliminar(int id);
+    PedidoDetalle crear(int idPedido, int idProducto, int cantidad, double precioUnitario);
+
+    PedidoDetalle actualizar(int idPedido, int idDetalle, int idProducto, int cantidad, double precioUnitario);
+
+    void eliminar(int idPedido, int idDetalle);
 
 }

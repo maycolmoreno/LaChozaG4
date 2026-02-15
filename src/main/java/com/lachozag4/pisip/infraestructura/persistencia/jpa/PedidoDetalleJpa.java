@@ -2,36 +2,35 @@ package com.lachozag4.pisip.infraestructura.persistencia.jpa;
 
 import java.io.Serializable;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "pedidodetalle")
+@Table(name = "pedido_detalle")
 @Data
+@NoArgsConstructor
 public class PedidoDetalleJpa implements Serializable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int idpedidodetalle;
-	private Integer cantidad; // >= 1
+    private static final long serialVersionUID = 1L;
 
-	// PedidoJpa
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int idpedidodetalle;
+
 	@ManyToOne
-	@JoinColumn(name = "Fkproducto")
-	private ProductoJpa Fkproducto;
-	// PedidoDetalleJpa
+	@JoinColumn(name="fkPedido")
+    private PedidoJpa fkPedido; 
+    
 	@ManyToOne
-	@JoinColumn(name = "Fkpedidodet")
-	private PedidoJpa Fkpedidodet;
+	@JoinColumn(name="fkProducto")
+    private ProductoJpa fkProducto;
+    
+    @Column(nullable = false)
+    private int cantidad;
+
+    @Column(nullable = false)
+    private double precioUnitario;
 
 }
