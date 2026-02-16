@@ -20,15 +20,15 @@ public interface IMesaJpaRepositorio extends JpaRepository<MesaJpa, Integer> {
 	List<MesaJpa> findByCapacidadGreaterThanEqual(int capacidad);
 
 	/**
-	 * Lista mesas activas que NO tienen pedidos pendientes (estado = 'PENDIENTE', 'EN_COCINA' o 'LISTO_PARA_ENTREGA')
+	 * Lista mesas activas que NO tienen cuentas abiertas.
 	 */
 	@Query("SELECT m FROM MesaJpa m WHERE m.estado = true AND m.idmesa NOT IN " +
-		"(SELECT p.fkMesa.idmesa FROM PedidoJpa p WHERE p.estado IN ('PENDIENTE', 'EN_COCINA', 'LISTO_PARA_ENTREGA'))")
+		"(SELECT c.fkMesa.idmesa FROM CuentaJpa c WHERE c.estado = 'ABIERTA')")
 	List<MesaJpa> findMesasSinPedidosActivos();
 
 	/**
-	 * Lista mesas que tienen pedidos pendientes, en cocina o listos para entrega
+	 * Lista mesas que tienen cuentas abiertas (ocupadas).
 	 */
-	@Query("SELECT DISTINCT m FROM MesaJpa m JOIN PedidoJpa p ON p.fkMesa.idmesa = m.idmesa WHERE p.estado IN ('PENDIENTE', 'EN_COCINA', 'LISTO_PARA_ENTREGA')")
+	@Query("SELECT DISTINCT m FROM MesaJpa m JOIN CuentaJpa c ON c.fkMesa.idmesa = m.idmesa WHERE c.estado = 'ABIERTA'")
 	List<MesaJpa> findMesasConPedidosActivos();
 }

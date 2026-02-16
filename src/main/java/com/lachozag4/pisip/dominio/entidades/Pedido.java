@@ -11,13 +11,15 @@ public class Pedido implements Serializable {
 	// Constantes de estado del pedido
 	public static final String ESTADO_PENDIENTE = "PENDIENTE";
 	public static final String ESTADO_EN_COCINA = "EN_COCINA";
+	public static final String ESTADO_EN_BAR = "EN_BAR";
 	public static final String ESTADO_LISTO_PARA_ENTREGA = "LISTO_PARA_ENTREGA";
 	public static final String ESTADO_COMPLETADO = "COMPLETADO";
 	public static final String ESTADO_CANCELADO = "CANCELADO";
 
 	private static final java.util.Map<String, java.util.Set<String>> TRANSICIONES_PERMITIDAS = java.util.Map.of(
-			ESTADO_PENDIENTE, java.util.Set.of(ESTADO_EN_COCINA, ESTADO_CANCELADO),
+			ESTADO_PENDIENTE, java.util.Set.of(ESTADO_EN_COCINA, ESTADO_EN_BAR, ESTADO_CANCELADO),
 			ESTADO_EN_COCINA, java.util.Set.of(ESTADO_LISTO_PARA_ENTREGA, ESTADO_CANCELADO),
+			ESTADO_EN_BAR, java.util.Set.of(ESTADO_LISTO_PARA_ENTREGA, ESTADO_CANCELADO),
 			ESTADO_LISTO_PARA_ENTREGA, java.util.Set.of(ESTADO_COMPLETADO, ESTADO_CANCELADO));
 
 	private final int idpedido;
@@ -65,6 +67,10 @@ public class Pedido implements Serializable {
 		return ESTADO_EN_COCINA.equals(estado);
 	}
 
+	public boolean estaEnBar() {
+		return ESTADO_EN_BAR.equals(estado);
+	}
+
 	public boolean esListoParaEntrega() {
 		return ESTADO_LISTO_PARA_ENTREGA.equals(estado);
 	}
@@ -82,7 +88,7 @@ public class Pedido implements Serializable {
 	}
 
 	public boolean esActivo() {
-		return esPendiente() || estaEnCocina() || esListoParaEntrega();
+		return esPendiente() || estaEnCocina() || estaEnBar() || esListoParaEntrega();
 	}
 
 	public boolean esEditable() {

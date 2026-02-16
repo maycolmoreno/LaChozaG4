@@ -14,9 +14,6 @@ public class PedidoRequestDTO {
 	@NotNull(message = "La fecha es obligatoria")
 	private LocalDateTime fecha;
 
-	@NotNull(message = "El estado es obligatorio")
-	private String estado;
-
 	@Size(max = 500, message = "Las observaciones no deben superar 500 caracteres")
 	private String observaciones;
 

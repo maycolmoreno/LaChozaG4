@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -75,8 +76,9 @@ public class UsuarioControlador {
 	}
 
 	@PostMapping("/cambiar-password")
-	public ResponseEntity<Void> cambiarPassword(@Valid @RequestBody CambiarPasswordRequestDTO request) {
-		usuarioUseCase.cambiarPassword(request.getUsername(), request.getPasswordActual(), request.getPasswordNuevo());
+	public ResponseEntity<Void> cambiarPassword(@Valid @RequestBody CambiarPasswordRequestDTO request,
+			Authentication authentication) {
+		usuarioUseCase.cambiarPassword(authentication.getName(), request.getPasswordActual(), request.getPasswordNuevo());
 		return ResponseEntity.noContent().build();
 	}
 

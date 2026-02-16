@@ -3,6 +3,7 @@ package com.lachozag4.pisip.infraestructura.configuracion;
 import com.lachozag4.pisip.infraestructura.seguridad.JwtAccessDeniedHandler;
 import com.lachozag4.pisip.infraestructura.seguridad.JwtAuthenticationEntryPoint;
 import com.lachozag4.pisip.infraestructura.seguridad.JwtAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,7 +19,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
@@ -28,13 +31,16 @@ public class SeguridadConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
     private final JwtAccessDeniedHandler accessDeniedHandler;
+    private final String corsAllowedOrigins;
 
     public SeguridadConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
                            JwtAuthenticationEntryPoint authenticationEntryPoint,
-                           JwtAccessDeniedHandler accessDeniedHandler) {
+                           JwtAccessDeniedHandler accessDeniedHandler,
+                           @Value("${cors.allowed-origins:http://localhost:8085}") String corsAllowedOrigins) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
+        this.corsAllowedOrigins = corsAllowedOrigins;
     }
 
     @Bean
@@ -51,9 +57,10 @@ public class SeguridadConfig {
             .authorizeHttpRequests(auth -> auth
                 // --- Endpoints públicos (login, cambio de password, setup) ---
                 .requestMatchers(HttpMethod.POST, "/api/usuarios/login").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/usuarios/cambiar-password").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/usuarios/cambiar-password").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/usuarios/existe-alguno").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/usuarios/setup-admin").permitAll()
+                .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
 
                 // --- Usuarios: solo ADMIN ---
                 .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
@@ -79,6 +86,9 @@ public class SeguridadConfig {
                 // --- Cuentas: ADMIN y CAMARERO ---
                 .requestMatchers("/api/cuentas/**").hasAnyRole("ADMIN", "CAMARERO")
 
+                // --- Caja: ADMIN y CAMARERO ---
+                .requestMatchers("/api/caja/**").hasAnyRole("ADMIN", "CAMARERO")
+
                 // --- Reportes: solo ADMIN ---
                 .requestMatchers("/api/reportes/**").hasRole("ADMIN")
 
@@ -97,7 +107,11 @@ public class SeguridadConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:8085"));
+        List<String> origins = Arrays.stream(corsAllowedOrigins.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+        config.setAllowedOrigins(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
