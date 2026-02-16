@@ -1,4 +1,4 @@
-﻿package com.lachozag4.pisip.aplicacion.casosuso.impl;
+package com.lachozag4.pisip.aplicacion.casosuso.impl;
 
 import java.util.List;
 import java.time.LocalDateTime;
