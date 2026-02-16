@@ -1,4 +1,4 @@
-package com.lachozag4.pisip.aplicacion.casosuso.impl;
+﻿package com.lachozag4.pisip.aplicacion.casosuso.impl;
 
 import java.util.List;
 import java.time.LocalDateTime;
@@ -11,6 +11,7 @@ import com.lachozag4.pisip.aplicacion.excepciones.NotFoundException;
 import com.lachozag4.pisip.dominio.entidades.Pedido;
 import com.lachozag4.pisip.dominio.entidades.Cuenta;
 import com.lachozag4.pisip.dominio.entidades.ResultadoPaginado;
+import com.lachozag4.pisip.dominio.repositorios.ICajaTurnoRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.IPedidoRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.ICuentaRepositorio;
 import com.lachozag4.pisip.dominio.servicios.IGestionStockServicio;
@@ -23,12 +24,14 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 	private final IPedidoRepositorio repositorio;
 	private final IGestionStockServicio stockServicio;
     private final ICuentaRepositorio cuentaRepositorio;
+    private final ICajaTurnoRepositorio cajaRepositorio;
 
 	@Override
 	@Transactional
 	public Pedido crear(Pedido pedido) {
+		validarCajaAbiertaParaVentas();
 		// Ya no restringimos por pedidos activos en la misma mesa.
-		// La mesa puede tener varios pedidos abiertos simultáneamente.
+		// La mesa puede tener varios pedidos abiertos simultÃ¡neamente.
 		stockServicio.validarYDescontar(pedido.getDetalles());
 		return repositorio.guardar(pedido.comoPendiente());
 	}
@@ -69,11 +72,11 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 	public Pedido cambiarEstado(int id, String nuevoEstado) {
 		Pedido existente = obtenerPorId(id);
 
-		validarCuentaNoCerrada(existente);
+		validarCuentaPermiteCambioEstado(existente, nuevoEstado);
 
 		if (!existente.puedeTransicionarA(nuevoEstado)) {
-			throw new BusinessException("Transición de estado no permitida para pedido #" + id + ": "
-					+ existente.getEstado() + " → " + nuevoEstado);
+			throw new BusinessException("TransiciÃ³n de estado no permitida para pedido #" + id + ": "
+					+ existente.getEstado() + " â†’ " + nuevoEstado);
 		}
 
 		if (Pedido.ESTADO_EN_COCINA.equals(nuevoEstado)) {
@@ -103,7 +106,7 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 		recalcularTotalCuentaSiAplica(cancelado);
 	}
 
-	// ── Validaciones privadas ──
+	// â”€â”€ Validaciones privadas â”€â”€
 
 	@Override
 	public ResultadoPaginado<Pedido> listarPaginado(String estado, String q,
@@ -119,7 +122,7 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 
 		int idCuenta = pedido.getFkCuenta().getIdcuenta();
 		List<Pedido> pedidosCuenta = repositorio.listarPorCuenta(idCuenta);
-		// Solo cuentan para el total los pedidos que no están cancelados
+		// Solo cuentan para el total los pedidos que no estÃ¡n cancelados
 		double total = pedidosCuenta.stream()
 				.filter(p -> !Pedido.ESTADO_CANCELADO.equals(p.getEstado()))
 				.flatMap(p -> p.getDetalles().stream())
@@ -143,7 +146,7 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 	private void validarEditable(Pedido pedido) {
 		if (!pedido.esEditable()) {
 			throw new BusinessException(
-					"Este pedido no se puede modificar porque está en estado " + pedido.getEstado());
+					"Este pedido no se puede modificar porque estÃ¡ en estado " + pedido.getEstado());
 		}
 	}
 
@@ -152,8 +155,27 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 	 */
 	private void validarCuentaNoCerrada(Pedido pedido) {
 		if (pedido.getFkCuenta() != null && pedido.getFkCuenta().estaCerrada()) {
-			throw new BusinessException("No se puede modificar este pedido porque su cuenta ya está "
+			throw new BusinessException("No se puede modificar este pedido porque su cuenta ya estÃ¡ "
 					+ pedido.getFkCuenta().getEstado());
 		}
 	}
+	private void validarCuentaPermiteCambioEstado(Pedido pedido, String nuevoEstado) {
+		if (pedido.getFkCuenta() == null) {
+			return;
+		}
+		String estadoCuenta = pedido.getFkCuenta().getEstado();
+		if (Cuenta.ESTADO_ANULADA.equals(estadoCuenta)) {
+			throw new BusinessException("No se puede modificar este pedido porque su cuenta ya esta " + estadoCuenta);
+		}
+		if (Cuenta.ESTADO_PAGADA.equals(estadoCuenta) && Pedido.ESTADO_CANCELADO.equals(nuevoEstado)) {
+			throw new BusinessException("No se puede cancelar el pedido porque su cuenta ya esta " + estadoCuenta);
+		}
+	}
+	private void validarCajaAbiertaParaVentas() {
+		if (cajaRepositorio.buscarCajaAbierta().isEmpty()) {
+			throw new BusinessException("Debe aperturar caja antes de registrar ventas.");
+		}
+	}
 }
+
+

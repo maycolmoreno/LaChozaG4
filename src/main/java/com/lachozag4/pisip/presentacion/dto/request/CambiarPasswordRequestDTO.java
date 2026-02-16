@@ -6,9 +6,6 @@ import lombok.Data;
 @Data
 public class CambiarPasswordRequestDTO {
 
-    @NotBlank(message = "El username es obligatorio")
-    private String username;
-
     @NotBlank(message = "La contraseña actual es obligatoria")
     private String passwordActual;
 

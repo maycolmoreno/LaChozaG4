@@ -7,9 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.IPedidoDetalleUseCase;
 import com.lachozag4.pisip.aplicacion.excepciones.BusinessException;
 import com.lachozag4.pisip.aplicacion.excepciones.NotFoundException;
+import com.lachozag4.pisip.dominio.entidades.Cuenta;
 import com.lachozag4.pisip.dominio.entidades.Pedido;
 import com.lachozag4.pisip.dominio.entidades.PedidoDetalle;
 import com.lachozag4.pisip.dominio.entidades.Producto;
+import com.lachozag4.pisip.dominio.repositorios.ICuentaRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.IPedidoDetalleRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.IPedidoRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.IProductoRepositorio;
@@ -24,6 +26,7 @@ public class PedidoDetalleUseCaseImpl implements IPedidoDetalleUseCase {
     private final IPedidoDetalleRepositorio detalleRepo;
     private final IPedidoRepositorio pedidoRepo;
     private final IProductoRepositorio productoRepo;
+    private final ICuentaRepositorio cuentaRepo;
     private final IGestionStockServicio stockServicio;
 
     /* ========================
@@ -69,7 +72,9 @@ public class PedidoDetalleUseCaseImpl implements IPedidoDetalleUseCase {
 
         // Descuenta stock y guarda (si prefieres, haz el descuento después del guardar)
         stockServicio.validarYDescontar(List.of(detalle));
-        return detalleRepo.guardar(detalle);
+        PedidoDetalle guardado = detalleRepo.guardar(detalle);
+        recalcularTotalCuentaSiAplica(pedido);
+        return guardado;
     }
 
     @Override
@@ -97,7 +102,9 @@ public class PedidoDetalleUseCaseImpl implements IPedidoDetalleUseCase {
         stockServicio.validarYDescontar(List.of(actualizado));
 
         // 3) Persistir cambios
-        return detalleRepo.guardar(actualizado);
+        PedidoDetalle guardado = detalleRepo.guardar(actualizado);
+        recalcularTotalCuentaSiAplica(pedido);
+        return guardado;
     }
 
     @Override
@@ -110,6 +117,7 @@ public class PedidoDetalleUseCaseImpl implements IPedidoDetalleUseCase {
 
         // 2) Eliminar
         detalleRepo.eliminar(idDetalle);
+        recalcularTotalCuentaSiAplica(det.getFkPedido());
     }
 
     /* ========================
@@ -144,5 +152,28 @@ public class PedidoDetalleUseCaseImpl implements IPedidoDetalleUseCase {
             throw new BusinessException("Stock insuficiente. Requerido: " + cantidad);
         }
         return producto;
+    }
+
+    private void recalcularTotalCuentaSiAplica(Pedido pedido) {
+        if (pedido == null || pedido.getFkCuenta() == null) {
+            return;
+        }
+
+        int idCuenta = pedido.getFkCuenta().getIdcuenta();
+        List<Pedido> pedidosCuenta = pedidoRepo.listarPorCuenta(idCuenta);
+        double total = pedidosCuenta.stream()
+                .filter(p -> !Pedido.ESTADO_CANCELADO.equals(p.getEstado()))
+                .flatMap(p -> p.getDetalles().stream())
+                .mapToDouble(d -> d.getCantidad() * d.getPrecioUnitario())
+                .sum();
+
+        var cuenta = pedido.getFkCuenta();
+        if (!pedidosCuenta.isEmpty() && pedidosCuenta.stream().allMatch(Pedido::esCancelado)) {
+            var cuentaCerrada = cuenta.conEstado(Cuenta.ESTADO_ANULADA, java.time.LocalDateTime.now()).conTotal(0.0);
+            cuentaRepo.actualizar(cuentaCerrada);
+            return;
+        }
+
+        cuentaRepo.actualizar(cuenta.conTotal(total));
     }
 }
