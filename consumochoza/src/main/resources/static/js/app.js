@@ -51,7 +51,6 @@
     };
 
     document.addEventListener('DOMContentLoaded', function() {
-        initMobileSidebar();
         initGlobalSearch();
         initFormValidation();
         initClienteNumericInputs();
@@ -59,65 +58,6 @@
         initProductoCatalogo();
         initEntregaNotificaciones();
     });
-
-    function initMobileSidebar() {
-        var wrapper = document.getElementById('main-wrapper');
-        if (!wrapper) return;
-
-        var navToggler = document.querySelector('.nav-toggler');
-        var sidebar = document.querySelector('.left-sidebar');
-        var overlay = document.querySelector('.sidebar-overlay');
-        var closeBtn = document.querySelector('.sidebar-close-btn');
-        if (!navToggler || !sidebar) return;
-
-        function syncBodyLock() {
-            var open = wrapper.classList.contains('show-sidebar') && window.innerWidth <= 991;
-            document.body.classList.toggle('sidebar-open-lock', open);
-        }
-
-        var classObserver = new MutationObserver(syncBodyLock);
-        classObserver.observe(wrapper, { attributes: true, attributeFilter: ['class'] });
-        window.addEventListener('resize', syncBodyLock);
-        syncBodyLock();
-
-        if (overlay) {
-            overlay.addEventListener('click', function() {
-                wrapper.classList.remove('show-sidebar');
-                syncBodyLock();
-            });
-        }
-
-        if (closeBtn) {
-            closeBtn.addEventListener('click', function() {
-                wrapper.classList.remove('show-sidebar');
-                syncBodyLock();
-            });
-        }
-
-        // Cerrar al tocar fuera del sidebar cuando esta abierto.
-        document.addEventListener('click', function(e) {
-            if (!wrapper.classList.contains('show-sidebar')) return;
-            if (
-                e.target.closest('.left-sidebar') ||
-                e.target.closest('.nav-toggler') ||
-                e.target.closest('.sidebar-overlay')
-            ) {
-                return;
-            }
-            wrapper.classList.remove('show-sidebar');
-            syncBodyLock();
-        });
-
-        // Cerrar tras seleccionar una opcion en movil.
-        sidebar.querySelectorAll('a.sidebar-link').forEach(function(link) {
-            link.addEventListener('click', function() {
-                if (window.innerWidth <= 991) {
-                    wrapper.classList.remove('show-sidebar');
-                    syncBodyLock();
-                }
-            });
-        });
-    }
 
     function initGlobalSearch() {
         var input = document.getElementById('global-search');

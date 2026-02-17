@@ -1,16 +1,12 @@
-﻿{
-  "id": "/",
-  "name": "La Choza - Sistema de Gestion",
+{
+  "name": "La Choza - Sistema de Gestión",
   "short_name": "La Choza",
-  "description": "Sistema de gestion de restaurante La Choza",
+  "description": "Sistema de gestión de restaurante La Choza",
   "start_url": "/",
-  "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
   "orientation": "any",
   "background_color": "#ffffff",
   "theme_color": "#F26522",
-  "prefer_related_applications": false,
   "lang": "es",
   "icons": [
     {

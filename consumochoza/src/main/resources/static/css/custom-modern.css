@@ -1,5 +1,5 @@
-﻿/* ==============================================================
-   LA CHOZA â€“ CSS ÃšNICO (LIMPIO + RESPONSIVE)
+/* ==============================================================
+   LA CHOZA – CSS ÚNICO (LIMPIO + RESPONSIVE)
    ============================================================== */
 
 /* =======================
@@ -8,7 +8,7 @@
 :root {
     /* Paleta pastel corporativa */
     --naranja: #FF9F68;          /* naranja pastel principal */
-    --naranja-oscuro: #F26522;   /* acento mÃ¡s intenso */
+    --naranja-oscuro: #F26522;   /* acento más intenso */
     --naranja-choza: #F26522;    /* color institucional unificado */
     --naranja-suave: #FFE3D0;    /* fondos suaves */
     --verde: #7DBE31;
@@ -51,7 +51,7 @@
 }
 
 /* =======================
-   2. RESET BÃSICO
+   2. RESET BÁSICO
 ======================= */
 * {
     box-sizing: border-box;
@@ -319,7 +319,7 @@ body {
 }
 
 /* =======================
-   10. PÃGINAS ESPECIALES
+   10. PÁGINAS ESPECIALES
 ======================= */
 
 /* LOGIN */
@@ -362,95 +362,29 @@ body.login {
    11. RESPONSIVE
 ======================= */
 @media (max-width: 991px) {
-    body.sidebar-open-lock {
-        overflow: hidden;
-        touch-action: none;
-    }
-
-    #main-wrapper .topbar {
-        position: relative;
-        z-index: 1060;
-    }
-
-    #main-wrapper .left-sidebar {
+    /* Sidebar como menú lateral oculto en móviles */
+    .left-sidebar {
         position: fixed;
         top: 56px;
-        left: 0;
-        width: min(84vw, 300px);
-        height: calc(100vh - 56px);
-        padding-top: 0 !important;
-        z-index: 1050;
-        transform: translateX(-100%);
-        transition: transform .25s ease;
-        overflow: hidden;
-    }
-
-    #main-wrapper.show-sidebar .left-sidebar {
-        transform: translateX(0);
-    }
-
-    #main-wrapper .sidebar-overlay {
-        position: fixed;
-        inset: 56px 0 0 0;
-        background: rgba(0, 0, 0, 0.35);
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-        transition: opacity .2s ease;
+        /* altura aproximada del topbar */
+        left: -260px;
+        width: 260px;
+        height: calc(100% - 56px);
         z-index: 1040;
     }
 
-    #main-wrapper.show-sidebar .sidebar-overlay {
-        opacity: 1;
-        visibility: visible;
-        pointer-events: auto;
+    body.sidebar-open .left-sidebar {
+        left: 0;
     }
 
-    #main-wrapper .left-sidebar .scroll-sidebar {
-        height: 100%;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-top: 0 !important;
-        padding-bottom: 20px;
-    }
-
-    #main-wrapper .left-sidebar .sidebar-nav {
-        padding-top: 0 !important;
-    }
-
-    #main-wrapper #sidebarnav {
-        padding-top: 0 !important;
-        margin-top: 0 !important;
-    }
-
-    #main-wrapper .sidebar-close-btn {
-        border-radius: 999px;
-        width: 34px;
-        height: 34px;
-        padding: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    #main-wrapper .page-wrapper {
+    /* El contenido ocupa todo el ancho en móviles */
+    .page-wrapper {
         margin-left: 0 !important;
-        padding-top: 0 !important;
-    }
-
-    /* En movil, ocultar breadcrumb para evitar bloque blanco superior */
-    #main-wrapper .page-breadcrumb {
-        display: none !important;
-    }
-
-    /* Compactar el espacio superior del contenido */
-    #main-wrapper .page-wrapper > .container-fluid {
-        padding-top: 0 !important;
     }
 }
 
 @media (max-width: 768px) {
-    /* Tablas desplazables horizontalmente en pantallas pequeÃ±as */
+    /* Tablas desplazables horizontalmente en pantallas pequeñas */
     .table {
         display: block;
         width: 100%;
@@ -463,7 +397,7 @@ body.login {
         grid-template-columns: 1fr;
     }
 
-    /* MÃ¡rgenes y padding mÃ¡s contenidos */
+    /* Márgenes y padding más contenidos */
     .container-fluid {
         padding-left: 0.75rem;
         padding-right: 0.75rem;
@@ -484,7 +418,7 @@ body.login {
 }
 
 /* =======================
-   11.1 MÃ“DULO COCINA
+   11.1 MÓDULO COCINA
 ======================= */
 
 .page-title {
@@ -496,7 +430,7 @@ body.login {
     color: var(--naranja);
 }
 
-/* Grid de Ã³rdenes */
+/* Grid de órdenes */
 .ordenes-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -560,13 +494,13 @@ body.login {
     font-size: 0.9rem;
 }
 
-/* BotÃ³n completar */
+/* Botón completar */
 .btn-completar {
     font-size: 1rem;
     font-weight: 700;
 }
 
-/* Sin Ã³rdenes */
+/* Sin órdenes */
 .sin-ordenes {
     text-align: center;
     padding: 60px 20px;
@@ -591,7 +525,7 @@ body.login {
 }
 
 /* =======================
-   11.2 MÃ“DULO PRODUCTOS
+   11.2 MÓDULO PRODUCTOS
 ======================= */
 
 .page-header h1 {
@@ -634,7 +568,7 @@ body.login {
     font-weight: 700;
 }
 
-/* CategorÃ­as */
+/* Categorías */
 .categoria-tabs {
     display: flex;
     flex-wrap: wrap;
@@ -652,12 +586,12 @@ body.login {
     color: #fff;
 }
 
-/* Espaciado extra entre tarjetas de catÃ¡logo */
+/* Espaciado extra entre tarjetas de catálogo */
 .producto-item {
     padding: 0 0.75rem 1.5rem;
 }
 
-/* Tarjeta de producto en catÃ¡logo */
+/* Tarjeta de producto en catálogo */
 .product-card {
     background: var(--blanco);
     border-radius: var(--radius);
@@ -757,7 +691,7 @@ body.login {
     color: #fff;
 }
 
-/* Estado vacÃ­o */
+/* Estado vacío */
 .empty-state {
     text-align: center;
     padding: 60px;
@@ -833,7 +767,7 @@ body.login {
     font-weight: 800;
 }
 
-/* AnimaciÃ³n al agregar */
+/* Animación al agregar */
 .producto-agregado {
     animation: pulse 0.3s ease;
 }
@@ -907,7 +841,7 @@ body.login {
     color: var(--naranja);
 }
 
-/* Teclado numÃ©rico POS (cantidad rÃ¡pida) */
+/* Teclado numérico POS (cantidad rápida) */
 .pos-keypad {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -935,7 +869,7 @@ body.login {
    13. OVERRIDES DEL TEMPLATE (SIN AZULES)
 ======================= */
 
-/* GrÃ¡ficos tipo campaign (antes usaban #27a9e3 y #7460ee) */
+/* Gráficos tipo campaign (antes usaban #27a9e3 y #7460ee) */
 .campaign .ct-series-a .ct-line,
 .campaign .ct-series-a .ct-point {
     stroke: var(--naranja) !important;
@@ -955,19 +889,19 @@ body.login {
     background: var(--naranja) !important;
 }
 
-/* PÃ­ldoras de navegaciÃ³n que marcaban activo en azul */
+/* Píldoras de navegación que marcaban activo en azul */
 .nav-pills.custom-pills .nav-link.active {
     color: var(--naranja) !important;
     border-bottom-color: var(--naranja) !important;
 }
 
-/* Overlay de imÃ¡genes que resaltaba en azul */
+/* Overlay de imágenes que resaltaba en azul */
 .el-element-overlay .el-card-item .el-overlay-1 .el-info .el-item .el-link:hover {
     background: var(--naranja) !important;
     border-color: var(--naranja) !important;
 }
 
-/* Datepicker del template (cabecera y dÃ­a seleccionado en naranja) */
+/* Datepicker del template (cabecera y día seleccionado en naranja) */
 .dtp > .dtp-content > .dtp-date-view > header.dtp-header {
     background: var(--naranja) !important;
 }
@@ -993,13 +927,13 @@ body.login {
     background: #fff !important;
 }
 
-/* Links del menÃº en gris oscuro */
+/* Links del menú en gris oscuro */
 #main-wrapper .sidebar-nav ul .sidebar-item .sidebar-link {
     color: var(--gris-texto) !important;
     opacity: 1 !important;
 }
 
-/* Iconos del menÃº en naranja */
+/* Iconos del menú en naranja */
 #main-wrapper .sidebar-nav ul .sidebar-item .sidebar-link i {
     color: var(--naranja-choza) !important;
 }
@@ -1014,7 +948,7 @@ body.login {
     color: var(--naranja-choza) !important;
 }
 
-/* Ãtem seleccionado / activo con fondo naranja */
+/* Ítem seleccionado / activo con fondo naranja */
 #main-wrapper .sidebar-nav ul .sidebar-item.selected > .sidebar-link,
 #main-wrapper .sidebar-nav ul .sidebar-item .sidebar-link.active {
     background: var(--naranja-choza) !important;
@@ -1055,7 +989,7 @@ body.login {
     background: var(--naranja-choza) !important;
 }
 
-/* Collapse (vista mÃ³vil) tambiÃ©n naranja */
+/* Collapse (vista móvil) también naranja */
 #navbarSupportedContent {
     background: var(--naranja-choza) !important;
 }
@@ -1099,21 +1033,21 @@ body.login {
     border-color: var(--naranja-choza) !important;
 }
 
-/* Fondos primarios â†’ naranja institucional */
+/* Fondos primarios → naranja institucional */
 .bg-primary,
 .bg-purple {
     background-color: var(--naranja-choza) !important;
     color: #fff !important;
 }
 
-/* Badge primaria y barra de progreso sÃ­ usan el acento fuerte */
+/* Badge primaria y barra de progreso sí usan el acento fuerte */
 .badge-primary,
 .progress-bar {
     background-color: var(--naranja) !important;
     border-color: var(--naranja) !important;
 }
 
-/* Botones primarios/pÃºrpura del template (naranja solo en CTAs) */
+/* Botones primarios/púrpura del template (naranja solo en CTAs) */
 .btn-primary,
 .btn-purple {
     background-color: var(--naranja) !important;
@@ -1126,7 +1060,7 @@ body.login {
     border-color: var(--naranja-oscuro) !important;
 }
 
-/* PaginaciÃ³n activa y list-group activos con fondo suave y borde naranja */
+/* Paginación activa y list-group activos con fondo suave y borde naranja */
 .page-item.active .page-link,
 .list-group-item.active {
     background-color: var(--naranja-suave) !important;
@@ -1191,7 +1125,7 @@ body.login {
 }
 
 /* =======================
-   19. PWA â€“ STANDALONE MODE
+   19. PWA – STANDALONE MODE
 ======================= */
 
 /* Safe area para notch / barra de estado en modo standalone */
@@ -1214,7 +1148,7 @@ body.login {
         padding-top: env(safe-area-inset-top, 0px);
     }
 
-    /* Hacer los botones mÃ¡s grandes para dedo (touch target mÃ­nimo 44px) */
+    /* Hacer los botones más grandes para dedo (touch target mínimo 44px) */
     .sidebar-link,
     .btn,
     .nav-link,
@@ -1230,7 +1164,7 @@ body.login {
     }
 }
 
-/* Mejoras responsive para pantallas < 576px (mÃ³viles) */
+/* Mejoras responsive para pantallas < 576px (móviles) */
 @media (max-width: 575.98px) {
     .page-breadcrumb { padding: .5rem 1rem; }
     .page-title { font-size: 1.15rem; }
@@ -1244,11 +1178,10 @@ body.login {
     /* KPI cards en 2 columnas */
     .kpi-card { min-width: 0; }
 
-    /* Formularios mÃ¡s tÃ¡ctiles */
+    /* Formularios más táctiles */
     .form-control, .form-select {
-        font-size: 16px !important; /* Previene zoom automÃ¡tico en iOS */
+        font-size: 16px !important; /* Previene zoom automático en iOS */
         min-height: 44px;
     }
 }
-
 

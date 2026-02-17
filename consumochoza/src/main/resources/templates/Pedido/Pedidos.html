@@ -35,7 +35,7 @@
                             pedido(s) listo(s) para entregar
                         </strong>
                         <br>
-                        <small>La cocina ha completado estas ordenes. Llevalas a la mesa.</small>
+                        <small>La cocina ha completado estas órdenes. Llévalas a la mesa.</small>
                     </div>
                 </div>
             </div>
@@ -63,42 +63,6 @@
                 <a th:href="@{/pedidos/nuevo}" class="btn btn-primary btn-sm">
                     <i class="bi bi-plus-circle"></i> Nuevo Pedido
                 </a>
-            </div>
-        </div>
-
-        <!-- Resumen facturacion -->
-        <div class="row g-2 mb-3">
-            <div class="col-12 col-md-3">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body py-2">
-                        <small class="text-muted d-block">Facturado hoy</small>
-                        <strong class="text-success">$<span th:text="${#numbers.formatDecimal(totalFacturadoHoy, 1, 2)}">0.00</span></strong>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-3">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body py-2">
-                        <small class="text-muted d-block">Por cobrar</small>
-                        <strong class="text-warning">$<span th:text="${#numbers.formatDecimal(totalPorCobrar, 1, 2)}">0.00</span></strong>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-3">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body py-2">
-                        <small class="text-muted d-block">Cuentas abiertas</small>
-                        <strong><span th:text="${cuentasAbiertasCount}">0</span></strong>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-3">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body py-2">
-                        <small class="text-muted d-block">Pagos parciales</small>
-                        <strong class="text-info"><span th:text="${cuentasConPagoParcial}">0</span></strong>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -138,15 +102,6 @@
                         <div class="kb-card-total">
                             $<span th:text="${#numbers.formatDecimal(ped.total, 1, 2)}"></span>
                         </div>
-                        <div class="kb-card-billing">
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PAGADO'}" class="badge bg-success">Pagado</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PAGO_PARCIAL'}" class="badge bg-info text-dark">Pago parcial</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PENDIENTE_COBRO'}" class="badge bg-warning text-dark">Pendiente cobro</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'SIN_CUENTA'}" class="badge bg-secondary">Sin cuenta</span>
-                            <small th:if="${saldoCobroPorPedido[ped.idpedido] != null and saldoCobroPorPedido[ped.idpedido] > 0}" class="text-muted d-block">
-                                Saldo: $<span th:text="${#numbers.formatDecimal(saldoCobroPorPedido[ped.idpedido], 1, 2)}"></span>
-                            </small>
-                        </div>
                         <div th:if="${ped.observaciones != null and !ped.observaciones.isEmpty()}" class="kb-card-obs">
                             <i class="bi bi-chat-left-text"></i>
                             <span th:text="${ped.observaciones}"></span>
@@ -158,22 +113,14 @@
                             <a th:href="@{/pedidos/editar/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-editar" title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <form th:if="${pedidosSoloBarIds != null and pedidosSoloBarIds.contains(ped.idpedido)}"
-                                  th:action="@{'/pedidos/enviar-bar/' + ${ped.idpedido}}" method="post" style="display:inline">
-                                <button type="submit" class="kb-btn kb-btn-cocina" title="Enviar a Bar"
-                                        onclick="return confirm('Enviar este pedido a bar?')">
-                                    <i class="bi bi-cup-straw"></i>
-                                </button>
-                            </form>
-                            <form th:if="${pedidosSoloBarIds == null or !pedidosSoloBarIds.contains(ped.idpedido)}"
-                                  th:action="@{'/pedidos/enviar-cocina/' + ${ped.idpedido}}" method="post" style="display:inline">
+                            <form th:action="@{'/pedidos/enviar-cocina/' + ${ped.idpedido}}" method="post" style="display:inline">
                                 <button type="submit" class="kb-btn kb-btn-cocina" title="Enviar a Cocina"
-                                        onclick="return confirm('Enviar este pedido a cocina?')">
+                                        onclick="return confirm('¿Enviar este pedido a cocina?')">
                                     <i class="bi bi-fire"></i>
                                 </button>
                             </form>
                             <a th:href="@{/pedidos/eliminar/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-cancelar" title="Cancelar"
-                               onclick="return confirm('Cancelar este pedido?')">
+                               onclick="return confirm('¿Cancelar este pedido? Se restaurará el stock.')">
                                 <i class="bi bi-x-lg"></i>
                             </a>
                         </div>
@@ -214,15 +161,6 @@
                         <div class="kb-card-total">
                             $<span th:text="${#numbers.formatDecimal(ped.total, 1, 2)}"></span>
                         </div>
-                        <div class="kb-card-billing">
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PAGADO'}" class="badge bg-success">Pagado</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PAGO_PARCIAL'}" class="badge bg-info text-dark">Pago parcial</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PENDIENTE_COBRO'}" class="badge bg-warning text-dark">Pendiente cobro</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'SIN_CUENTA'}" class="badge bg-secondary">Sin cuenta</span>
-                            <small th:if="${saldoCobroPorPedido[ped.idpedido] != null and saldoCobroPorPedido[ped.idpedido] > 0}" class="text-muted d-block">
-                                Saldo: $<span th:text="${#numbers.formatDecimal(saldoCobroPorPedido[ped.idpedido], 1, 2)}"></span>
-                            </small>
-                        </div>
                         <div th:if="${ped.observaciones != null and !ped.observaciones.isEmpty()}" class="kb-card-obs">
                             <i class="bi bi-chat-left-text"></i>
                             <span th:text="${ped.observaciones}"></span>
@@ -233,12 +171,12 @@
                             </a>
                             <form th:action="@{'/pedidos/finalizar/' + ${ped.idpedido}}" method="post" style="display:inline">
                                 <button type="submit" class="kb-btn kb-btn-listo" title="Marcar como Listo"
-                                        onclick="return confirm('Marcar pedido como listo para entrega?')">
+                                        onclick="return confirm('¿Marcar pedido como listo para entrega?')">
                                     <i class="bi bi-check2-square"></i>
                                 </button>
                             </form>
                             <a th:href="@{/pedidos/eliminar/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-cancelar" title="Cancelar"
-                               onclick="return confirm('Cancelar este pedido?')">
+                               onclick="return confirm('¿Cancelar este pedido? Se restaurará el stock.')">
                                 <i class="bi bi-x-lg"></i>
                             </a>
                         </div>
@@ -246,67 +184,6 @@
                 </div>
             </div>
 
-
-            <!-- COLUMNA: EN BAR -->
-            <div class="kb-column">
-                <div class="kb-column-header kb-header-cocina">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-cup-straw"></i>
-                        <span>En Bar</span>
-                    </div>
-                    <span class="kb-count" th:text="${#lists.size(pedidosPorEstado['EN_BAR'])}">0</span>
-                </div>
-                <div class="kb-column-body">
-                    <div th:if="${#lists.isEmpty(pedidosPorEstado['EN_BAR'])}" class="kb-empty">
-                        <i class="bi bi-cup-straw"></i>
-                        <small>Sin pedidos en bar</small>
-                    </div>
-                    <div th:each="ped : ${pedidosPorEstado['EN_BAR']}" class="kb-card kb-card-cocina">
-                        <div class="kb-card-top">
-                            <span class="kb-card-id">#<span th:text="${ped.idpedido}"></span></span>
-                            <span class="kb-card-time">
-                                <i class="bi bi-clock"></i>
-                                <span th:text="${#temporals.format(ped.fecha, 'HH:mm')}"></span>
-                            </span>
-                        </div>
-                        <div class="kb-card-mesa">
-                            <i class="bi bi-grid-3x3-gap-fill"></i>
-                            Mesa <span th:text="${ped.mesa != null ? ped.mesa.numero : '-'}"></span>
-                        </div>
-                        <div class="kb-card-cliente">
-                            <i class="bi bi-person"></i>
-                            <span th:text="${ped.cliente != null ? ped.cliente.nombre : 'Sin cliente'}"></span>
-                        </div>
-                        <div class="kb-card-total">
-                            $<span th:text="${#numbers.formatDecimal(ped.total, 1, 2)}"></span>
-                        </div>
-                        <div class="kb-card-billing">
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PAGADO'}" class="badge bg-success">Pagado</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PAGO_PARCIAL'}" class="badge bg-info text-dark">Pago parcial</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PENDIENTE_COBRO'}" class="badge bg-warning text-dark">Pendiente cobro</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'SIN_CUENTA'}" class="badge bg-secondary">Sin cuenta</span>
-                            <small th:if="${saldoCobroPorPedido[ped.idpedido] != null and saldoCobroPorPedido[ped.idpedido] > 0}" class="text-muted d-block">
-                                Saldo: $<span th:text="${#numbers.formatDecimal(saldoCobroPorPedido[ped.idpedido], 1, 2)}"></span>
-                            </small>
-                        </div>
-                        <div class="kb-card-actions">
-                            <a th:href="@{/pedidos/detalle/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-ver" title="Ver detalle">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <form th:action="@{'/pedidos/finalizar-bar/' + ${ped.idpedido}}" method="post" style="display:inline">
-                                <button type="submit" class="kb-btn kb-btn-listo" title="Marcar como Listo"
-                                        onclick="return confirm('Marcar pedido de bar como listo para entrega?')">
-                                    <i class="bi bi-check2-square"></i>
-                                </button>
-                            </form>
-                            <a th:href="@{/pedidos/eliminar/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-cancelar" title="Cancelar"
-                               onclick="return confirm('Cancelar este pedido?')">
-                                <i class="bi bi-x-lg"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <!-- COLUMNA: LISTO PARA ENTREGA -->
             <div class="kb-column">
                 <div class="kb-column-header kb-header-listo">
@@ -340,15 +217,6 @@
                         <div class="kb-card-total">
                             $<span th:text="${#numbers.formatDecimal(ped.total, 1, 2)}"></span>
                         </div>
-                        <div class="kb-card-billing">
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PAGADO'}" class="badge bg-success">Pagado</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PAGO_PARCIAL'}" class="badge bg-info text-dark">Pago parcial</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PENDIENTE_COBRO'}" class="badge bg-warning text-dark">Pendiente cobro</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'SIN_CUENTA'}" class="badge bg-secondary">Sin cuenta</span>
-                            <small th:if="${saldoCobroPorPedido[ped.idpedido] != null and saldoCobroPorPedido[ped.idpedido] > 0}" class="text-muted d-block">
-                                Saldo: $<span th:text="${#numbers.formatDecimal(saldoCobroPorPedido[ped.idpedido], 1, 2)}"></span>
-                            </small>
-                        </div>
                         <div th:if="${ped.observaciones != null and !ped.observaciones.isEmpty()}" class="kb-card-obs">
                             <i class="bi bi-chat-left-text"></i>
                             <span th:text="${ped.observaciones}"></span>
@@ -359,12 +227,12 @@
                             </a>
                             <form th:action="@{'/pedidos/entregar/' + ${ped.idpedido}}" method="post" style="display:inline">
                                 <button type="submit" class="kb-btn kb-btn-entregar" title="Entregar"
-                                        onclick="return confirm('Marcar pedido como entregado?')">
+                                        onclick="return confirm('¿Marcar pedido como entregado?')">
                                     <i class="bi bi-truck"></i>
                                 </button>
                             </form>
                             <a th:href="@{/pedidos/eliminar/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-cancelar" title="Cancelar"
-                               onclick="return confirm('Cancelar este pedido?')">
+                               onclick="return confirm('¿Cancelar este pedido? Se restaurará el stock.')">
                                 <i class="bi bi-x-lg"></i>
                             </a>
                         </div>
@@ -405,39 +273,24 @@
                         <div class="kb-card-total">
                             $<span th:text="${#numbers.formatDecimal(ped.total, 1, 2)}"></span>
                         </div>
-                        <div class="kb-card-billing">
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PAGADO'}" class="badge bg-success">Pagado</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PAGO_PARCIAL'}" class="badge bg-info text-dark">Pago parcial</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PENDIENTE_COBRO'}" class="badge bg-warning text-dark">Pendiente cobro</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'SIN_CUENTA'}" class="badge bg-secondary">Sin cuenta</span>
-                            <small th:if="${saldoCobroPorPedido[ped.idpedido] != null and saldoCobroPorPedido[ped.idpedido] > 0}" class="text-muted d-block">
-                                Saldo: $<span th:text="${#numbers.formatDecimal(saldoCobroPorPedido[ped.idpedido], 1, 2)}"></span>
-                            </small>
-                        </div>
-                        <div th:if="${pedidosConCobrar != null
-                                     and pedidosConCobrar.contains(ped.idpedido)
-                                     and ped.mesa != null
-                                     and ped.cliente != null
-                                     and cuentasPorMesa != null
-                                     and cuentasPorMesa[ped.mesa.idmesa + '-' + ped.cliente.idcliente] != null}"
-                             class="mt-1">
-                            <span class="badge text-bg-warning">Pendiente de cobro</span>
-                        </div>
                         <div class="kb-card-actions">
                             <a th:href="@{/pedidos/detalle/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-ver" title="Ver detalle">
                                 <i class="bi bi-eye"></i>
                             </a>
                             <!-- Cobrar -->
-                                <a th:if="${pedidosConCobrar != null
-              and pedidosConCobrar.contains(ped.idpedido)
-              and ped.mesa != null
-              and ped.cliente != null
-              and cuentasPorMesa != null
-              and cuentasPorMesa[ped.mesa.idmesa + '-' + ped.cliente.idcliente] != null}"
-   th:href="@{'/cuentas/' + ${cuentasPorMesa[ped.mesa.idmesa + '-' + ped.cliente.idcliente].idcuenta} + '/pagos?origen=pedidos'}"
-   class="btn btn-outline-success btn-sm" title="Cobrar cuenta">
-     <i class="bi bi-cash-coin"></i>
-</a>
+                            <form th:if="${pedidosConCobrar != null
+                                         and pedidosConCobrar.contains(ped.idpedido)
+                                         and ped.mesa != null
+                                         and ped.cliente != null
+                                         and cuentasPorMesa != null
+                                         and cuentasPorMesa[ped.mesa.idmesa + '-' + ped.cliente.idcliente] != null}"
+                                  th:action="@{'/cuentas/cobrar/' + ${cuentasPorMesa[ped.mesa.idmesa + '-' + ped.cliente.idcliente].idcuenta} + '?origen=pedidos'}"
+                                  method="post" style="display:inline">
+                                <button type="submit" class="kb-btn kb-btn-cobrar" title="Cobrar cuenta"
+                                        onclick="return confirm('¿Cobrar la cuenta de esta mesa?')">
+                                    <i class="bi bi-cash-coin"></i>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -476,15 +329,6 @@
                         <div class="kb-card-total kb-total-tachado">
                             $<span th:text="${#numbers.formatDecimal(ped.total, 1, 2)}"></span>
                         </div>
-                        <div class="kb-card-billing">
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PAGADO'}" class="badge bg-success">Pagado</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PAGO_PARCIAL'}" class="badge bg-info text-dark">Pago parcial</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PENDIENTE_COBRO'}" class="badge bg-warning text-dark">Pendiente cobro</span>
-                            <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'SIN_CUENTA'}" class="badge bg-secondary">Sin cuenta</span>
-                            <small th:if="${saldoCobroPorPedido[ped.idpedido] != null and saldoCobroPorPedido[ped.idpedido] > 0}" class="text-muted d-block">
-                                Saldo: $<span th:text="${#numbers.formatDecimal(saldoCobroPorPedido[ped.idpedido], 1, 2)}"></span>
-                            </small>
-                        </div>
                         <div class="kb-card-actions">
                             <a th:href="@{/pedidos/detalle/{id}(id=${ped.idpedido})}" class="kb-btn kb-btn-ver" title="Ver detalle">
                                 <i class="bi bi-eye"></i>
@@ -497,7 +341,7 @@
 
         <!-- ======================== VISTA TABLA (oculta por defecto) ======================== -->
         <div id="vistaTabla" style="display: none;">
-            <!-- Filtros y busqueda -->
+            <!-- Filtros y búsqueda -->
             <div class="card mb-3">
                 <div class="card-body">
                     <form th:action="@{/pedidos}" method="get" class="row g-2 align-items-end">
@@ -529,9 +373,6 @@
                                 <a th:href="@{/pedidos(estado='EN_COCINA', q=${q}, fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}"
                                    class="btn btn-outline-primary btn-sm"
                                    th:classappend="${filtroEstado} == 'EN_COCINA' ? ' active' : ''">Cocina</a>
-                                <a th:href="@{/pedidos(estado='EN_BAR', q=${q}, fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}"
-                                   class="btn btn-outline-primary btn-sm"
-                                   th:classappend="${filtroEstado} == 'EN_BAR' ? ' active' : ''">Bar</a>
                                 <a th:href="@{/pedidos(estado='LISTO_PARA_ENTREGA', q=${q}, fechaDesde=${fechaDesde}, fechaHasta=${fechaHasta})}"
                                    class="btn btn-outline-info btn-sm"
                                    th:classappend="${filtroEstado} == 'LISTO_PARA_ENTREGA' ? ' active' : ''">Listo</a>
@@ -564,7 +405,6 @@
                             <th>Usuario</th>
                             <th>Total</th>
                             <th>Estado</th>
-                            <th>Cobro</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -579,21 +419,11 @@
                             <td>
                                 <span th:if="${ped.estado == 'PENDIENTE'}" class="badge bg-warning text-dark">Pendiente</span>
                                 <span th:if="${ped.estado == 'EN_COCINA'}" class="badge bg-primary">En Cocina</span>
-                                <span th:if="${ped.estado == 'EN_BAR'}" class="badge bg-primary">En Bar</span>
                                 <span th:if="${ped.estado == 'LISTO_PARA_ENTREGA'}" class="badge bg-info text-dark">
                                     <i class="bi bi-bell-fill"></i> Por Entregar
                                 </span>
                                 <span th:if="${ped.estado == 'COMPLETADO'}" class="badge bg-success">Completado</span>
                                 <span th:if="${ped.estado == 'CANCELADO'}" class="badge bg-secondary">Cancelado</span>
-                            </td>
-                            <td>
-                                <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PAGADO'}" class="badge bg-success">Pagado</span>
-                                <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PAGO_PARCIAL'}" class="badge bg-info text-dark">Parcial</span>
-                                <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'PENDIENTE_COBRO'}" class="badge bg-warning text-dark">Pendiente</span>
-                                <span th:if="${estadoCobroPorPedido[ped.idpedido] == 'SIN_CUENTA'}" class="badge bg-secondary">Sin cuenta</span>
-                                <small th:if="${saldoCobroPorPedido[ped.idpedido] != null and saldoCobroPorPedido[ped.idpedido] > 0}" class="d-block text-muted">
-                                    $<span th:text="${#numbers.formatDecimal(saldoCobroPorPedido[ped.idpedido], 1, 2)}"></span>
-                                </small>
                             </td>
                             <td>
                                 <a th:href="@{/pedidos/detalle/{id}(id=${ped.idpedido})}" class="btn btn-info btn-sm">
@@ -603,59 +433,49 @@
                                    th:href="@{/pedidos/editar/{id}(id=${ped.idpedido})}" class="btn btn-warning btn-sm">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form th:if="${ped.estado == 'PENDIENTE' and pedidosSoloBarIds != null and pedidosSoloBarIds.contains(ped.idpedido)}"
-                                      th:action="@{'/pedidos/enviar-bar/' + ${ped.idpedido}}" method="post" style="display:inline">
-                                    <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Enviar a bar?')">
-                                        <i class="bi bi-cup-straw"></i>
-                                    </button>
-                                </form>
-                                <form th:if="${ped.estado == 'PENDIENTE' and (pedidosSoloBarIds == null or !pedidosSoloBarIds.contains(ped.idpedido))}"
-                                      th:action="@{'/pedidos/enviar-cocina/' + ${ped.idpedido}}" method="post" style="display:inline">
-                                    <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Enviar a cocina?')">
+                                <form th:if="${ped.estado == 'PENDIENTE'}" th:action="@{'/pedidos/enviar-cocina/' + ${ped.idpedido}}" method="post" style="display:inline">
+                                    <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('¿Enviar a cocina?')">
                                         <i class="bi bi-fire"></i>
                                     </button>
                                 </form>
                                 <a th:if="${ped.estado != 'COMPLETADO' and ped.estado != 'CANCELADO'}"
                                    th:href="@{/pedidos/eliminar/{id}(id=${ped.idpedido})}" class="btn btn-danger btn-sm"
-                                   onclick="return confirm('Cancelar este pedido?')">
+                                   onclick="return confirm('¿Cancelar este pedido?')">
                                     <i class="bi bi-x-lg"></i>
                                 </a>
                                 <form th:if="${ped.estado == 'EN_COCINA'}" th:action="@{'/pedidos/finalizar/' + ${ped.idpedido}}" method="post" style="display:inline">
-                                    <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Marcar pedido como listo para entrega?')">
-                                        <i class="bi bi-check2-square"></i>
-                                    </button>
-                                </form>
-                                <form th:if="${ped.estado == 'EN_BAR'}" th:action="@{'/pedidos/finalizar-bar/' + ${ped.idpedido}}" method="post" style="display:inline">
-                                    <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Marcar pedido de bar como listo para entrega?')">
+                                    <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('¿Marcar como listo?')">
                                         <i class="bi bi-check2-square"></i>
                                     </button>
                                 </form>
                                 <form th:if="${ped.estado == 'LISTO_PARA_ENTREGA'}" th:action="@{'/pedidos/entregar/' + ${ped.idpedido}}" method="post" style="display:inline">
-                                    <button type="submit" class="btn btn-info btn-sm" onclick="return confirm('Marcar pedido como entregado?')">
+                                    <button type="submit" class="btn btn-info btn-sm" onclick="return confirm('¿Entregar pedido?')">
                                         <i class="bi bi-truck"></i>
                                     </button>
                                 </form>
-                                <a th:if="${pedidosConCobrar != null
-             and pedidosConCobrar.contains(ped.idpedido)
-             and ped.mesa != null
-             and ped.cliente != null
-             and cuentasPorMesa != null
-             and cuentasPorMesa[ped.mesa.idmesa + '-' + ped.cliente.idcliente] != null}"
-   th:href="@{'/cuentas/' + ${cuentasPorMesa[ped.mesa.idmesa + '-' + ped.cliente.idcliente].idcuenta} + '/pagos?origen=pedidos'}"
-   class="kb-btn kb-btn-cobrar" title="Cobrar cuenta">
-    <i class="bi bi-cash-coin"></i>
-</a>
+                                <form th:if="${pedidosConCobrar != null
+                                             and pedidosConCobrar.contains(ped.idpedido)
+                                             and ped.mesa != null
+                                             and ped.cliente != null
+                                             and cuentasPorMesa != null
+                                             and cuentasPorMesa[ped.mesa.idmesa + '-' + ped.cliente.idcliente] != null}"
+                                      th:action="@{'/cuentas/cobrar/' + ${cuentasPorMesa[ped.mesa.idmesa + '-' + ped.cliente.idcliente].idcuenta} + '?origen=pedidos'}"
+                                      method="post" style="display:inline">
+                                    <button type="submit" class="btn btn-outline-success btn-sm" onclick="return confirm('¿Cobrar?')">
+                                        <i class="bi bi-cash-coin"></i>
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(pedidos)}">
-                            <td colspan="9" class="text-center">No hay pedidos registrados</td>
+                            <td colspan="8" class="text-center">No hay pedidos registrados</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- Paginacion -->
-            <nav th:if="${totalPaginas} > 1" aria-label="Paginacion pedidos" class="mt-3">
+            <!-- Paginación -->
+            <nav th:if="${totalPaginas} > 1" aria-label="Paginación pedidos" class="mt-3">
                 <ul class="pagination justify-content-center">
                     <li class="page-item" th:classappend="${page} == 0 ? ' disabled' : ''">
                         <a class="page-link"
@@ -800,9 +620,6 @@
                 color: #16a34a;
                 margin-bottom: 6px;
             }
-            .kb-card-billing {
-                margin-bottom: 8px;
-            }
             .kb-total-tachado {
                 text-decoration: line-through;
                 color: #9ca3af;
@@ -863,7 +680,7 @@
             }
             .kb-empty i { font-size: 2rem; margin-bottom: 8px; opacity: .4; }
 
-            /* Animacion pulse para "Por Entregar" */
+            /* Animación pulse para "Por Entregar" */
             .kb-pulse {
                 animation: kbPulse 2s ease-in-out infinite;
             }

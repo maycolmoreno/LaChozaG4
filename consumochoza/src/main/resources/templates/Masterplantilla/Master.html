@@ -90,11 +90,6 @@
 		<!-- ========== LEFT SIDEBAR ========== -->
 		<aside class="left-sidebar" data-sidebarbg="skin5">
 			<div class="scroll-sidebar">
-				<div class="d-flex d-lg-none justify-content-end p-2">
-					<button type="button" class="btn btn-sm btn-outline-secondary sidebar-close-btn" aria-label="Cerrar menú">
-						<i class="bi bi-x-lg"></i>
-					</button>
-				</div>
 				<nav class="sidebar-nav">
 					<ul id="sidebarnav" class="pt-4">
 
@@ -149,12 +144,6 @@
 								class="bi bi-cash-stack"></i> <span class="hide-menu">Cuentas</span>
 						</a></li>
 
-						<li class="sidebar-item"
-							sec:authorize="hasAnyRole('ADMIN','CAMARERO')"><a
-							th:href="@{/caja}" class="sidebar-link"> <i
-								class="bi bi-safe2-fill"></i> <span class="hide-menu">Caja</span>
-						</a></li>
-
 						<!-- ===== COCINA ===== -->
 						<li class="sidebar-item"
 							sec:authorize="hasAnyRole('ADMIN','COCINA')"><a
@@ -182,7 +171,6 @@
 				</nav>
 			</div>
 		</aside>
-		<div class="sidebar-overlay d-lg-none"></div>
 
 
 		<div class="page-wrapper">

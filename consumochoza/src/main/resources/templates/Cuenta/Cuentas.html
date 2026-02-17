@@ -95,14 +95,11 @@
                     <span th:if="${c.estado == 'ANULADA'}" class="badge bg-secondary">Anulada</span>
                 </td>
                 <td>
-                    <a th:href="@{'/cuentas/' + ${c.idcuenta} + '/pagos'}" class="btn btn-primary btn-sm">
-                        <i class="bi bi-wallet2"></i> Pagos
-                    </a>
-                    <a th:if="${c.estado == 'ABIERTA'}"
-   th:href="@{'/cuentas/' + ${c.idcuenta} + '/pagos'}"
-   class="btn btn-success btn-sm">
-    <i class="bi bi-cash"></i> Cobrar
-</a>
+                    <form th:action="@{'/cuentas/cobrar/' + ${c.idcuenta}}" method="post" style="display:inline" th:if="${c.estado == 'ABIERTA'}">
+                        <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('¿Cobrar esta cuenta?');">
+                            <i class="bi bi-cash"></i> Cobrar
+                        </button>
+                    </form>
                     <form th:action="@{'/cuentas/anular/' + ${c.idcuenta}}" method="post" style="display:inline" th:if="${c.estado == 'ABIERTA'}">
                         <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Anular esta cuenta?');">
                             <i class="bi bi-x-circle"></i> Anular
@@ -119,6 +116,3 @@
 </div>
 </body>
 </html>
-
-
-

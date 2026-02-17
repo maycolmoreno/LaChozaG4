@@ -5,103 +5,11 @@
 
 <head>
     <title>Punto de Venta</title>
-    <style>
-        .pos-vista {
-            --pos-surface: #ffffff;
-            --pos-dark: #182b4a;
-            --pos-dark-2: #0f1d35;
-            --pos-accent: #f47a20;
-            --pos-text: #213047;
-            --pos-border: #dbe2ec;
-            --pos-shadow: 0 10px 24px rgba(18, 31, 56, 0.08);
-            color: var(--pos-text);
-        }
-        .pos-vista .pos-hero {
-            background: linear-gradient(135deg, var(--pos-dark), var(--pos-dark-2));
-            border-radius: 16px;
-            color: #fff;
-            padding: 14px 18px;
-            box-shadow: 0 14px 30px rgba(17, 33, 58, 0.35);
-        }
-        .pos-vista .page-title { color: #fff; }
-        .pos-vista .page-title i { color: #ffb27d; }
-        .pos-vista .stats-badge {
-            background: var(--pos-accent);
-            color: #fff;
-            padding: 8px 14px;
-            border-radius: 999px;
-            box-shadow: 0 8px 18px rgba(244, 122, 32, 0.35);
-        }
-        .pos-vista .stats-badge .text-muted { color: rgba(255, 255, 255, 0.85) !important; }
-        .pos-vista .card {
-            background: var(--pos-surface);
-            border: 1px solid var(--pos-border);
-            border-radius: 14px;
-            box-shadow: var(--pos-shadow);
-        }
-        .pos-vista .card:hover { transform: none; }
-        .pos-vista .pos-sticky { top: 80px; }
-        .pos-vista .pos-panel-ticket .card-header {
-            background: var(--pos-dark) !important;
-            color: #fff !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-        }
-        .pos-vista .pos-panel-ticket .badge.bg-light {
-            background: rgba(255, 255, 255, 0.22) !important;
-            color: #fff !important;
-            border: 1px solid rgba(255, 255, 255, 0.35);
-        }
-        .pos-vista #resumenMesaCliente { color: rgba(255, 255, 255, 0.82) !important; }
-        .pos-vista .pos-filtros { border: 1px solid var(--pos-border); background: #f9fbfd; }
-        .pos-vista .btn-categoria {
-            background: #eef3f8;
-            border: 1px solid #dde6f1;
-            color: #4d6078;
-        }
-        .pos-vista .btn-categoria.active {
-            background: #2a78df;
-            border-color: #2a78df;
-            color: #fff;
-        }
-        .pos-vista .productos-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-        .pos-vista .producto-card {
-            border: 1px solid #e1e8f2;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(12, 35, 64, 0.08);
-        }
-        .pos-vista .producto-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(12, 35, 64, 0.14);
-        }
-        .pos-vista .producto-img { background: linear-gradient(180deg, #f8fbff, #eff4fa); }
-        .pos-vista .producto-precio { color: var(--pos-accent); }
-        .pos-vista .carrito-items { max-height: 43vh; }
-        .pos-vista #totalPedido { color: var(--pos-accent) !important; }
-        .pos-vista .btn-success { background: var(--pos-accent); border-color: var(--pos-accent); }
-        .pos-vista .btn-success:hover { background: #e16912; border-color: #e16912; }
-        .pos-vista .btn-warning {
-            background: #f7f9fc !important;
-            border-color: #d9e1ec !important;
-            color: #2a3a53 !important;
-        }
-        .pos-vista .btn-warning:hover { background: #ecf1f8 !important; }
-        .pos-vista .pos-panel-datos .card-header {
-            background: #f7f9fc !important;
-            color: #25364f !important;
-            border-bottom: 1px solid #e1e8f2;
-        }
-        .pos-vista .pos-panel-datos .card-header .bi { color: #2f79df; }
-        .pos-vista .list-group-item.active { background: #2f79df; border-color: #2f79df; }
-        @media (max-width: 991.98px) {
-            .pos-vista .pos-sticky { position: static !important; top: auto; }
-            .pos-vista .productos-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
-            .pos-vista .carrito-items { max-height: 34vh; }
-        }
-    </style>
+ 
 </head>
 
 <body>
-    <div layout:fragment="contenidopaginas" class="pos-vista">
+    <div layout:fragment="contenidopaginas">
         <!-- Mensajes de error/éxito -->
         <div id="alertError" class="alert alert-danger alert-dismissible fade show" role="alert"
              th:attr="style=${error} ? '' : 'display:none;'">
@@ -114,7 +22,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
         <!-- Cabecera moderna POS -->
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 pos-hero">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
             <div>
                 <h1 class="page-title mb-1"><i class="bi bi-shop-window me-2"></i>Punto de Venta</h1>
             </div>
@@ -131,13 +39,14 @@
         <form th:action="@{/pedidos/guardar}" method="post" id="pedidoForm" onsubmit="return validarYEnviarPedido(event)" novalidate>
              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                  <input type="hidden" name="idpedido" th:value="${pedido.idpedido}" />
+                 <input type="hidden" name="estado" value="PENDIENTE" />
                  <input type="hidden" name="idUsuario" id="idUsuario"
                      th:value="${pedido.idUsuario != null ? pedido.idUsuario : (usuarioLogueado != null ? usuarioLogueado.idusuario : '')}" />
             
             <div class="row g-3">
                 <!-- Columna izquierda: Pedido actual -->
                 <div class="col-lg-3 order-lg-1 order-2">
-                    <div class="card carrito-card pos-panel-ticket sticky-top pos-sticky">
+                    <div class="card carrito-card sticky-top" style="top: 80px;">
                         <div class="card-header bg-primary text-white py-2">
                             <h5 class="mb-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <div>
@@ -192,7 +101,7 @@
 
                 <!-- Columna central: catálogo de productos -->
                 <div class="col-lg-5 order-lg-2 order-1">
-                    <div class="card mb-3 pos-filtros" style="overflow: visible;">
+                    <div class="card mb-3" style="overflow: visible;">
                         <div class="card-body py-2" style="overflow: visible;">
                             <div class="d-flex flex-column flex-md-row align-items-md-center gap-2">
                                 <div class="flex-grow-1">
@@ -214,10 +123,6 @@
                     </div>
 
                     <!-- Filtro por categoría -->
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="mb-0 fw-bold"><i class="bi bi-grid-3x3-gap me-1"></i>Cat&aacute;logo</h6>
-                        <small class="text-muted">Toca un producto para agregarlo al pedido</small>
-                    </div>
                     <div class="categoria-tabs mb-3">
                         <button type="button" class="btn btn-categoria active" data-categoria="todos">
                             <i class="bi bi-grid-3x3-gap"></i> Todos
@@ -259,7 +164,7 @@
 
                 <!-- Columna derecha: mesa, cuenta y cliente -->
                 <div class="col-lg-4 order-lg-3 order-3">
-                    <div class="card pos-panel-datos sticky-top pos-sticky">
+                    <div class="card sticky-top" style="top: 80px;">
                         <div class="card-header bg-white border-0 pb-0">
                             <h5 class="mb-0 d-flex align-items-center gap-2">
                                 <i class="bi bi-table"></i>
@@ -301,34 +206,6 @@
                                             <small class="text-muted d-block mb-1">Cuentas abiertas de esta mesa:</small>
                                             <div id="listaCuentasMesa" class="list-group list-group-flush small"></div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label small mb-1">Forma de cobro</label>
-                                <div class="mt-1">
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="modoCobro" id="modoCobroFinal" value="AL_FINAL" checked>
-                                        <label class="form-check-label" for="modoCobroFinal">Pagar al final</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="modoCobro" id="modoCobroInicio" value="AL_INICIO">
-                                        <label class="form-check-label" for="modoCobroInicio">Pagar al inicio</label>
-                                    </div>
-                                </div>
-                                <div class="row g-2 mt-1" id="bloquePagoInicio" style="display:none;">
-                                    <div class="col-6">
-                                        <label class="form-label small mb-1">Metodo</label>
-                                        <select class="form-select form-select-sm" name="metodoPagoInicio">
-                                            <option value="EFECTIVO">Efectivo</option>
-                                            <option value="TRANSFERENCIA">Transferencia</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-6">
-                                        <label class="form-label small mb-1">Referencia</label>
-                                        <input type="text" class="form-control form-control-sm" name="referenciaPagoInicio"
-                                               placeholder="Opcional (ej: OP-123)">
                                     </div>
                                 </div>
                             </div>
@@ -628,24 +505,6 @@
                         actualizarInfoCuentaMesa();
                     });
             }
-
-            function actualizarModoCobroUI() {
-                const rbCobroInicio = document.getElementById('modoCobroInicio');
-                const rbCobroFinal = document.getElementById('modoCobroFinal');
-                const bloquePagoInicio = document.getElementById('bloquePagoInicio');
-                const inputReferencia = document.querySelector('input[name="referenciaPagoInicio"]');
-
-                if (!rbCobroInicio || !rbCobroFinal || !bloquePagoInicio) {
-                    return;
-                }
-
-                const pagoAlInicio = rbCobroInicio.checked;
-                bloquePagoInicio.style.display = pagoAlInicio ? '' : 'none';
-
-                if (!pagoAlInicio && inputReferencia) {
-                    inputReferencia.value = '';
-                }
-            }
             
             // Mapa de stock para acceso rápido y seguro
             // Al editar un pedido, sumamos al stock actual la cantidad ya reservada
@@ -824,16 +683,6 @@
                         aplicarFiltrosProductos();
                     });
                 }
-
-                const rbCobroInicio = document.getElementById('modoCobroInicio');
-                const rbCobroFinal = document.getElementById('modoCobroFinal');
-                if (rbCobroInicio) {
-                    rbCobroInicio.addEventListener('change', actualizarModoCobroUI);
-                }
-                if (rbCobroFinal) {
-                    rbCobroFinal.addEventListener('change', actualizarModoCobroUI);
-                }
-                actualizarModoCobroUI();
                 
                 // Cerrar resultados al hacer clic fuera
                 document.addEventListener('click', function(e) {
