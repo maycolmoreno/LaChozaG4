@@ -1,0 +1,364 @@
+/* ============================================
+   ESTILOS PARA IMPRESIÓN DE TICKETS
+   ============================================ */
+
+/* Estilos para impresión */
+@media print {
+    /* Resetear todo */
+    *, *::before, *::after {
+        box-sizing: border-box !important;
+    }
+    
+    /* ========================================
+       OCULTAR TODOS LOS ELEMENTOS DEL LAYOUT
+       Matrix Admin Template
+       ======================================== */
+    .topbar,
+    .top-navbar,
+    .navbar,
+    .navbar-header,
+    .navbar-collapse,
+    .navbar-nav,
+    header.topbar,
+    nav.navbar,
+    .left-sidebar,
+    aside.left-sidebar,
+    .scroll-sidebar,
+    .sidebar-nav,
+    #sidebarnav,
+    .sidebar-item,
+    .sidebar-link,
+    .page-breadcrumb,
+    .preloader,
+    .no-print,
+    .btn,
+    footer,
+    .customizer {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    html, body {
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        font-family: 'Courier New', Courier, monospace !important;
+        font-size: 12px !important;
+    }
+    
+    /* Resetear el wrapper principal */
+    #main-wrapper {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: auto !important;
+    }
+    
+    #main-wrapper[data-layout="vertical"] .left-sidebar {
+        display: none !important;
+    }
+    
+    .page-wrapper {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        background: #fff !important;
+        min-height: auto !important;
+    }
+    
+    .container-fluid,
+    section {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Contenedor del ticket - centrado */
+    .ticket-container {
+        display: block !important;
+        visibility: visible !important;
+        width: 100% !important;
+        max-width: 300px !important;
+        margin: 0 auto !important;
+        padding: 10px !important;
+        font-family: 'Courier New', Courier, monospace !important;
+        color: #000 !important;
+    }
+    
+    /* Asegurar que todo dentro del ticket sea visible */
+    .ticket-container * {
+        visibility: visible !important;
+        color: #000 !important;
+    }
+    
+    /* Cards */
+    .card {
+        display: block !important;
+        border: none !important;
+        box-shadow: none !important;
+        margin-bottom: 10px !important;
+        background: #fff !important;
+    }
+    
+    .card-header {
+        background: #fff !important;
+        border: none !important;
+        padding: 5px 0 !important;
+        text-align: center !important;
+    }
+    
+    .card-header h3 {
+        font-size: 16px !important;
+        font-weight: bold !important;
+        margin: 0 !important;
+        color: #000 !important;
+    }
+    
+    .card-header h5 {
+        font-size: 12px !important;
+        font-weight: bold !important;
+        margin: 0 !important;
+        color: #000 !important;
+        text-align: left !important;
+    }
+    
+    .card-body {
+        padding: 5px 0 !important;
+    }
+    
+    /* Filas de información */
+    .row {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+    
+    .col-md-3, .col-md-12 {
+        display: inline-block !important;
+        width: 48% !important;
+        padding: 2px !important;
+        vertical-align: top !important;
+        float: none !important;
+    }
+    
+    .col-md-12 {
+        width: 100% !important;
+        display: block !important;
+    }
+    
+    .card-body strong {
+        font-size: 10px !important;
+        display: block !important;
+    }
+    
+    .card-body p {
+        font-size: 11px !important;
+        margin: 0 0 5px 0 !important;
+    }
+    
+    /* Tabla */
+    .table-responsive {
+        overflow: visible !important;
+        width: 100% !important;
+    }
+    
+    table.table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        font-size: 10px !important;
+        table-layout: fixed !important;
+    }
+    
+    table.table thead tr,
+    table.table tbody tr,
+    table.table tfoot tr {
+        display: table-row !important;
+        width: 100% !important;
+    }
+    
+    table.table th,
+    table.table td {
+        display: table-cell !important;
+        padding: 3px 2px !important;
+        border-bottom: 1px dotted #ccc !important;
+        color: #000 !important;
+        background: #fff !important;
+        text-align: left !important;
+        vertical-align: top !important;
+    }
+    
+    /* Anchos específicos */
+    table.table th:nth-child(1),
+    table.table td:nth-child(1) { 
+        width: 40% !important; 
+    }
+    table.table th:nth-child(2),
+    table.table td:nth-child(2) { 
+        width: 15% !important; 
+        text-align: center !important; 
+    }
+    table.table th:nth-child(3),
+    table.table td:nth-child(3) { 
+        width: 22% !important; 
+        text-align: right !important; 
+    }
+    table.table th:nth-child(4),
+    table.table td:nth-child(4) { 
+        width: 23% !important; 
+        text-align: right !important; 
+    }
+    
+    table.table thead th {
+        font-weight: bold !important;
+        border-bottom: 1px solid #000 !important;
+        background: #fff !important;
+    }
+    
+    .table-dark, .table-dark th {
+        background: #fff !important;
+        color: #000 !important;
+    }
+    
+    .table-striped tbody tr {
+        background: #fff !important;
+    }
+    
+    table.table tfoot th {
+        font-weight: bold !important;
+        font-size: 12px !important;
+        border-top: 2px solid #000 !important;
+        border-bottom: none !important;
+        padding-top: 8px !important;
+    }
+    
+    .table-light, .table-light th {
+        background: #fff !important;
+    }
+    
+    /* Pie del ticket */
+    #ticketFooter {
+        display: block !important;
+        text-align: center !important;
+        margin-top: 15px !important;
+        padding-top: 10px !important;
+        border-top: 1px dashed #000 !important;
+    }
+    
+    #ticketFooter p {
+        margin: 3px 0 !important;
+        font-size: 10px !important;
+    }
+    
+    /* Ocultar flex en header para impresión */
+    .d-flex {
+        display: block !important;
+    }
+    
+    .justify-content-between,
+    .align-items-center {
+        justify-content: initial !important;
+        align-items: initial !important;
+    }
+}
+    
+    .table tfoot th {
+        border-top: 2px solid #000 !important;
+        font-size: 13px !important;
+    }
+    
+    /* Información del pedido */
+    .ticket-container .row {
+        margin: 0 !important;
+    }
+    
+    .ticket-container .col-md-3 {
+        width: 50% !important;
+        float: left !important;
+        padding: 2px 5px !important;
+    }
+    
+    .ticket-container p {
+        margin: 0 0 5px 0 !important;
+    }
+    
+    .ticket-container strong {
+        font-size: 10px !important;
+    }
+    
+    /* Pie del ticket */
+    #ticketFooter {
+        display: block !important;
+        margin-top: 10px !important;
+        padding-top: 10px !important;
+        border-top: 1px dashed #000 !important;
+        text-align: center !important;
+    }
+    
+    #ticketFooter p {
+        margin: 3px 0 !important;
+        font-size: 11px !important;
+    }
+    
+    /* Línea divisoria */
+    hr {
+        border-top: 1px dashed #000 !important;
+    }
+
+
+/* ============================================
+   ESTILOS PARA PREVIEW EN PANTALLA
+   ============================================ */
+
+/* Botón de imprimir */
+.btn-print {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-print:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+.btn-print i {
+    margin-right: 5px;
+}
+
+/* Contenedor del ticket */
+.ticket-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Pie del ticket (oculto en pantalla) */
+#ticketFooter {
+    display: none;
+    text-align: center;
+    padding: 15px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+    border-radius: 0 0 15px 15px;
+}
+
+#ticketFooter p {
+    margin: 5px 0;
+    color: #666;
+}
+
+#ticketFooter p:first-child {
+    font-weight: 600;
+    color: #333;
+}

@@ -55,6 +55,19 @@ public class SeguridadConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/",
+                    "/login",
+                    "/error/**",
+                    "/favicon.ico",
+                    "/manifest.json",
+                    "/sw.js",
+                    "/offline.html",
+                    "/assets/**",
+                    "/css/**",
+                    "/js/**",
+                    "/dist/**"
+                ).permitAll()
                 // --- Endpoints públicos (login, cambio de password, setup) ---
                 .requestMatchers(HttpMethod.POST, "/api/usuarios/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/usuarios/cambiar-password").authenticated()

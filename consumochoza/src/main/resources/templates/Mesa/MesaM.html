@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{Masterplantilla/Master}">
+
+<head>
+    <title>Mesas</title>
+</head>
+
+<body>
+    <div layout:fragment="contenidopaginas">
+        <!-- Alertas de mensajes flash -->
+        <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span th:text="${mensajeExito}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${mensajeError}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Lista de Mesas</h1>
+            <a th:href="@{/mesa/nuevo}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nueva Mesa
+            </a>
+        </div>
+
+        <!-- Filtros de mesas -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="btn-group" role="group" aria-label="Filtros de mesas">
+                    <a th:href="@{/mesa}" 
+                       th:class="${filtro == 'todas'} ? 'btn btn-primary' : 'btn btn-outline-primary'">
+                        <i class="bi bi-grid"></i> Todas 
+                        <span class="badge bg-light text-dark" th:text="${#lists.size(mesasDisponibles) + #lists.size(mesasOcupadas)}"></span>
+                    </a>
+                    <a th:href="@{/mesa/disponibles}" 
+                       th:class="${filtro == 'disponibles'} ? 'btn btn-success' : 'btn btn-outline-success'">
+                        <i class="bi bi-check-circle"></i> Disponibles 
+                        <span class="badge bg-light text-dark" th:text="${#lists.size(mesasDisponibles)}"></span>
+                    </a>
+                    <a th:href="@{/mesa/ocupadas}" 
+                       th:class="${filtro == 'ocupadas'} ? 'btn btn-danger' : 'btn btn-outline-danger'">
+                        <i class="bi bi-x-circle"></i> Ocupadas 
+                        <span class="badge bg-light text-dark" th:text="${#lists.size(mesasOcupadas)}"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Número</th>
+                        <th>Capacidad</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="mesa : ${mesas}">
+                        <td th:text="${mesa.idmesa}"></td>
+                        <td th:text="${mesa.numero}"></td>
+                        <td th:text="${mesa.capacidad}"></td>
+                        <td>
+                            <span th:if="${mesa.estado}" class="badge bg-success">Disponible</span>
+                            <span th:unless="${mesa.estado}" class="badge bg-danger">Ocupada</span>
+                        </td>
+                        <td>
+                            <a th:href="@{/mesa/editar/{id}(id=${mesa.idmesa})}" 
+                               class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                            <a th:href="@{/mesa/eliminar/{id}(id=${mesa.idmesa})}" 
+                               class="btn btn-danger btn-sm"
+                               onclick="return confirm('¿Está seguro de dar de baja esta mesa?')">
+                                <i class="bi bi-trash"></i> Dar de baja
+                            </a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(mesas)}">
+                        <td colspan="5" class="text-center">No hay mesas registradas</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

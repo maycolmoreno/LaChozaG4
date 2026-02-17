@@ -31,3 +31,12 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# local IDE/build metadata
+**/target/
+**/.apt_generated/
+**/.apt_generated_tests/
+**/.settings/
+**/.classpath
+**/.project
+**/.factorypath
