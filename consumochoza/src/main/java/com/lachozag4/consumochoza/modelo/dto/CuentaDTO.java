@@ -1,4 +1,4 @@
-﻿package com.lachozag4.consumochoza.modelo.dto;
+package com.lachozag4.consumochoza.modelo.dto;
 
 import java.time.LocalDateTime;
 

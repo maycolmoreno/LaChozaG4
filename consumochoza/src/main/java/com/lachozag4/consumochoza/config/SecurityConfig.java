@@ -1,4 +1,4 @@
-﻿package com.lachozag4.consumochoza.config;
+package com.lachozag4.consumochoza.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

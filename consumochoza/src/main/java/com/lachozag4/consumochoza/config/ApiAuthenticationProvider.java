@@ -1,4 +1,4 @@
-﻿package com.lachozag4.consumochoza.config;
+package com.lachozag4.consumochoza.config;
 
 import java.util.Collections;
 

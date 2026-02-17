@@ -1,4 +1,4 @@
-﻿package com.lachozag4.consumochoza.controlador;
+package com.lachozag4.consumochoza.controlador;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-﻿package com.lachozag4.consumochoza.controlador;
+package com.lachozag4.consumochoza.controlador;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

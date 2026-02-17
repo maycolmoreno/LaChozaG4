@@ -1,4 +1,4 @@
-﻿package com.lachozag4.consumochoza;
+package com.lachozag4.consumochoza;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
