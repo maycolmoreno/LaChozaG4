@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{Masterplantilla/Master}">
+
+<head>
+    <title>Crear administrador inicial</title>
+</head>
+
+<body>
+<div layout:fragment="contenidopaginas">
+    <div class="card col-md-6 mx-auto">
+        <div class="card-header">
+            <h3>Crear administrador inicial</h3>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">
+                No se ha encontrado ningún usuario registrado. Cree el usuario administrador inicial
+                para poder acceder al sistema. Este paso solo se realiza una vez.
+            </p>
+
+            <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span th:text="${mensajeError}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <form th:action="@{/setup-admin}" th:object="${usuario}" method="post" class="needs-validation" novalidate>
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" th:field="*{username}" required maxlength="100" />
+                    <div class="invalid-feedback">El username es obligatorio.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" th:field="*{password}" required maxlength="255" />
+                    <div class="invalid-feedback">La contraseña es obligatoria.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="nombreCompleto" class="form-label">Nombre completo</label>
+                    <input type="text" class="form-control" id="nombreCompleto" th:field="*{nombreCompleto}" required maxlength="255" />
+                    <div class="invalid-feedback">El nombre completo es obligatorio.</div>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle-fill me-1"></i>
+                    Este usuario se creará con el rol <strong>ADMIN</strong> y estará activo.
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle-fill"></i> Crear administrador
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

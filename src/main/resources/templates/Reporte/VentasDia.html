@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{Masterplantilla/Master}">
+
+<head>
+    <title>Reporte de Ventas del Día</title>
+</head>
+
+<body>
+<div layout:fragment="contenidopaginas">
+    <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <h1><i class="bi bi-graph-up-arrow me-2"></i>Ventas del Día</h1>
+            <p>Resumen de pedidos completados para la fecha seleccionada</p>
+        </div>
+        <form class="d-flex align-items-center" method="get" th:action="@{/reportes/ventas-dia}">
+            <label class="me-2 mb-0"><strong>Fecha:</strong></label>
+            <input type="date" class="form-control me-2" name="fecha"
+                   th:value="${fechaSeleccionada}">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search me-1"></i>Consultar
+            </button>
+        </form>
+    </div>
+
+    <div class="row mb-4" th:if="${reporte != null}">
+        <div class="col-md-3 mb-3">
+            <div class="card text-bg-primary h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Total Ventas</h6>
+                    <h3 class="card-text" th:text="'$' + ${#numbers.formatDecimal(reporte.totalVentas, 1, 2)}">$0.00</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-bg-success h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Número de Pedidos</h6>
+                    <h3 class="card-text" th:text="${reporte.numeroPedidos}">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-bg-info h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Ticket Promedio</h6>
+                    <h3 class="card-text" th:text="'$' + ${#numbers.formatDecimal(reporte.ticketPromedio, 1, 2)}">$0.00</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-bg-secondary h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Productos Vendidos</h6>
+                    <h3 class="card-text" th:text="${reporte.totalProductos}">0</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4" th:if="${reporte != null and !#lists.isEmpty(reporte.pedidos)}">
+        <div class="card-header">
+            <h5 class="mb-0">Pedidos del día</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Hora</th>
+                        <th>Mesa</th>
+                        <th>Cliente</th>
+                        <th>Atendido por</th>
+                        <th class="text-end">Total</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${reporte.pedidos}">
+                        <td th:text="${p.idpedido}"></td>
+                        <td th:text="${#temporals.format(p.fecha, 'HH:mm')}"></td>
+                        <td th:text="${p.mesa != null} ? 'Mesa ' + ${p.mesa.numero} : '-' "></td>
+                        <td th:text="${p.cliente != null} ? ${p.cliente.nombre} : '-' "></td>
+                        <td th:text="${p.usuario != null} ? ${p.usuario.nombreCompleto} : '-' "></td>
+                        <td class="text-end" th:text="'$' + ${#numbers.formatDecimal(p.total, 1, 2)}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" th:if="${reporte != null and !#lists.isEmpty(reporte.productos)}">
+        <div class="card-header">
+            <h5 class="mb-0">Productos más vendidos</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Producto</th>
+                        <th class="text-center">Cantidad</th>
+                        <th class="text-end">Total vendido</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="prod : ${reporte.productos}">
+                        <td th:text="${prod.nombreProducto}"></td>
+                        <td class="text-center" th:text="${prod.cantidadVendida}"></td>
+                        <td class="text-end" th:text="'$' + ${#numbers.formatDecimal(prod.totalVendido, 1, 2)}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${reporte == null || (#lists.isEmpty(reporte.pedidos) and #lists.isEmpty(reporte.productos))}"
+         class="alert alert-info mt-3">
+        <i class="bi bi-info-circle me-2"></i>
+        No hay ventas registradas para la fecha seleccionada.
+    </div>
+</div>
+</body>
+</html>

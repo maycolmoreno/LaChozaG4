@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sin Conexión - La Choza</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background: linear-gradient(135deg, #fff5ee 0%, #ffe0cc 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+        .offline-card {
+            text-align: center;
+            background: #fff;
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            box-shadow: 0 10px 40px rgba(242,101,34,0.15);
+            max-width: 380px;
+            width: 90%;
+        }
+        .offline-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        h1 {
+            color: #F26522;
+            font-size: 1.5rem;
+            margin-bottom: .5rem;
+        }
+        p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        .btn-retry {
+            display: inline-block;
+            background: #F26522;
+            color: #fff;
+            border: none;
+            padding: .75rem 2rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background .2s;
+        }
+        .btn-retry:hover { background: #d4551b; }
+    </style>
+</head>
+<body>
+    <div class="offline-card">
+        <div class="offline-icon">📡</div>
+        <h1>Sin conexión</h1>
+        <p>No se pudo conectar al servidor.<br>Revisa tu conexión a internet e inténtalo de nuevo.</p>
+        <button class="btn-retry" onclick="window.location.reload()">Reintentar</button>
+    </div>
+</body>
+</html>

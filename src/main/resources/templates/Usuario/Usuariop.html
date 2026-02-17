@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{Masterplantilla/Master}">
+
+<head>
+    <title>Usuarios</title>
+</head>
+
+<body>
+    <div layout:fragment="contenidopaginas">
+        <!-- Alertas de mensajes flash -->
+        <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span th:text="${mensajeExito}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${mensajeError}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1>Lista de Usuarios</h1>
+            <a th:href="@{/usuario/nuevo}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nuevo Usuario
+            </a>
+        </div>
+
+        <!-- Filtros por estado -->
+        <div class="mb-3">
+            <div class="btn-group" role="group" aria-label="Filtro de estado">
+                <a th:href="@{/usuario}"
+                   class="btn btn-outline-secondary"
+                   th:classappend="${filtroEstado} == 'TODOS' ? ' active' : ''">
+                    <i class="bi bi-list"></i> Todos
+                </a>
+                <a th:href="@{/usuario(estado='ACTIVO')}"
+                   class="btn btn-outline-success"
+                   th:classappend="${filtroEstado} == 'ACTIVO' ? ' active' : ''">
+                    <i class="bi bi-person-check"></i> Activos
+                </a>
+                <a th:href="@{/usuario(estado='INACTIVO')}"
+                   class="btn btn-outline-danger"
+                   th:classappend="${filtroEstado} == 'INACTIVO' ? ' active' : ''">
+                    <i class="bi bi-person-x"></i> Inactivos
+                </a>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Nombre Completo</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="usr : ${usuarios}">
+                        <td th:text="${usr.idusuario}"></td>
+                        <td th:text="${usr.username}"></td>
+                        <td th:text="${usr.nombreCompleto}"></td>
+                        <td><span class="badge bg-info" th:text="${usr.rol}"></span></td>
+                        <td>
+                            <span th:if="${usr.estado}" class="badge bg-success">Activo</span>
+                            <span th:unless="${usr.estado}" class="badge bg-danger">Inactivo</span>
+                        </td>
+                        <td>
+                            <a th:href="@{/usuario/editar/{id}(id=${usr.idusuario})}" 
+                               class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                            <a th:href="@{/usuario/eliminar/{id}(id=${usr.idusuario})}" 
+                               class="btn btn-danger btn-sm"
+                               onclick="return confirm('¿Está seguro de dar de baja este usuario?')">
+                                <i class="bi bi-trash"></i> Dar de baja
+                            </a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(usuarios)}">
+                        <td colspan="6" class="text-center">No hay usuarios registrados</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{Masterplantilla/Master}">
+
+<head>
+    <title>Detalle de Pedido</title>
+    <link th:href="@{/css/ticket-print.css}" rel="stylesheet" />
+</head>
+
+<body>
+    <div layout:fragment="contenidopaginas">
+        <!-- Contenedor imprimible -->
+        <div class="ticket-container">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Pedido #<span th:text="${pedido.idpedido}"></span></h3>
+                    <div class="no-print">
+                        <button onclick="imprimirTicket()" class="btn btn-print me-2">
+                            <i class="bi bi-printer"></i> Imprimir
+                        </button>
+                        <a th:href="@{/pedidos}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>Fecha:</strong>
+                            <p th:text="${#temporals.format(pedido.fecha, 'dd/MM/yyyy HH:mm')}"></p>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Mesa:</strong>
+                            <p th:text="${pedido.mesa != null} ? 'Mesa ' + ${pedido.mesa.numero} : '-'"></p>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Cliente:</strong>
+                            <p th:text="${pedido.cliente != null} ? ${pedido.cliente.nombre} : '-'"></p>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Atendido por:</strong>
+                            <p th:text="${pedido.usuario != null} ? ${pedido.usuario.nombreCompleto} : '-'"></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <strong>Observaciones:</strong>
+                            <p th:text="${pedido.observaciones} ?: 'Sin observaciones'"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5>Productos del Pedido</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Detalle</th>
+                                    <th class="text-center">Cant.</th>
+                                    <th class="text-end">P.Unit</th>
+                                    <th class="text-end">Subt.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="det : ${pedido.detalle}">
+                                    <td th:text="${det.producto != null} ? ${det.producto.nombre} : 'Producto'"></td>
+                                    <td class="text-center" th:text="${det.cantidad}"></td>
+                                    <td class="text-end" th:text="'$' + ${#numbers.formatDecimal(det.precioUnitario, 1, 2)}"></td>
+                                    <td class="text-end" th:text="'$' + ${#numbers.formatDecimal(det.subtotal, 1, 2)}"></td>
+                                </tr>
+                                <tr th:if="${pedido.detalle == null || #lists.isEmpty(pedido.detalle)}">
+                                    <td colspan="4" class="text-center">No hay productos en este pedido</td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <th colspan="3" class="text-end">TOTAL:</th>
+                                    <th class="text-end" th:text="'$' + ${#numbers.formatDecimal(pedido.total, 1, 2)}"></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pie del ticket (solo visible al imprimir) -->
+            <div class="text-center mt-3" style="display: none;" id="ticketFooter">
+                <p>¡Gracias por su preferencia!</p>
+                <p>La Choza - Restaurant</p>
+            </div>
+        </div>
+        
+        <script>
+            function imprimirTicket() {
+                // Mostrar pie del ticket
+                document.getElementById('ticketFooter').style.display = 'block';
+                
+                // Imprimir
+                window.print();
+                
+                // Ocultar pie después de imprimir
+                setTimeout(function() {
+                    document.getElementById('ticketFooter').style.display = 'none';
+                }, 1000);
+            }
+        </script>
+    </div>
+</body>
+</html>

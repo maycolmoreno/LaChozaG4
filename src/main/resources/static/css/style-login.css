@@ -1,0 +1,110 @@
+/* Paleta de colores basada en el Dashboard */
+:root {
+    --naranja-vibrante: #F26522;
+    --naranja-choza: #F26522; /* color institucional unificado */
+    --naranja-suave: #FFDAB9;
+    --verde-suave: #7DBE31;
+    --gris-fondo: #F8F9FA;
+    --gris-texto: #444444;
+    --blanco: #FFFFFF;
+}
+
+.login-page {
+    background-color: var(--gris-fondo);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.login-card {
+    background: var(--blanco);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    max-width: 400px;
+    width: 90%;
+    border-top: 6px solid var(--naranja-vibrante);
+}
+
+.login-header {
+    padding: 40px 30px 20px;
+    text-align: center;
+}
+
+.login-header img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--gris-fondo);
+    margin-bottom: 15px;
+}
+
+.login-header h2 {
+    color: var(--gris-texto);
+    margin: 0;
+    font-weight: 700;
+}
+
+.login-body {
+    padding: 20px 35px 40px;
+}
+
+.input-group-custom {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.input-group-custom i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--naranja-vibrante);
+    z-index: 10;
+}
+
+.login-page .form-control {
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    padding: 12px 12px 12px 45px !important;
+    color: var(--gris-texto);
+}
+
+.login-page .form-control:focus {
+    border-color: var(--naranja-vibrante);
+    box-shadow: 0 0 0 3px rgba(242, 101, 34, 0.1);
+}
+
+.login-page .form-check-input:checked {
+    background-color: var(--verde-suave);
+    border-color: var(--verde-suave);
+}
+
+.login-page .btn-login {
+    background-color: var(--naranja-vibrante);
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-weight: 600;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.login-page .btn-login:hover {
+    background-color: #d95a1e;
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(242, 101, 34, 0.3);
+}
+
+.login-page .alert {
+    border-radius: 10px;
+    font-size: 0.85rem;
+    border: none;
+    margin-bottom: 25px;
+}

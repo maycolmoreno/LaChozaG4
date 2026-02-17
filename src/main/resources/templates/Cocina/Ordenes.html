@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{Masterplantilla/Master}">
+
+<head>
+<title>Cocina - Órdenes Pendientes</title>
+</head>
+
+<body>
+	<div layout:fragment="contenidopaginas">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<h2 class="page-title">
+				<i class="bi bi-fire"></i> Órdenes de Cocina
+			</h2>
+			<button class="btn btn-outline-primary" onclick="location.reload()">
+				<i class="bi bi-arrow-clockwise"></i> Actualizar
+			</button>
+		</div>
+
+		<!-- Sin órdenes -->
+		<div th:if="${#lists.isEmpty(pedidos)}" class="sin-ordenes">
+			<i class="bi bi-check-circle"></i>
+			<h4>¡No hay órdenes pendientes!</h4>
+			<p class="text-muted">Todas las órdenes han sido completadas</p>
+		</div>
+
+		<!-- Grid de órdenes -->
+		<div class="ordenes-grid" th:unless="${#lists.isEmpty(pedidos)}">
+			<div th:each="pedido : ${pedidos}" class="card orden-card">
+				<div
+					class="card-header d-flex justify-content-between align-items-center">
+					<div>
+						<span class="mesa-numero"> <i
+							class="bi bi-grid-3x3-gap-fill"></i> Mesa <span
+							th:text="${pedido.mesa != null ? pedido.mesa.numero : '-'}"></span>
+						</span>
+					</div>
+					<div class="text-end">
+						<span class="badge fs-6"> #<span
+							th:text="${pedido.idpedido}"></span>
+						</span> <br> <span class="tiempo-pedido mt-1 d-inline-block">
+							<i class="bi bi-clock"></i> <span
+							th:text="${#temporals.format(pedido.fecha, 'HH:mm')}"></span>
+						</span>
+					</div>
+				</div>
+
+				<div class="card-body">
+					<!-- Lista de productos -->
+					<div th:if="${pedido.detalle != null}">
+						<div th:each="det : ${pedido.detalle}" class="producto-item">
+							<div class="d-flex align-items-center">
+								<span class="cantidad-badge" th:text="${det.cantidad}"></span> <span
+									class="fw-medium"
+									th:text="${det.producto != null ? det.producto.nombre : 'Producto'}"></span>
+							</div>
+						</div>
+					</div>
+
+					<!-- Observaciones -->
+					<div
+						th:if="${pedido.observaciones != null && !pedido.observaciones.isEmpty()}"
+						class="observaciones-alert">
+						<i class="bi bi-exclamation-triangle text-warning"></i> <strong>Nota:</strong>
+						<span th:text="${pedido.observaciones}"></span>
+					</div>
+				</div>
+
+				<div class="card-footer">
+					<form th:action="@{/cocina/completar/{id}(id=${pedido.idpedido})}"
+						method="post">
+						<button type="submit" class="btn btn-completar btn-success w-100">
+							<i class="bi bi-check-lg"></i> Marcar como Listo
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<!-- Indicador de actualización automática -->
+		<div class="refresh-indicator">
+			<i class="bi bi-arrow-repeat"></i> Auto-refresh: <span id="countdown">30</span>s
+		</div>
+
+	</div>
+</body>
+</html>
