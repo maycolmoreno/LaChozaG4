@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{Masterplantilla/Master}">
+
+<head>
+    <title>Comedor - Formulario</title>
+</head>
+
+<body>
+    <div layout:fragment="contenidopaginas">
+        <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${mensajeError}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="form-modern-card">
+            <div class="form-modern-header">
+                <div class="form-modern-header-icon"><i class="bi bi-house-door-fill"></i></div>
+                <div class="form-modern-header-text">
+                    <h4 th:text="${comedor.idcomedor == 0} ? 'Nuevo Comedor' : 'Editar Comedor'"></h4>
+                    <p>Configuración del área de comedor</p>
+                </div>
+            </div>
+            <form th:action="@{/comedor/guardar}" th:object="${comedor}" method="post" class="needs-validation" novalidate>
+                <input type="hidden" th:field="*{idcomedor}" />
+                <div class="form-modern-body">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre del Comedor</label>
+                        <input type="text" class="form-control" id="nombre"
+                               th:field="*{nombre}" required maxlength="100"
+                               placeholder="Ej: Comedor 1, Comedor Bar, Terraza" />
+                        <div class="invalid-feedback">El nombre del comedor es obligatorio.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion"
+                                  th:field="*{descripcion}" rows="3" maxlength="500"
+                                  placeholder="Descripción opcional del área"></textarea>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" id="estado" th:field="*{estado}" />
+                        <label class="form-check-label" for="estado">Activo</label>
+                    </div>
+                </div>
+                <div class="form-modern-footer">
+                    <a th:href="@{/comedor}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save me-1"></i> Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

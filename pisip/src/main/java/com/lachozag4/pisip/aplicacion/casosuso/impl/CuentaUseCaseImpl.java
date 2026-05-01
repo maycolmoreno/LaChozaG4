@@ -10,6 +10,7 @@ import com.lachozag4.pisip.aplicacion.excepciones.BusinessException;
 import com.lachozag4.pisip.aplicacion.excepciones.NotFoundException;
 import com.lachozag4.pisip.dominio.entidades.Cuenta;
 import com.lachozag4.pisip.dominio.entidades.Pedido;
+import com.lachozag4.pisip.dominio.repositorios.IClienteRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.ICuentaRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.IPedidoRepositorio;
 
@@ -20,6 +21,7 @@ public class CuentaUseCaseImpl implements ICuentaUseCase {
 
 	private final ICuentaRepositorio repositorio;
 	private final IPedidoRepositorio pedidoRepositorio;
+	private final IClienteRepositorio clienteRepositorio;
 
 	@Override
 	@Transactional
@@ -78,6 +80,19 @@ public class CuentaUseCaseImpl implements ICuentaUseCase {
 		LocalDateTime ahora = LocalDateTime.now();
 		Cuenta actualizada = existente.conEstado(nuevoEstado, ahora);
 		return repositorio.actualizar(actualizada);
+	}
+
+	@Override
+	@Transactional
+	public Cuenta asignarCliente(int idcuenta, int idCliente) {
+		Cuenta cuenta = obtenerPorId(idcuenta);
+		if (cuenta.estaCerrada()) {
+			throw new BusinessException("No se puede cambiar el cliente de una cuenta cerrada");
+		}
+		var cliente = clienteRepositorio.buscarPorId(idCliente)
+				.orElseThrow(() -> new NotFoundException("Cliente no encontrado con ID: " + idCliente));
+		cuenta.setFkCliente(cliente);
+		return repositorio.actualizar(cuenta);
 	}
 
 	@Override

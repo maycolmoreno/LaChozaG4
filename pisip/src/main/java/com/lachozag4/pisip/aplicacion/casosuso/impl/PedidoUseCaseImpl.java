@@ -14,6 +14,7 @@ import com.lachozag4.pisip.dominio.entidades.ResultadoPaginado;
 import com.lachozag4.pisip.dominio.repositorios.ICajaTurnoRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.IPedidoRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.ICuentaRepositorio;
+import com.lachozag4.pisip.dominio.repositorios.IMesaRepositorio;
 import com.lachozag4.pisip.dominio.servicios.IGestionStockServicio;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 	private final IGestionStockServicio stockServicio;
     private final ICuentaRepositorio cuentaRepositorio;
     private final ICajaTurnoRepositorio cajaRepositorio;
+    private final IMesaRepositorio mesaRepositorio;
 
 	@Override
 	@Transactional
@@ -33,7 +35,14 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 		// Ya no restringimos por pedidos activos en la misma mesa.
 		// La mesa puede tener varios pedidos abiertos simultÃ¡neamente.
 		stockServicio.validarYDescontar(pedido.getDetalles());
-		return repositorio.guardar(pedido.comoPendiente());
+		Pedido creado = repositorio.guardar(pedido.comoPendiente());
+		// Marcar la mesa como OCUPADA (estado = false) automáticamente
+		if (creado.getFkMesa() != null) {
+			mesaRepositorio.buscarPorId(creado.getFkMesa().getIdmesa()).ifPresent(mesa ->
+				mesaRepositorio.guardar(mesa.conEstado(false))
+			);
+		}
+		return creado;
 	}
 
 	@Override
@@ -87,7 +96,27 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 			stockServicio.restaurar(existente.getDetalles());
 		}
 
-		return repositorio.guardar(existente.conEstado(nuevoEstado));
+		Pedido guardado = repositorio.guardar(existente.conEstado(nuevoEstado));
+
+		// Si el pedido queda COMPLETADO o CANCELADO, verificar si la mesa
+		// tiene otros pedidos activos; si no, marcarla como LIBRE (estado = true)
+		if ((Pedido.ESTADO_COMPLETADO.equals(nuevoEstado) || Pedido.ESTADO_CANCELADO.equals(nuevoEstado))
+				&& guardado.getFkMesa() != null) {
+			int idMesa = guardado.getFkMesa().getIdmesa();
+			boolean tieneOtrosPedidosActivos = repositorio.listarTodos().stream()
+					.anyMatch(p -> p.getFkMesa() != null
+							&& p.getFkMesa().getIdmesa() == idMesa
+							&& p.getIdpedido() != guardado.getIdpedido()
+							&& !Pedido.ESTADO_COMPLETADO.equals(p.getEstado())
+							&& !Pedido.ESTADO_CANCELADO.equals(p.getEstado()));
+			if (!tieneOtrosPedidosActivos) {
+				mesaRepositorio.buscarPorId(idMesa).ifPresent(mesa ->
+					mesaRepositorio.guardar(mesa.conEstado(true))
+				);
+			}
+		}
+
+		return guardado;
 	}
 
 	@Override

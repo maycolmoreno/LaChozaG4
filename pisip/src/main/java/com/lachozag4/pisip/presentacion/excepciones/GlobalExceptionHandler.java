@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.lachozag4.pisip.aplicacion.excepciones.BusinessException;
 import com.lachozag4.pisip.aplicacion.excepciones.NotFoundException;
@@ -31,7 +30,7 @@ public class GlobalExceptionHandler {
         log.warn("BusinessException: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
-
+    
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -46,14 +45,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleDataIntegrity(DataIntegrityViolationException ex) {
         log.warn("DataIntegrityViolationException: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body("No se puede realizar la operacion porque existen registros relacionados.");
-    }
-
-    @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<String> handleNoResource(NoResourceFoundException ex) {
-        log.warn("Recurso estatico no encontrado: {}", ex.getResourcePath());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("Recurso no encontrado: " + ex.getResourcePath());
+                .body("No se puede realizar la operación porque existen registros relacionados.");
     }
 
     @ExceptionHandler(Exception.class)

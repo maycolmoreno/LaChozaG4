@@ -24,11 +24,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
-        String path = request.getRequestURI();
-        if (path != null && !path.startsWith("/api/")) {
-            response.sendRedirect("/login");
-            return;
-        }
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

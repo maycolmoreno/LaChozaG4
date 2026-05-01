@@ -8,7 +8,7 @@ import org.mapstruct.MappingTarget;
 import com.lachozag4.pisip.dominio.entidades.Pedido;
 import com.lachozag4.pisip.infraestructura.persistencia.jpa.PedidoJpa;
 
-@Mapper(componentModel = "spring", uses = { IPedidoDetalleJpaMapper.class, ICuentaJpaMapper.class })
+@Mapper(componentModel = "spring", uses = { IPedidoDetalleJpaMapper.class, ICuentaJpaMapper.class, IMesaJpaMapper.class, IClienteJpaMapper.class, IUsuarioJpaMapper.class })
 public interface IPedidoJpaMapper {
 
 	@org.mapstruct.Mapping(target = "conEstado", ignore = true)

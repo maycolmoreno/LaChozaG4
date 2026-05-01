@@ -51,43 +51,108 @@
             </div>
         </div>
 
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Número</th>
-                        <th>Capacidad</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="mesa : ${mesas}">
-                        <td th:text="${mesa.idmesa}"></td>
-                        <td th:text="${mesa.numero}"></td>
-                        <td th:text="${mesa.capacidad}"></td>
-                        <td>
-                            <span th:if="${mesa.estado}" class="badge bg-success">Disponible</span>
-                            <span th:unless="${mesa.estado}" class="badge bg-danger">Ocupada</span>
-                        </td>
-                        <td>
-                            <a th:href="@{/mesa/editar/{id}(id=${mesa.idmesa})}" 
-                               class="btn btn-warning btn-sm">
-                                <i class="bi bi-pencil"></i> Editar
-                            </a>
-                            <a th:href="@{/mesa/eliminar/{id}(id=${mesa.idmesa})}" 
-                               class="btn btn-danger btn-sm"
-                               onclick="return confirm('¿Está seguro de dar de baja esta mesa?')">
-                                <i class="bi bi-trash"></i> Dar de baja
-                            </a>
-                        </td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(mesas)}">
-                        <td colspan="5" class="text-center">No hay mesas registradas</td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Mesas agrupadas por Comedor -->
+        <div th:each="comedor : ${comedores}" class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-house-door-fill me-2"></i>
+                    <span th:text="${comedor.nombre}">Comedor</span>
+                </h5>
+                <span class="badge bg-light text-dark"
+                      th:text="${#lists.size(mesasPorComedor[comedor.idcomedor])} + ' mesa(s)'">
+                </span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0" data-paginate="10">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Número</th>
+                                <th>Capacidad</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="mesa : ${mesasPorComedor[comedor.idcomedor]}">
+                                <td th:text="${mesa.idmesa}"></td>
+                                <td th:text="${mesa.numero}"></td>
+                                <td th:text="${mesa.capacidad}"></td>
+                                <td>
+                                    <span th:if="${mesa.estado}" class="badge bg-success">Disponible</span>
+                                    <span th:unless="${mesa.estado}" class="badge bg-danger">Ocupada</span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/mesa/editar/{id}(id=${mesa.idmesa})}" 
+                                       class="btn btn-warning btn-sm">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <a th:href="@{/mesa/eliminar/{id}(id=${mesa.idmesa})}" 
+                                       class="btn btn-danger btn-sm"
+                                       onclick="return confirm('¿Está seguro de dar de baja esta mesa?')">
+                                        <i class="bi bi-trash"></i> Dar de baja
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mesas sin comedor asignado -->
+        <div class="card mb-4 shadow-sm" th:if="${!#lists.isEmpty(mesasSinComedor)}">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-question-circle-fill me-2"></i>
+                    Sin Comedor Asignado
+                </h5>
+                <span class="badge bg-light text-dark"
+                      th:text="${#lists.size(mesasSinComedor)} + ' mesa(s)'">
+                </span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0" data-paginate="10">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Número</th>
+                                <th>Capacidad</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="mesa : ${mesasSinComedor}">
+                                <td th:text="${mesa.idmesa}"></td>
+                                <td th:text="${mesa.numero}"></td>
+                                <td th:text="${mesa.capacidad}"></td>
+                                <td>
+                                    <span th:if="${mesa.estado}" class="badge bg-success">Disponible</span>
+                                    <span th:unless="${mesa.estado}" class="badge bg-danger">Ocupada</span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/mesa/editar/{id}(id=${mesa.idmesa})}" 
+                                       class="btn btn-warning btn-sm">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <a th:href="@{/mesa/eliminar/{id}(id=${mesa.idmesa})}" 
+                                       class="btn btn-danger btn-sm"
+                                       onclick="return confirm('¿Está seguro de dar de baja esta mesa?')">
+                                        <i class="bi bi-trash"></i> Dar de baja
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(mesas)}" class="alert alert-info text-center">
+            <i class="bi bi-info-circle me-2"></i> No hay mesas registradas
         </div>
     </div>
 </body>

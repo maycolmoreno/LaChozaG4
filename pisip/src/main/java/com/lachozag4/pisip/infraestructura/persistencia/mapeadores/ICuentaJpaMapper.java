@@ -5,7 +5,7 @@ import org.mapstruct.Mapper;
 import com.lachozag4.pisip.dominio.entidades.Cuenta;
 import com.lachozag4.pisip.infraestructura.persistencia.jpa.CuentaJpa;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = { IMesaJpaMapper.class, IClienteJpaMapper.class })
 public interface ICuentaJpaMapper {
 
 	@org.mapstruct.Mapping(target = "conTotal", ignore = true)

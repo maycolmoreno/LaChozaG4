@@ -9,50 +9,64 @@
 
 <body>
     <div layout:fragment="contenidopaginas">
-        <div class="card">
-            <div class="card-header">
-                <h3 th:text="${mesa.idmesa == null} ? 'Nueva Mesa' : 'Editar Mesa'"></h3>
-            </div>
-            <div class="card-body">
-                <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    <span th:text="${mensajeError}"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div th:if="${mensajeError}" class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${mensajeError}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="form-modern-card">
+            <div class="form-modern-header">
+                <div class="form-modern-header-icon"><i class="bi bi-grid-3x3-gap-fill"></i></div>
+                <div class="form-modern-header-text">
+                    <h4 th:text="${mesa.idmesa == null} ? 'Nueva Mesa' : 'Editar Mesa'"></h4>
+                    <p>Configuración de mesa</p>
                 </div>
-                <form th:action="@{/mesa/guardar}" th:object="${mesa}" method="post" class="needs-validation" novalidate>
-                    <input type="hidden" th:field="*{idmesa}" />
-                    
+            </div>
+            <form th:action="@{/mesa/guardar}" th:object="${mesa}" method="post" class="needs-validation" novalidate>
+                <input type="hidden" th:field="*{idmesa}" />
+                <div class="form-modern-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="numero" class="form-label">Número de Mesa</label>
-                            <input type="number" class="form-control" id="numero" 
-                                   th:field="*{numero}" min="1" required />
+                            <input type="number" class="form-control" id="numero"
+                                   th:field="*{numero}" min="1" required placeholder="1" />
                             <div class="invalid-feedback">El número de mesa es obligatorio.</div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="capacidad" class="form-label">Capacidad</label>
-                            <input type="number" class="form-control" id="capacidad" 
-                                   th:field="*{capacidad}" min="1" required />
+                            <label for="capacidad" class="form-label">Capacidad (personas)</label>
+                            <input type="number" class="form-control" id="capacidad"
+                                   th:field="*{capacidad}" min="1" required placeholder="4" />
                             <div class="invalid-feedback">La capacidad es obligatoria.</div>
                         </div>
                     </div>
-                    
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="estado" 
-                               th:field="*{estado}" />
-                        <label class="form-check-label" for="estado">Disponible</label>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="idcomedor" class="form-label">Comedor</label>
+                            <select class="form-select" id="idcomedor" th:field="*{idcomedor}">
+                                <option value="">-- Sin asignar --</option>
+                                <option th:each="comedor : ${comedores}"
+                                        th:value="${comedor.idcomedor}"
+                                        th:text="${comedor.nombre}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3 d-flex align-items-end">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" id="estado" th:field="*{estado}" />
+                                <label class="form-check-label" for="estado">Disponible</label>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-save"></i> Guardar
-                        </button>
-                        <a th:href="@{/mesa}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Cancelar
-                        </a>
-                    </div>
-                </form>
-            </div>
+                </div>
+                <div class="form-modern-footer">
+                    <a th:href="@{/mesa}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save me-1"></i> Guardar
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </body>

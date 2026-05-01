@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.ICategoriaUseCase;
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.ICajaUseCase;
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.IClienteUseCase;
+import com.lachozag4.pisip.aplicacion.casosuso.entradas.IComedorUseCase;
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.IMesaUseCase;
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.ICuentaUseCase;
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.IPedidoDetalleUseCase;
@@ -18,6 +19,7 @@ import com.lachozag4.pisip.aplicacion.casosuso.entradas.IUsuarioUseCase;
 import com.lachozag4.pisip.aplicacion.casosuso.impl.CategoriaUseCaseImpl;
 import com.lachozag4.pisip.aplicacion.casosuso.impl.CajaUseCaseImpl;
 import com.lachozag4.pisip.aplicacion.casosuso.impl.ClienteUseCaseImpl;
+import com.lachozag4.pisip.aplicacion.casosuso.impl.ComedorUseCaseImpl;
 import com.lachozag4.pisip.aplicacion.casosuso.impl.CuentaUseCaseImpl;
 import com.lachozag4.pisip.aplicacion.casosuso.impl.MesaUseCaseImpl;
 import com.lachozag4.pisip.aplicacion.casosuso.impl.PedidoDetalleUseCaseImpl;
@@ -29,6 +31,7 @@ import com.lachozag4.pisip.dominio.entidades.Categoria;
 import com.lachozag4.pisip.dominio.repositorios.ICategoriaRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.ICajaTurnoRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.IClienteRepositorio;
+import com.lachozag4.pisip.dominio.repositorios.IComedorRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.IMesaRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.ICuentaRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.IPedidoDetalleRepositorio;
@@ -41,6 +44,7 @@ import com.lachozag4.pisip.aplicacion.servicios.GestionStockServicioImpl;
 import com.lachozag4.pisip.infraestructura.persistencia.adaptadores.CajaTurnoRepositorioImpl;
 import com.lachozag4.pisip.infraestructura.persistencia.adaptadores.CategoriaRepositorioImpl;
 import com.lachozag4.pisip.infraestructura.persistencia.adaptadores.ClienteRepositorioImpl;
+import com.lachozag4.pisip.infraestructura.persistencia.adaptadores.ComedorRepositorioImpl;
 import com.lachozag4.pisip.infraestructura.persistencia.adaptadores.CuentaRepositorioImpl;
 import com.lachozag4.pisip.infraestructura.persistencia.adaptadores.MesaRepositorioImpl;
 import com.lachozag4.pisip.infraestructura.persistencia.adaptadores.PedidoDetalleRepositorioImpl;
@@ -50,6 +54,7 @@ import com.lachozag4.pisip.infraestructura.persistencia.adaptadores.ProductoRepo
 import com.lachozag4.pisip.infraestructura.persistencia.adaptadores.UsuarioRepositorioImpl;
 import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.ICategoriaJpaMapper;
 import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.IClienteJpaMapper;
+import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.IComedorJpaMapper;
 import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.ICuentaJpaMapper;
 import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.IMesaJpaMapper;
 import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.IPedidoDetalleJpaMapper;
@@ -59,6 +64,7 @@ import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.IUsuarioJpaMa
 import com.lachozag4.pisip.infraestructura.repositorios.ICategoriaJpaRepositorio;
 import com.lachozag4.pisip.infraestructura.repositorios.ICajaTurnoJpaRepositorio;
 import com.lachozag4.pisip.infraestructura.repositorios.IClienteJpaRepositorio;
+import com.lachozag4.pisip.infraestructura.repositorios.IComedorJpaRepositorio;
 import com.lachozag4.pisip.infraestructura.repositorios.ICuentaJpaRepositorio;
 import com.lachozag4.pisip.infraestructura.repositorios.IMesaJpaRepositorio;
 import com.lachozag4.pisip.infraestructura.repositorios.IPedidoDetalleJpaRepositorio;
@@ -105,8 +111,8 @@ public class ConfiguracionGeneral {
 	}
 
 	@Bean
-	ICuentaUseCase cuentaUseCase(ICuentaRepositorio repositorio, IPedidoRepositorio pedidoRepositorio) {
-		return new CuentaUseCaseImpl(repositorio, pedidoRepositorio);
+	ICuentaUseCase cuentaUseCase(ICuentaRepositorio repositorio, IPedidoRepositorio pedidoRepositorio, IClienteRepositorio clienteRepositorio) {
+		return new CuentaUseCaseImpl(repositorio, pedidoRepositorio, clienteRepositorio);
 	}
 
 	@Bean
@@ -117,6 +123,16 @@ public class ConfiguracionGeneral {
 	@Bean
 	IMesaUseCase mesaUseCase(IMesaRepositorio repositorio) {
 		return new MesaUseCaseImpl(repositorio);
+	}
+
+	@Bean
+	IComedorRepositorio comedorRepositorio(IComedorJpaRepositorio jpaRepository, IComedorJpaMapper mapper) {
+		return new ComedorRepositorioImpl(jpaRepository, mapper);
+	}
+
+	@Bean
+	IComedorUseCase comedorUseCase(IComedorRepositorio repositorio) {
+		return new ComedorUseCaseImpl(repositorio);
 	}
 
 	@Bean
@@ -131,8 +147,9 @@ public class ConfiguracionGeneral {
 
 	@Bean
 	IPedidoUseCase pedidoUseCase(IPedidoRepositorio repositorio, IGestionStockServicio stockServicio,
-			ICuentaRepositorio cuentaRepositorio, ICajaTurnoRepositorio cajaRepositorio) {
-		return new PedidoUseCaseImpl(repositorio, stockServicio, cuentaRepositorio, cajaRepositorio);
+			ICuentaRepositorio cuentaRepositorio, ICajaTurnoRepositorio cajaRepositorio,
+			IMesaRepositorio mesaRepositorio) {
+		return new PedidoUseCaseImpl(repositorio, stockServicio, cuentaRepositorio, cajaRepositorio, mesaRepositorio);
 	}
 
 	@Bean

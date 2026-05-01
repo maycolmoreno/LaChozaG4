@@ -93,11 +93,17 @@
 				<nav class="sidebar-nav">
 					<ul id="sidebarnav" class="pt-4">
 
-						<!-- ===== ADMIN ===== -->
+						<!-- ─── PANEL ─── -->
 						<li class="sidebar-item" sec:authorize="hasRole('ADMIN')"><a
 							th:href="@{/}" class="sidebar-link"> <i
 								class="bi bi-speedometer2"></i> <span class="hide-menu">Dashboard</span>
 						</a></li>
+
+						<!-- ─── ADMINISTRACIÓN ─── -->
+						<li class="nav-small-cap" sec:authorize="hasRole('ADMIN')">
+							<i class="bi bi-three-dots nav-small-cap-icon"></i>
+							<span class="hide-menu">Administración</span>
+						</li>
 
 						<li class="sidebar-item" sec:authorize="hasRole('ADMIN')"><a
 							th:href="@{/usuario}" class="sidebar-link"> <i
@@ -115,6 +121,11 @@
 						</a></li>
 
 						<li class="sidebar-item" sec:authorize="hasRole('ADMIN')"><a
+							th:href="@{/comedor}" class="sidebar-link"> <i
+								class="bi bi-house-door-fill"></i> <span class="hide-menu">Comedores</span>
+						</a></li>
+
+						<li class="sidebar-item" sec:authorize="hasRole('ADMIN')"><a
 							th:href="@{/mesa}" class="sidebar-link"> <i
 								class="bi bi-grid-3x3-gap-fill"></i> <span class="hide-menu">Mesas</span>
 						</a></li>
@@ -124,7 +135,13 @@
 								class="bi bi-box-seam-fill"></i> <span class="hide-menu">Productos</span>
 						</a></li>
 
-						<!-- ===== OPERACIONES ===== -->
+						<!-- ─── OPERACIONES ─── -->
+						<li class="nav-small-cap"
+							sec:authorize="hasAnyRole('ADMIN','CAMARERO')">
+							<i class="bi bi-three-dots nav-small-cap-icon"></i>
+							<span class="hide-menu">Operaciones</span>
+						</li>
+
 						<li class="sidebar-item"
 							sec:authorize="hasAnyRole('ADMIN','CAMARERO')"><a
 							th:href="@{/pedidos}" class="sidebar-link"> <i
@@ -144,7 +161,44 @@
 								class="bi bi-cash-stack"></i> <span class="hide-menu">Cuentas</span>
 						</a></li>
 
-						<!-- ===== COCINA ===== -->
+						<li class="sidebar-item"
+							sec:authorize="hasAnyRole('ADMIN','CAMARERO')"><a
+							th:href="@{/caja}" class="sidebar-link"> <i
+								class="bi bi-safe2-fill"></i> <span class="hide-menu">Caja</span>
+						</a></li>
+
+						<!-- ─── CAJERO ─── -->
+						<li class="nav-small-cap"
+							sec:authorize="hasRole('CAJERO')">
+							<i class="bi bi-three-dots nav-small-cap-icon"></i>
+							<span class="hide-menu">Caja &amp; Cobros</span>
+						</li>
+
+						<li class="sidebar-item"
+							sec:authorize="hasRole('CAJERO')"><a
+							th:href="@{/cuentas}" class="sidebar-link"> <i
+								class="bi bi-cash-stack"></i> <span class="hide-menu">Cuentas</span>
+						</a></li>
+
+						<li class="sidebar-item"
+							sec:authorize="hasRole('CAJERO')"><a
+							th:href="@{/caja}" class="sidebar-link"> <i
+								class="bi bi-safe2-fill"></i> <span class="hide-menu">Caja</span>
+						</a></li>
+
+						<li class="sidebar-item"
+							sec:authorize="hasRole('CAJERO')"><a
+							th:href="@{/pedidos}" class="sidebar-link"> <i
+								class="bi bi-receipt-cutoff"></i> <span class="hide-menu">Pedidos</span>
+						</a></li>
+
+						<!-- ─── COCINA & BAR ─── -->
+						<li class="nav-small-cap"
+							sec:authorize="hasAnyRole('ADMIN','COCINA')">
+							<i class="bi bi-three-dots nav-small-cap-icon"></i>
+							<span class="hide-menu">Cocina &amp; Bar</span>
+						</li>
+
 						<li class="sidebar-item"
 							sec:authorize="hasAnyRole('ADMIN','COCINA')"><a
 							th:href="@{/cocina}" class="sidebar-link"> <i
@@ -152,7 +206,12 @@
 									Cocina</span>
 						</a></li>
 
-						<!-- ===== REPORTES (SI LOS TIENES) ===== -->
+						<!-- ─── REPORTES ─── -->
+						<li class="nav-small-cap" sec:authorize="hasRole('ADMIN')">
+							<i class="bi bi-three-dots nav-small-cap-icon"></i>
+							<span class="hide-menu">Reportes</span>
+						</li>
+
 						<li class="sidebar-item" sec:authorize="hasRole('ADMIN')"><a
 							th:href="@{/reportes}" class="sidebar-link"> <i
 								class="bi bi-bar-chart-fill"></i> <span class="hide-menu">Reportes</span>

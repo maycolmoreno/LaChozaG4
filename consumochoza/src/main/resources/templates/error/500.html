@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{Masterplantilla/Master}">
+
+<head>
+    <title>Error del servidor</title>
+</head>
+
+<body>
+    <div layout:fragment="contenidopaginas">
+        <div class="error-page">
+            <div class="error-icon error-icon-danger">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h1 class="error-code">500</h1>
+            <h2 class="error-title">Error interno del servidor</h2>
+            <p class="error-message">
+                Ocurri&oacute; un error inesperado al procesar tu solicitud.<br>
+                Por favor int&eacute;ntalo nuevamente o contacta al administrador.
+            </p>
+            <div class="error-actions">
+                <a th:href="@{/}" class="error-btn error-btn-primary">
+                    <i class="bi bi-house-fill"></i> Ir al Inicio
+                </a>
+                <button type="button" class="error-btn error-btn-secondary" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> Reintentar
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

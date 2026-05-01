@@ -14,5 +14,5 @@ public class MesaRequestDTO {
 
     private boolean estado;
 
-  
+    private Integer idcomedor;
 }

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.lachozag4.pisip.aplicacion.casosuso.entradas.IComedorUseCase;
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.IMesaUseCase;
 import com.lachozag4.pisip.presentacion.dto.request.MesaRequestDTO;
 import com.lachozag4.pisip.presentacion.dto.response.MesaResponseDTO;
@@ -25,11 +26,25 @@ import jakarta.validation.Valid;
 public class MesaControlador {
 
 	private final IMesaUseCase mesaUseCase;
+	private final IComedorUseCase comedorUseCase;
 	private final IMesaDtoMapper mapper;
 
-	public MesaControlador(IMesaUseCase mesaUseCase, IMesaDtoMapper mapper) {
+	public MesaControlador(IMesaUseCase mesaUseCase, IComedorUseCase comedorUseCase, IMesaDtoMapper mapper) {
 		this.mesaUseCase = mesaUseCase;
+		this.comedorUseCase = comedorUseCase;
 		this.mapper = mapper;
+	}
+
+	private MesaResponseDTO enriquecerConComedor(MesaResponseDTO dto) {
+		if (dto.getIdcomedor() != null) {
+			try {
+				var comedor = comedorUseCase.buscarPorId(dto.getIdcomedor());
+				dto.setNombreComedor(comedor.getNombre());
+			} catch (Exception e) {
+				dto.setNombreComedor("Sin asignar");
+			}
+		}
+		return dto;
 	}
 
 	@PostMapping
@@ -41,25 +56,25 @@ public class MesaControlador {
 
 	@GetMapping
 	public ResponseEntity<List<MesaResponseDTO>> listar() {
-		var lista = mesaUseCase.listar().stream().map(mapper::toResponseDTO).toList();
+		var lista = mesaUseCase.listar().stream().map(mapper::toResponseDTO).map(this::enriquecerConComedor).toList();
 		return ResponseEntity.ok(lista);
 	}
 
 	@GetMapping("/disponibles")
 	public ResponseEntity<List<MesaResponseDTO>> listarDisponibles() {
-		var lista = mesaUseCase.listarDisponibles().stream().map(mapper::toResponseDTO).toList();
+		var lista = mesaUseCase.listarDisponibles().stream().map(mapper::toResponseDTO).map(this::enriquecerConComedor).toList();
 		return ResponseEntity.ok(lista);
 	}
 
 	@GetMapping("/ocupadas")
 	public ResponseEntity<List<MesaResponseDTO>> listarOcupadas() {
-		var lista = mesaUseCase.listarOcupadas().stream().map(mapper::toResponseDTO).toList();
+		var lista = mesaUseCase.listarOcupadas().stream().map(mapper::toResponseDTO).map(this::enriquecerConComedor).toList();
 		return ResponseEntity.ok(lista);
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<MesaResponseDTO> obtenerPorId(@PathVariable("id") int idmesa) {
-		return ResponseEntity.ok(mapper.toResponseDTO(mesaUseCase.obtenerPorId(idmesa)));
+		return ResponseEntity.ok(enriquecerConComedor(mapper.toResponseDTO(mesaUseCase.obtenerPorId(idmesa))));
 	}
 
 	@PutMapping("/{id}")

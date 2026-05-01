@@ -4,124 +4,327 @@
       layout:decorate="~{Masterplantilla/Master}">
 
 <head>
-    <title>Reporte de Ventas del Día</title>
+    <title>Reportes</title>
 </head>
 
 <body>
 <div layout:fragment="contenidopaginas">
-    <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-        <div>
-            <h1><i class="bi bi-graph-up-arrow me-2"></i>Ventas del Día</h1>
-            <p>Resumen de pedidos completados para la fecha seleccionada</p>
-        </div>
-        <form class="d-flex align-items-center" method="get" th:action="@{/reportes/ventas-dia}">
-            <label class="me-2 mb-0"><strong>Fecha:</strong></label>
-            <input type="date" class="form-control me-2" name="fecha"
-                   th:value="${fechaSeleccionada}">
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-search me-1"></i>Consultar
-            </button>
-        </form>
-    </div>
 
-    <div class="row mb-4" th:if="${reporte != null}">
-        <div class="col-md-3 mb-3">
-            <div class="card text-bg-primary h-100">
-                <div class="card-body">
-                    <h6 class="card-title">Total Ventas</h6>
-                    <h3 class="card-text" th:text="'$' + ${#numbers.formatDecimal(reporte.totalVentas, 1, 2)}">$0.00</h3>
-                </div>
-            </div>
+    <!-- ===== HEADER ===== -->
+    <div class="rpt-header">
+        <div class="rpt-header-left">
+            <h1 class="rpt-title"><i class="bi bi-bar-chart-fill"></i> Reportes de Ventas</h1>
+            <p class="rpt-subtitle">An&aacute;lisis de pedidos completados</p>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card text-bg-success h-100">
-                <div class="card-body">
-                    <h6 class="card-title">Número de Pedidos</h6>
-                    <h3 class="card-text" th:text="${reporte.numeroPedidos}">0</h3>
+        <div class="rpt-header-right">
+            <form class="rpt-date-form" method="get" th:action="@{/reportes/ventas-dia}">
+                <div class="rpt-date-presets">
+                    <button type="button" class="rpt-preset-btn" data-offset="0">Hoy</button>
+                    <button type="button" class="rpt-preset-btn" data-offset="-1">Ayer</button>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card text-bg-info h-100">
-                <div class="card-body">
-                    <h6 class="card-title">Ticket Promedio</h6>
-                    <h3 class="card-text" th:text="'$' + ${#numbers.formatDecimal(reporte.ticketPromedio, 1, 2)}">$0.00</h3>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                    <input type="date" class="form-control" name="fecha" id="rptFecha"
+                           th:value="${fechaSeleccionada}">
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card text-bg-secondary h-100">
-                <div class="card-body">
-                    <h6 class="card-title">Productos Vendidos</h6>
-                    <h3 class="card-text" th:text="${reporte.totalProductos}">0</h3>
-                </div>
-            </div>
+                <button type="submit" class="rpt-btn-consultar">
+                    <i class="bi bi-search"></i> Consultar
+                </button>
+            </form>
         </div>
     </div>
 
-    <div class="card mb-4" th:if="${reporte != null and !#lists.isEmpty(reporte.pedidos)}">
-        <div class="card-header">
-            <h5 class="mb-0">Pedidos del día</h5>
+    <!-- ===== FECHA CONSULTADA ===== -->
+    <div class="rpt-fecha-badge" th:if="${reporte != null}">
+        <i class="bi bi-calendar-check"></i>
+        <span>Mostrando datos del <strong th:text="${#temporals.format(fechaSeleccionada, 'EEEE dd ''de'' MMMM, yyyy')}"></strong></span>
+    </div>
+
+    <!-- ===== KPI CARDS ===== -->
+    <div class="rpt-kpi-grid" th:if="${reporte != null}">
+        <div class="rpt-kpi-card rpt-kpi-ventas">
+            <div class="rpt-kpi-icon"><i class="bi bi-cash-coin"></i></div>
+            <div class="rpt-kpi-data">
+                <span class="rpt-kpi-value">$/ <span th:text="${#numbers.formatDecimal(reporte.totalVentas, 1, 2)}">0.00</span></span>
+                <span class="rpt-kpi-label">Total Ventas</span>
+            </div>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-striped mb-0">
-                    <thead class="table-light">
-                    <tr>
-                        <th>#</th>
-                        <th>Hora</th>
-                        <th>Mesa</th>
-                        <th>Cliente</th>
-                        <th>Atendido por</th>
-                        <th class="text-end">Total</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="p : ${reporte.pedidos}">
-                        <td th:text="${p.idpedido}"></td>
-                        <td th:text="${#temporals.format(p.fecha, 'HH:mm')}"></td>
-                        <td th:text="${p.mesa != null} ? 'Mesa ' + ${p.mesa.numero} : '-' "></td>
-                        <td th:text="${p.cliente != null} ? ${p.cliente.nombre} : '-' "></td>
-                        <td th:text="${p.usuario != null} ? ${p.usuario.nombreCompleto} : '-' "></td>
-                        <td class="text-end" th:text="'$' + ${#numbers.formatDecimal(p.total, 1, 2)}"></td>
-                    </tr>
-                    </tbody>
-                </table>
+        <div class="rpt-kpi-card rpt-kpi-pedidos">
+            <div class="rpt-kpi-icon"><i class="bi bi-receipt-cutoff"></i></div>
+            <div class="rpt-kpi-data">
+                <span class="rpt-kpi-value" th:text="${reporte.numeroPedidos}">0</span>
+                <span class="rpt-kpi-label">Pedidos</span>
+            </div>
+        </div>
+        <div class="rpt-kpi-card rpt-kpi-ticket">
+            <div class="rpt-kpi-icon"><i class="bi bi-tag-fill"></i></div>
+            <div class="rpt-kpi-data">
+                <span class="rpt-kpi-value">$/ <span th:text="${#numbers.formatDecimal(reporte.ticketPromedio, 1, 2)}">0.00</span></span>
+                <span class="rpt-kpi-label">Ticket Promedio</span>
+            </div>
+        </div>
+        <div class="rpt-kpi-card rpt-kpi-productos">
+            <div class="rpt-kpi-icon"><i class="bi bi-box-seam-fill"></i></div>
+            <div class="rpt-kpi-data">
+                <span class="rpt-kpi-value" th:text="${reporte.totalProductos}">0</span>
+                <span class="rpt-kpi-label">Productos Vendidos</span>
             </div>
         </div>
     </div>
 
-    <div class="card" th:if="${reporte != null and !#lists.isEmpty(reporte.productos)}">
-        <div class="card-header">
-            <h5 class="mb-0">Productos más vendidos</h5>
+    <!-- ===== GR&Aacute;FICO + TOP PRODUCTOS ===== -->
+    <div class="row g-4 mb-4" th:if="${reporte != null and !#lists.isEmpty(reporte.productos)}">
+        <!-- Gráfico de barras -->
+        <div class="col-lg-7">
+            <div class="rpt-chart-card">
+                <div class="rpt-chart-header">
+                    <h5><i class="bi bi-bar-chart-line-fill"></i> Ventas por Producto</h5>
+                </div>
+                <div class="rpt-chart-body">
+                    <canvas id="chartProductos" height="280"></canvas>
+                </div>
+            </div>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-striped mb-0">
-                    <thead class="table-light">
-                    <tr>
-                        <th>Producto</th>
-                        <th class="text-center">Cantidad</th>
-                        <th class="text-end">Total vendido</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="prod : ${reporte.productos}">
-                        <td th:text="${prod.nombreProducto}"></td>
-                        <td class="text-center" th:text="${prod.cantidadVendida}"></td>
-                        <td class="text-end" th:text="'$' + ${#numbers.formatDecimal(prod.totalVendido, 1, 2)}"></td>
-                    </tr>
-                    </tbody>
-                </table>
+        <!-- Top 5 productos -->
+        <div class="col-lg-5">
+            <div class="rpt-chart-card">
+                <div class="rpt-chart-header">
+                    <h5><i class="bi bi-trophy-fill"></i> Top Productos</h5>
+                </div>
+                <div class="rpt-chart-body">
+                    <canvas id="chartDonut" height="280"></canvas>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- ===== TABLA PEDIDOS DEL D&Iacute;A ===== -->
+    <div class="rpt-table-card" th:if="${reporte != null and !#lists.isEmpty(reporte.pedidos)}">
+        <div class="rpt-table-header">
+            <h5><i class="bi bi-list-task"></i> Pedidos del d&iacute;a</h5>
+            <div class="rpt-table-actions">
+                <div class="input-group input-group-sm rpt-search-box">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" placeholder="Buscar..." id="rptPedidoSearch">
+                </div>
+                <button type="button" class="rpt-btn-export" onclick="exportarCSV('pedidos')">
+                    <i class="bi bi-download"></i> CSV
+                </button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 rpt-table" id="tablaPedidos" data-paginate="10" data-paginate-search="rptPedidoSearch">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Hora</th>
+                    <th>Mesa</th>
+                    <th>Cliente</th>
+                    <th>Atendido por</th>
+                    <th class="text-end">Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${reporte.pedidos}">
+                    <td class="fw-semibold" th:text="${p.idpedido}"></td>
+                    <td><i class="bi bi-clock text-muted me-1"></i><span th:text="${#temporals.format(p.fecha, 'HH:mm')}"></span></td>
+                    <td th:text="${p.mesa != null} ? 'Mesa ' + ${p.mesa.numero} : '-'"></td>
+                    <td th:text="${p.cliente != null} ? ${p.cliente.nombre} : '-'"></td>
+                    <td>
+                        <span class="rpt-cajero"><i class="bi bi-person-circle"></i> <span th:text="${p.usuario != null} ? ${p.usuario.nombreCompleto} : '-'"></span></span>
+                    </td>
+                    <td class="text-end fw-semibold">$/ <span th:text="${#numbers.formatDecimal(p.total, 1, 2)}"></span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== TABLA PRODUCTOS VENDIDOS ===== -->
+    <div class="rpt-table-card" th:if="${reporte != null and !#lists.isEmpty(reporte.productos)}">
+        <div class="rpt-table-header">
+            <h5><i class="bi bi-box-seam"></i> Productos vendidos</h5>
+            <div class="rpt-table-actions">
+                <button type="button" class="rpt-btn-export" onclick="exportarCSV('productos')">
+                    <i class="bi bi-download"></i> CSV
+                </button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 rpt-table" id="tablaProductos" data-paginate="10">
+                <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th class="text-center">Cantidad</th>
+                    <th class="text-end">Total vendido</th>
+                    <th class="text-center" style="width:200px;">Proporci&oacute;n</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="prod : ${reporte.productos}">
+                    <td class="fw-semibold" th:text="${prod.nombreProducto}"></td>
+                    <td class="text-center">
+                        <span class="rpt-qty-badge" th:text="${prod.cantidadVendida}"></span>
+                    </td>
+                    <td class="text-end">$/ <span th:text="${#numbers.formatDecimal(prod.totalVendido, 1, 2)}"></span></td>
+                    <td class="text-center">
+                        <div class="rpt-bar-mini">
+                            <div class="rpt-bar-fill" th:style="'width:' + ${reporte.totalVentas > 0 ? (prod.totalVendido / reporte.totalVentas * 100) : 0} + '%'"></div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== ESTADO VAC&Iacute;O ===== -->
     <div th:if="${reporte == null || (#lists.isEmpty(reporte.pedidos) and #lists.isEmpty(reporte.productos))}"
-         class="alert alert-info mt-3">
-        <i class="bi bi-info-circle me-2"></i>
-        No hay ventas registradas para la fecha seleccionada.
+         class="rpt-empty">
+        <i class="bi bi-clipboard-data"></i>
+        <h4>Sin datos para esta fecha</h4>
+        <p>No hay ventas registradas para la fecha seleccionada. Prueba con otra fecha.</p>
     </div>
+
+    <!-- ===== DATOS PARA CHARTS ===== -->
+    <script th:if="${reporte != null and !#lists.isEmpty(reporte.productos)}" th:inline="javascript">
+        var rptProductosData = /*[[${reporte.productos}]]*/ [];
+        var rptTotalVentas = /*[[${reporte.totalVentas}]]*/ 0;
+    </script>
+
+    <!-- ===== JS REPORTES ===== -->
+    <script>
+        (function() {
+            'use strict';
+
+            document.addEventListener('DOMContentLoaded', function() {
+                initDatePresets();
+                initCharts();
+            });
+
+            // ─── Presets de fecha ───
+            function initDatePresets() {
+                var btns = document.querySelectorAll('.rpt-preset-btn');
+                var input = document.getElementById('rptFecha');
+                if (!input) return;
+
+                btns.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var offset = parseInt(this.getAttribute('data-offset'), 10);
+                        var d = new Date();
+                        d.setDate(d.getDate() + offset);
+                        input.value = d.toISOString().split('T')[0];
+                        input.closest('form').submit();
+                    });
+                });
+            }
+
+            // ─── Charts ───
+            function initCharts() {
+                if (typeof rptProductosData === 'undefined' || !rptProductosData.length) return;
+
+                var colores = ['#F26522', '#2ecc71', '#3498db', '#f39c12', '#9b59b6', '#e74c3c', '#1abc9c', '#34495e', '#e67e22', '#27ae60'];
+
+                // Gráfico de barras horizontal
+                var ctxBar = document.getElementById('chartProductos');
+                if (ctxBar) {
+                    var top10 = rptProductosData.slice(0, 10);
+                    new Chart(ctxBar.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: top10.map(function(p) { return p.nombreProducto; }),
+                            datasets: [{
+                                label: 'Venta ($/)',
+                                data: top10.map(function(p) { return p.totalVendido; }),
+                                backgroundColor: colores.slice(0, top10.length),
+                                borderRadius: 6,
+                                borderSkipped: false,
+                                barThickness: 28
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                x: {
+                                    ticks: { callback: function(v) { return '$/ ' + v.toFixed(2); } },
+                                    grid: { color: 'rgba(0,0,0,.04)' }
+                                },
+                                y: {
+                                    ticks: { font: { size: 12, weight: '500' } },
+                                    grid: { display: false }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Donut top 5
+                var ctxDonut = document.getElementById('chartDonut');
+                if (ctxDonut) {
+                    var top5 = rptProductosData.slice(0, 5);
+                    new Chart(ctxDonut.getContext('2d'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: top5.map(function(p) { return p.nombreProducto; }),
+                            datasets: [{
+                                data: top5.map(function(p) { return p.totalVendido; }),
+                                backgroundColor: colores.slice(0, 5),
+                                borderWidth: 2,
+                                borderColor: '#fff',
+                                hoverOffset: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '55%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { padding: 14, font: { size: 12 } }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // ─── Export CSV ───
+            window.exportarCSV = function(tipo) {
+                var table = document.getElementById(tipo === 'pedidos' ? 'tablaPedidos' : 'tablaProductos');
+                if (!table) return;
+
+                var csv = [];
+                var rows = table.querySelectorAll('tr');
+                rows.forEach(function(row) {
+                    if (row.style.display === 'none') return;
+                    var cols = row.querySelectorAll('th, td');
+                    var rowData = [];
+                    cols.forEach(function(col) {
+                        var text = col.textContent.replace(/\s+/g, ' ').trim().replace(/"/g, '""');
+                        rowData.push('"' + text + '"');
+                    });
+                    csv.push(rowData.join(','));
+                });
+
+                var blob = new Blob(['\uFEFF' + csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'reporte-' + tipo + '-' + (document.getElementById('rptFecha').value || 'hoy') + '.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+
+                if (window.showToast) {
+                    window.showToast('<i class="bi bi-file-earmark-check"></i> Archivo CSV descargado', 'success');
+                }
+            };
+
+        })();
+    </script>
 </div>
 </body>
 </html>

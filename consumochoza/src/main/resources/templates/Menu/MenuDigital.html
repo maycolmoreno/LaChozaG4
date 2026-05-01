@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Menú - La Choza</title>
+
+    <link rel="icon" type="image/svg+xml" th:href="@{/assets/images/favicon.svg}" />
+    <meta name="theme-color" content="#F26522" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        :root {
+            --choza-primary: #F26522;
+            --choza-primary-dark: #d44d0a;
+            --choza-bg: #faf9f7;
+            --choza-card: #ffffff;
+            --choza-text: #1a1a1a;
+            --choza-muted: #6c757d;
+            --choza-border: #e8e2d9;
+            --choza-radius: 16px;
+            --choza-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--choza-bg);
+            color: var(--choza-text);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .menu-header {
+            background: linear-gradient(135deg, var(--choza-primary) 0%, var(--choza-primary-dark) 100%);
+            color: #fff;
+            text-align: center;
+            padding: 2rem 1.5rem 3.5rem;
+            position: relative;
+        }
+        .menu-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        .menu-header p {
+            opacity: 0.88;
+            font-size: 0.95rem;
+            margin-top: 0.3rem;
+        }
+        .menu-header-wave {
+            position: absolute;
+            bottom: -1px; left: 0; right: 0;
+            height: 40px;
+            background: var(--choza-bg);
+            clip-path: ellipse(55% 100% at 50% 100%);
+        }
+
+        /* Sticky nav de categorías */
+        .category-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--choza-bg);
+            padding: 0.75rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            border-bottom: 1px solid var(--choza-border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .category-nav::-webkit-scrollbar { display: none; }
+        .cat-pill {
+            flex-shrink: 0;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            border: 2px solid var(--choza-border);
+            background: var(--choza-card);
+            color: var(--choza-muted);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .cat-pill:hover,
+        .cat-pill.active {
+            background: var(--choza-primary);
+            border-color: var(--choza-primary);
+            color: #fff;
+        }
+
+        /* Contenido */
+        .menu-body {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 3rem;
+        }
+
+        /* Sección de categoría */
+        .cat-section {
+            margin-bottom: 2rem;
+        }
+        .cat-section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--choza-primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--choza-border);
+        }
+
+        /* Tarjeta de producto */
+        .producto-card {
+            background: var(--choza-card);
+            border-radius: var(--choza-radius);
+            box-shadow: var(--choza-shadow);
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--choza-border);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .producto-card:hover {
+            box-shadow: 0 6px 20px rgba(242,101,34,0.12);
+            transform: translateY(-1px);
+        }
+
+        .producto-img-wrap {
+            flex-shrink: 0;
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f0ece6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .producto-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .producto-img-placeholder {
+            font-size: 2rem;
+            color: #ccc;
+        }
+
+        .producto-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .producto-nombre {
+            font-weight: 700;
+            font-size: 0.97rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .producto-desc {
+            font-size: 0.8rem;
+            color: var(--choza-muted);
+            margin-top: 0.2rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .producto-precio {
+            margin-top: 0.5rem;
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--choza-primary);
+        }
+
+        /* Footer */
+        .menu-footer {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            font-size: 0.78rem;
+            color: var(--choza-muted);
+            border-top: 1px solid var(--choza-border);
+        }
+
+        /* Sin productos */
+        .empty-menu {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--choza-muted);
+        }
+        .empty-menu i { font-size: 3rem; }
+        .empty-menu p { margin-top: 0.75rem; font-size: 1rem; }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="menu-header">
+    <h1><i class="bi bi-journal-text me-2"></i>Menú</h1>
+    <p>La Choza &bull; Bienvenido</p>
+    <div class="menu-header-wave"></div>
+</div>
+
+<!-- Nav de categorías sticky -->
+<nav class="category-nav" th:if="${!#maps.isEmpty(menu)}">
+    <th:block th:each="entry : ${menu}">
+        <a th:href="'#cat-' + ${entry.key.idcategoria}"
+           th:text="${entry.key.nombre}"
+           class="cat-pill"></a>
+    </th:block>
+</nav>
+
+<!-- Cuerpo del menú -->
+<div class="menu-body">
+
+    <!-- Sin productos disponibles -->
+    <div th:if="${#maps.isEmpty(menu)}" class="empty-menu">
+        <i class="bi bi-cup-hot"></i>
+        <p>Por el momento no hay productos disponibles.</p>
+    </div>
+
+    <!-- Sección por categoría -->
+    <section th:each="entry : ${menu}"
+             th:id="'cat-' + ${entry.key.idcategoria}"
+             class="cat-section">
+
+        <div class="cat-section-title">
+            <i class="bi bi-tag-fill"></i>
+            <span th:text="${entry.key.nombre}">Categoría</span>
+        </div>
+
+        <div th:each="prod : ${entry.value}" class="producto-card">
+
+            <!-- Imagen o placeholder -->
+            <div class="producto-img-wrap">
+                <img th:if="${prod.imagenUrl != null and !prod.imagenUrl.isBlank()}"
+                     th:src="${prod.imagenUrl}"
+                     th:alt="${prod.nombre}"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                <div class="producto-img-placeholder"
+                     th:style="${prod.imagenUrl != null and !prod.imagenUrl.isBlank()} ? 'display:none' : 'display:flex'">
+                    <i class="bi bi-image"></i>
+                </div>
+            </div>
+
+            <!-- Info -->
+            <div class="producto-info">
+                <div class="producto-nombre" th:text="${prod.nombre}">Producto</div>
+                <div class="producto-desc"
+                     th:if="${prod.descripcion != null and !prod.descripcion.isBlank()}"
+                     th:text="${prod.descripcion}"></div>
+                <div class="producto-precio">
+                    $<span th:text="${#numbers.formatDecimal(prod.precio, 1, 2)}">0.00</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</div>
+
+<!-- Footer -->
+<div class="menu-footer">
+    <i class="bi bi-geo-alt-fill me-1"></i> La Choza &nbsp;&bull;&nbsp;
+    Menú digital &bull; Los precios pueden variar
+</div>
+
+<script>
+    // Resaltar pill activa según posición de scroll
+    const sections = document.querySelectorAll('.cat-section');
+    const pills = document.querySelectorAll('.cat-pill');
+
+    function activarPill() {
+        let current = '';
+        sections.forEach(sec => {
+            const top = sec.getBoundingClientRect().top;
+            if (top <= 120) current = sec.id;
+        });
+        pills.forEach(pill => {
+            pill.classList.toggle('active', pill.getAttribute('href') === '#' + current);
+        });
+    }
+
+    window.addEventListener('scroll', activarPill, { passive: true });
+    activarPill();
+
+    // Scroll suave para los links de categoría
+    pills.forEach(pill => {
+        pill.addEventListener('click', e => {
+            e.preventDefault();
+            const target = document.querySelector(pill.getAttribute('href'));
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,88 +1,344 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-	layout:decorate="~{Masterplantilla/Master}">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{Masterplantilla/Master}">
 
 <head>
-<title>Cocina - Órdenes Pendientes</title>
+    <title>Cocina &#8211; KDS</title>
 </head>
 
 <body>
-	<div layout:fragment="contenidopaginas">
-		<div class="d-flex justify-content-between align-items-center mb-4">
-			<h2 class="page-title">
-				<i class="bi bi-fire"></i> Órdenes de Cocina
-			</h2>
-			<button class="btn btn-outline-primary" onclick="location.reload()">
-				<i class="bi bi-arrow-clockwise"></i> Actualizar
-			</button>
-		</div>
+    <div layout:fragment="contenidopaginas">
 
-		<!-- Sin órdenes -->
-		<div th:if="${#lists.isEmpty(pedidos)}" class="sin-ordenes">
-			<i class="bi bi-check-circle"></i>
-			<h4>¡No hay órdenes pendientes!</h4>
-			<p class="text-muted">Todas las órdenes han sido completadas</p>
-		</div>
+        <!-- ===== HEADER KDS ===== -->
+        <div class="kds-header">
+            <div class="kds-header-left">
+                <h1 class="kds-title"><i class="bi bi-fire"></i> Kitchen Display</h1>
+                <div class="kds-subtitle">
+                    <span class="kds-live-dot"></span>
+                    <span>En vivo &mdash; Auto-refresh cada <strong id="refreshInterval">15</strong>s</span>
+                </div>
+            </div>
+            <div class="kds-header-right">
+                <div class="kds-stat" id="kdsStatPendientes">
+                    <i class="bi bi-clock-history"></i>
+                    <div>
+                        <span class="kds-stat-value" id="totalOrdenes">0</span>
+                        <span class="kds-stat-label">&#211;rdenes</span>
+                    </div>
+                </div>
+                <div class="kds-stat kds-stat-warn" id="kdsStatUrgentes">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <div>
+                        <span class="kds-stat-value" id="totalUrgentes">0</span>
+                        <span class="kds-stat-label">Urgentes</span>
+                    </div>
+                </div>
+                <button class="kds-btn-fullscreen" onclick="toggleFullscreen()" title="Pantalla completa">
+                    <i class="bi bi-arrows-fullscreen"></i>
+                </button>
+                <button class="kds-btn-refresh" onclick="cargarOrdenes()" title="Actualizar ahora">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+        </div>
 
-		<!-- Grid de órdenes -->
-		<div class="ordenes-grid" th:unless="${#lists.isEmpty(pedidos)}">
-			<div th:each="pedido : ${pedidos}" class="card orden-card">
-				<div
-					class="card-header d-flex justify-content-between align-items-center">
-					<div>
-						<span class="mesa-numero"> <i
-							class="bi bi-grid-3x3-gap-fill"></i> Mesa <span
-							th:text="${pedido.mesa != null ? pedido.mesa.numero : '-'}"></span>
-						</span>
-					</div>
-					<div class="text-end">
-						<span class="badge fs-6"> #<span
-							th:text="${pedido.idpedido}"></span>
-						</span> <br> <span class="tiempo-pedido mt-1 d-inline-block">
-							<i class="bi bi-clock"></i> <span
-							th:text="${#temporals.format(pedido.fecha, 'HH:mm')}"></span>
-						</span>
-					</div>
-				</div>
+        <!-- ===== BARRA DE PROGRESO REFRESH ===== -->
+        <div class="kds-progress-bar">
+            <div class="kds-progress-fill" id="progressBar"></div>
+        </div>
 
-				<div class="card-body">
-					<!-- Lista de productos -->
-					<div th:if="${pedido.detalle != null}">
-						<div th:each="det : ${pedido.detalle}" class="producto-item">
-							<div class="d-flex align-items-center">
-								<span class="cantidad-badge" th:text="${det.cantidad}"></span> <span
-									class="fw-medium"
-									th:text="${det.producto != null ? det.producto.nombre : 'Producto'}"></span>
-							</div>
-						</div>
-					</div>
+        <!-- ===== SIN &#211;RDENES ===== -->
+        <div class="kds-empty" id="kdsEmpty" style="display:none;">
+            <i class="bi bi-emoji-smile"></i>
+            <h3>&#161;Todo al d&#237;a!</h3>
+            <p>No hay &#243;rdenes pendientes en cocina</p>
+            <small>Las nuevas &#243;rdenes aparecer&#225;n autom&#225;ticamente</small>
+        </div>
 
-					<!-- Observaciones -->
-					<div
-						th:if="${pedido.observaciones != null && !pedido.observaciones.isEmpty()}"
-						class="observaciones-alert">
-						<i class="bi bi-exclamation-triangle text-warning"></i> <strong>Nota:</strong>
-						<span th:text="${pedido.observaciones}"></span>
-					</div>
-				</div>
+        <!-- ===== GRID DE &#211;RDENES KDS ===== -->
+        <div class="kds-grid" id="kdsGrid"></div>
 
-				<div class="card-footer">
-					<form th:action="@{/cocina/completar/{id}(id=${pedido.idpedido})}"
-						method="post">
-						<button type="submit" class="btn btn-completar btn-success w-100">
-							<i class="bi bi-check-lg"></i> Marcar como Listo
-						</button>
-					</form>
-				</div>
-			</div>
-		</div>
+        <!-- ===== CSRF TOKEN ===== -->
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" id="csrfToken" />
+        <meta th:name="csrf-header" th:content="${_csrf.headerName}" />
 
-		<!-- Indicador de actualización automática -->
-		<div class="refresh-indicator">
-			<i class="bi bi-arrow-repeat"></i> Auto-refresh: <span id="countdown">30</span>s
-		</div>
+        <!-- ═══════════════════════════════════════════════════
+             JAVASCRIPT KDS
+             ═══════════════════════════════════════════════════ -->
+        <script>
+            (function() {
+                'use strict';
 
-	</div>
+                var REFRESH_SECONDS = 15;
+                var URGENT_MINUTES = 10;
+                var WARNING_MINUTES = 5;
+                var csrfToken = document.getElementById('csrfToken').value;
+                var csrfHeader = document.querySelector('meta[name="csrf-header"]').content;
+
+                var ordenesPrevias = [];
+                var countdown = REFRESH_SECONDS;
+                var intervalId = null;
+
+                // ── Inicialización ──
+                document.addEventListener('DOMContentLoaded', function() {
+                    cargarOrdenes();
+                    iniciarAutoRefresh();
+                });
+
+                // ── Auto-refresh con barra de progreso ──
+                function iniciarAutoRefresh() {
+                    countdown = REFRESH_SECONDS;
+                    if (intervalId) clearInterval(intervalId);
+                    intervalId = setInterval(function() {
+                        countdown--;
+                        actualizarBarraProgreso();
+                        actualizarTimers();
+                        if (countdown <= 0) {
+                            cargarOrdenes();
+                            countdown = REFRESH_SECONDS;
+                        }
+                    }, 1000);
+                }
+
+                function actualizarBarraProgreso() {
+                    var bar = document.getElementById('progressBar');
+                    var pct = ((REFRESH_SECONDS - countdown) / REFRESH_SECONDS) * 100;
+                    bar.style.width = pct + '%';
+                }
+
+                // ── Cargar órdenes vía AJAX ──
+                function cargarOrdenes() {
+                    fetch('/api/pos/cocina/ordenes')
+                        .then(function(r) { return r.json(); })
+                        .then(function(ordenes) {
+                            detectarNuevasOrdenes(ordenes);
+                            renderizarOrdenes(ordenes);
+                            actualizarEstadisticas(ordenes);
+                            ordenesPrevias = ordenes.map(function(o) { return o.idpedido; });
+                            countdown = REFRESH_SECONDS;
+                        })
+                        .catch(function(err) {
+                            console.error('Error cargando órdenes:', err);
+                        });
+                }
+                window.cargarOrdenes = cargarOrdenes;
+
+                // ── Detectar nuevas órdenes y reproducir sonido ──
+                function detectarNuevasOrdenes(ordenes) {
+                    if (ordenesPrevias.length === 0) return;
+                    var nuevas = ordenes.filter(function(o) {
+                        return ordenesPrevias.indexOf(o.idpedido) === -1;
+                    });
+                    if (nuevas.length > 0) {
+                        reproducirSonidoNuevaOrden();
+                        if (window.showToast) {
+                            window.showToast('<i class="bi bi-bell-fill"></i> ' + nuevas.length + ' nueva(s) orden(es) en cocina', 'warning');
+                        }
+                    }
+                }
+
+                // ── Renderizar órdenes en el grid ──
+                function renderizarOrdenes(ordenes) {
+                    var grid = document.getElementById('kdsGrid');
+                    var empty = document.getElementById('kdsEmpty');
+
+                    if (!ordenes || ordenes.length === 0) {
+                        grid.innerHTML = '';
+                        empty.style.display = 'flex';
+                        return;
+                    }
+                    empty.style.display = 'none';
+
+                    // Ordenar por fecha (más antiguos primero)
+                    ordenes.sort(function(a, b) {
+                        return new Date(a.fecha) - new Date(b.fecha);
+                    });
+
+                    var html = '';
+                    ordenes.forEach(function(pedido) {
+                        var minutos = calcularMinutos(pedido.fecha);
+                        var urgencia = obtenerUrgencia(minutos);
+
+                        html += '<div class="kds-order-card kds-urgencia-' + urgencia.nivel + '">';
+                        html += '  <div class="kds-order-header">';
+                        html += '    <div class="kds-order-id">';
+                        html += '      <span class="kds-order-num">#' + pedido.idpedido + '</span>';
+                        html += '      <span class="kds-order-mesa"><i class="bi bi-grid-3x3-gap-fill"></i> Mesa ' + (pedido.mesa ? pedido.mesa.numero : '-') + '</span>';
+                        html += '    </div>';
+                        html += '    <div class="kds-order-timer ' + urgencia.timerClass + '" data-fecha="' + pedido.fecha + '">';
+                        html += '      <i class="bi bi-stopwatch-fill"></i>';
+                        html += '      <span class="kds-timer-value">' + formatearTiempo(minutos) + '</span>';
+                        html += '    </div>';
+                        html += '  </div>';
+
+                        // Items
+                        html += '  <div class="kds-order-items">';
+                        if (pedido.detalle && pedido.detalle.length > 0) {
+                            pedido.detalle.forEach(function(det) {
+                                html += '<div class="kds-item">';
+                                html += '  <span class="kds-item-qty">' + det.cantidad + '</span>';
+                                html += '  <span class="kds-item-name">' + (det.producto ? det.producto.nombre : 'Producto') + '</span>';
+                                html += '</div>';
+                            });
+                        }
+                        html += '  </div>';
+
+                        // Observaciones
+                        if (pedido.observaciones && pedido.observaciones.trim() !== '') {
+                            html += '  <div class="kds-order-obs">';
+                            html += '    <i class="bi bi-chat-left-text-fill"></i>';
+                            html += '    <span>' + escapeHtml(pedido.observaciones) + '</span>';
+                            html += '  </div>';
+                        }
+
+                        // Botón completar
+                        html += '  <div class="kds-order-footer">';
+                        html += '    <button class="kds-btn-done" onclick="completarOrden(' + pedido.idpedido + ', this)">';
+                        html += '      <i class="bi bi-check-lg"></i> Listo';
+                        html += '    </button>';
+                        html += '  </div>';
+                        html += '</div>';
+                    });
+
+                    grid.innerHTML = html;
+                }
+
+                // ── Completar orden vía AJAX ──
+                window.completarOrden = function(id, btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando...';
+
+                    var headers = { 'Content-Type': 'application/json' };
+                    headers[csrfHeader] = csrfToken;
+
+                    fetch('/api/pos/pedidos/' + id + '/estado', {
+                        method: 'PATCH',
+                        headers: headers,
+                        body: JSON.stringify({ estado: 'LISTO_PARA_ENTREGA' })
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        var card = btn.closest('.kds-order-card');
+                        if (card) {
+                            card.classList.add('kds-order-done');
+                            setTimeout(function() {
+                                cargarOrdenes();
+                            }, 500);
+                        }
+                        if (window.showToast) {
+                            window.showToast('Pedido #' + id + ' listo para entrega', 'success');
+                        }
+                    })
+                    .catch(function(err) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="bi bi-check-lg"></i> Listo';
+                        if (window.showToast) {
+                            window.showToast('Error al completar pedido: ' + err.message, 'danger');
+                        }
+                    });
+                };
+
+                // ── Estadísticas ──
+                function actualizarEstadisticas(ordenes) {
+                    document.getElementById('totalOrdenes').textContent = ordenes.length;
+                    var urgentes = ordenes.filter(function(o) {
+                        return calcularMinutos(o.fecha) >= URGENT_MINUTES;
+                    }).length;
+                    document.getElementById('totalUrgentes').textContent = urgentes;
+
+                    var statUrgentes = document.getElementById('kdsStatUrgentes');
+                    if (urgentes > 0) {
+                        statUrgentes.classList.add('kds-stat-alert');
+                    } else {
+                        statUrgentes.classList.remove('kds-stat-alert');
+                    }
+                }
+
+                // ── Actualizar timers en vivo (cada segundo) ──
+                function actualizarTimers() {
+                    var timers = document.querySelectorAll('.kds-order-timer');
+                    timers.forEach(function(timer) {
+                        var fecha = timer.getAttribute('data-fecha');
+                        if (!fecha) return;
+                        var minutos = calcularMinutos(fecha);
+                        var urgencia = obtenerUrgencia(minutos);
+                        var valueEl = timer.querySelector('.kds-timer-value');
+                        if (valueEl) valueEl.textContent = formatearTiempo(minutos);
+
+                        timer.className = 'kds-order-timer ' + urgencia.timerClass;
+                        var card = timer.closest('.kds-order-card');
+                        if (card) {
+                            card.className = card.className.replace(/kds-urgencia-\w+/g, '');
+                            card.classList.add('kds-urgencia-' + urgencia.nivel);
+                        }
+                    });
+
+                    var urgent = document.querySelectorAll('.kds-urgencia-danger').length;
+                    document.getElementById('totalUrgentes').textContent = urgent;
+                    var statU = document.getElementById('kdsStatUrgentes');
+                    if (urgent > 0) statU.classList.add('kds-stat-alert');
+                    else statU.classList.remove('kds-stat-alert');
+                }
+
+                // ── Utilidades ──
+                function calcularMinutos(fechaStr) {
+                    var fecha = new Date(fechaStr);
+                    var ahora = new Date();
+                    return Math.floor((ahora - fecha) / 60000);
+                }
+
+                function obtenerUrgencia(minutos) {
+                    if (minutos >= URGENT_MINUTES) return { nivel: 'danger', timerClass: 'kds-timer-danger' };
+                    if (minutos >= WARNING_MINUTES) return { nivel: 'warning', timerClass: 'kds-timer-warning' };
+                    return { nivel: 'normal', timerClass: 'kds-timer-normal' };
+                }
+
+                function formatearTiempo(minutos) {
+                    if (minutos < 1) return '<1m';
+                    if (minutos < 60) return minutos + 'm';
+                    var h = Math.floor(minutos / 60);
+                    var m = minutos % 60;
+                    return h + 'h ' + m + 'm';
+                }
+
+                function escapeHtml(str) {
+                    var div = document.createElement('div');
+                    div.textContent = str;
+                    return div.innerHTML;
+                }
+
+                // ── Pantalla completa ──
+                window.toggleFullscreen = function() {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen().catch(function(){});
+                    } else {
+                        document.exitFullscreen();
+                    }
+                };
+
+                // ── Sonido nueva orden (3 tonos ascendentes) ──
+                function reproducirSonidoNuevaOrden() {
+                    try {
+                        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+                        [523.25, 659.25, 783.99].forEach(function(freq, i) {
+                            var osc = ctx.createOscillator();
+                            var gain = ctx.createGain();
+                            osc.connect(gain);
+                            gain.connect(ctx.destination);
+                            osc.frequency.value = freq;
+                            osc.type = 'sine';
+                            var start = ctx.currentTime + (i * 0.12);
+                            gain.gain.setValueAtTime(0.35, start);
+                            gain.gain.exponentialRampToValueAtTime(0.01, start + 0.25);
+                            osc.start(start);
+                            osc.stop(start + 0.25);
+                        });
+                    } catch (e) {}
+                }
+
+            })();
+        </script>
+    </div>
 </body>
 </html>

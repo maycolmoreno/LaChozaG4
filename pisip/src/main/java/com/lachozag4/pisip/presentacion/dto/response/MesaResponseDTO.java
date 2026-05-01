@@ -9,5 +9,7 @@ public class MesaResponseDTO {
 	private int numero;
 	private int capacidad;
 	private boolean estado;
+	private Integer idcomedor;
+	private String nombreComedor;
 
 }

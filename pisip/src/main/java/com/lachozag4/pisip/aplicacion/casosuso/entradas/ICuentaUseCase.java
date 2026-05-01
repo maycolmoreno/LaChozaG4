@@ -22,4 +22,9 @@ public interface ICuentaUseCase {
 	 * Agrega un pedido existente a una cuenta y recalcula el total.
 	 */
 	Cuenta agregarPedido(int idcuenta, int idpedido);
+
+	/**
+	 * Asigna o reemplaza el cliente de una cuenta abierta.
+	 */
+	Cuenta asignarCliente(int idcuenta, int idCliente);
 }

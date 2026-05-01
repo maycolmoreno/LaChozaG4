@@ -45,7 +45,8 @@ public class MesaUseCaseImpl implements IMesaUseCase {
 				mesa.getIdmesa(),
 				mesa.getNumero(),
 				mesa.getCapacidad(),
-				false
+				false,
+				mesa.getIdcomedor()
 		);
 		repositorio.guardar(desactivada);
 	}
@@ -61,7 +62,7 @@ public class MesaUseCaseImpl implements IMesaUseCase {
 			}
 		});
 
-		var mesaActualizada = new Mesa(idmesa, mesa.getNumero(), mesa.getCapacidad(), mesa.getEstado());
+		var mesaActualizada = new Mesa(idmesa, mesa.getNumero(), mesa.getCapacidad(), mesa.getEstado(), mesa.getIdcomedor());
 		return repositorio.guardar(mesaActualizada);
 	}
 

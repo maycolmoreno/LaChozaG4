@@ -78,4 +78,15 @@ public class CuentaControlador {
 		var actualizada = cuentaUseCase.agregarPedido(idcuenta, idpedido);
 		return ResponseEntity.ok(responseMapper.toResponseDTO(actualizada));
 	}
+
+	@PatchMapping(value = "/{id:\\d+}/cliente", consumes = "application/json")
+	public ResponseEntity<CuentaResponseDTO> asignarCliente(@PathVariable("id") int idcuenta,
+			@RequestBody java.util.Map<String, Integer> body) {
+		Integer idCliente = body.get("idCliente");
+		if (idCliente == null || idCliente < 1) {
+			return ResponseEntity.badRequest().build();
+		}
+		var actualizada = cuentaUseCase.asignarCliente(idcuenta, idCliente);
+		return ResponseEntity.ok(responseMapper.toResponseDTO(actualizada));
+	}
 }

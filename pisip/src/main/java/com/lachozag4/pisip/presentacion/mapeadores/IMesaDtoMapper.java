@@ -14,6 +14,7 @@ public interface IMesaDtoMapper {
 	Mesa toDomain(MesaRequestDTO dto);
 
 	@Mapping(target = "idmesa", source = "idmesa")
+	@Mapping(target = "nombreComedor", ignore = true)
 	MesaResponseDTO toResponseDTO(Mesa mesa);
 
 }

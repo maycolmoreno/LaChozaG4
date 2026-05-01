@@ -60,7 +60,8 @@ public class MesaRepositorioImpl implements IMesaRepositorio {
 
 	@Override
 	public List<Mesa> listarMesasOcupadas() {
-		return jpaRepository.findMesasConPedidosActivos().stream().map(mapper::toDomain).toList();
+		// Mesas con estado = false (ocupadas según el campo de estado)
+		return jpaRepository.findByEstadoFalse().stream().map(mapper::toDomain).toList();
 	}
 
 	@Override
