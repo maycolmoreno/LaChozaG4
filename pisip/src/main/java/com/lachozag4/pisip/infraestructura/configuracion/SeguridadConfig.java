@@ -55,51 +55,128 @@ public class SeguridadConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // --- Endpoints públicos (login, cambio de password, setup) ---
+
+                // ═══════════════════════════════════════════════════════════════
+                // ENDPOINTS PÚBLICOS
+                // ═══════════════════════════════════════════════════════════════
                 .requestMatchers(HttpMethod.POST, "/api/usuarios/login").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/usuarios/cambiar-password").authenticated()
-                .requestMatchers(HttpMethod.GET, "/api/usuarios/existe-alguno").permitAll()
+                .requestMatchers(HttpMethod.GET,  "/api/usuarios/existe-alguno").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/usuarios/setup-admin").permitAll()
                 .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
-                // --- Swagger / OpenAPI (acceso libre para desarrollo) ---
-                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs").permitAll()
 
-                // --- Usuarios: perfil propio accesible a cualquier rol autenticado ---
+                // ═══════════════════════════════════════════════════════════════
+                // WEBSOCKET — el handshake HTTP debe pasar sin filtro JWT
+                // La autorización real se hace en el STOMP CONNECT (o con JWT en header)
+                // ═══════════════════════════════════════════════════════════════
+                .requestMatchers("/ws/**", "/ws-sockjs/**").permitAll()
+
+                // ═══════════════════════════════════════════════════════════════
+                // SWAGGER / OPENAPI — solo ADMIN
+                // ═══════════════════════════════════════════════════════════════
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html",
+                                 "/v3/api-docs/**", "/v3/api-docs").hasRole("ADMIN")
+
+                // ═══════════════════════════════════════════════════════════════
+                // USUARIOS
+                // ═══════════════════════════════════════════════════════════════
+                // Perfil propio: cualquier rol autenticado puede consultar su usuario
                 .requestMatchers(HttpMethod.GET, "/api/usuarios/por-username/**").authenticated()
-                // --- Usuarios: resto solo ADMIN ---
+                // Cambio de contraseña: cualquier usuario autenticado
+                .requestMatchers(HttpMethod.POST, "/api/usuarios/cambiar-password").authenticated()
+                // Resto de usuarios: solo ADMIN
                 .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
 
-                // --- Categorías: ADMIN puede todo, los demás solo lectura ---
-                .requestMatchers(HttpMethod.GET, "/api/categorias/**").hasAnyRole("ADMIN", "CAMARERO", "COCINA", "CAJERO")
-                .requestMatchers("/api/categorias/**").hasRole("ADMIN")
+                // ═══════════════════════════════════════════════════════════════
+                // CATEGORÍAS — lectura: todos los roles | escritura: ADMIN
+                // ═══════════════════════════════════════════════════════════════
+                .requestMatchers(HttpMethod.GET, "/api/categorias/**")
+                    .hasAnyRole("ADMIN", "CAMARERO", "COCINA", "CAJERO")
+                .requestMatchers(HttpMethod.POST,   "/api/categorias/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT,    "/api/categorias/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/categorias/**").hasRole("ADMIN")
 
-                // --- Productos: ADMIN puede todo, COCINA y CAMARERO solo lectura ---
-                .requestMatchers(HttpMethod.GET, "/api/productos/**").hasAnyRole("ADMIN", "CAMARERO", "COCINA", "CAJERO")
-                .requestMatchers("/api/productos/**").hasRole("ADMIN")
+                // ═══════════════════════════════════════════════════════════════
+                // PRODUCTOS — lectura: todos los roles | escritura: ADMIN
+                // ═══════════════════════════════════════════════════════════════
+                .requestMatchers(HttpMethod.GET, "/api/productos/**")
+                    .hasAnyRole("ADMIN", "CAMARERO", "COCINA", "CAJERO")
+                .requestMatchers(HttpMethod.POST,   "/api/productos/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT,    "/api/productos/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
 
-                // --- Mesas: ADMIN puede todo, CAMARERO y CAJERO lectura ---
-                .requestMatchers(HttpMethod.GET, "/api/mesas/**").hasAnyRole("ADMIN", "CAMARERO", "CAJERO")
-                .requestMatchers("/api/mesas/**").hasRole("ADMIN")
+                // ═══════════════════════════════════════════════════════════════
+                // MESAS — lectura: ADMIN/CAMARERO/CAJERO | escritura: ADMIN
+                // ═══════════════════════════════════════════════════════════════
+                .requestMatchers(HttpMethod.GET, "/api/mesas/**")
+                    .hasAnyRole("ADMIN", "CAMARERO", "CAJERO")
+                .requestMatchers(HttpMethod.POST,   "/api/mesas/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT,    "/api/mesas/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/mesas/**").hasRole("ADMIN")
 
-                // --- Clientes: ADMIN, CAMARERO y CAJERO ---
-                .requestMatchers("/api/clientes/**").hasAnyRole("ADMIN", "CAMARERO", "CAJERO")
+                // ═══════════════════════════════════════════════════════════════
+                // CLIENTES
+                //   GET   → ADMIN/CAMARERO/CAJERO
+                //   POST  → ADMIN/CAMARERO/CAJERO  (crear cliente en sala o en caja)
+                //   PUT   → ADMIN                  (actualización completa de datos)
+                //   DELETE→ ADMIN
+                // ═══════════════════════════════════════════════════════════════
+                .requestMatchers(HttpMethod.GET,  "/api/clientes/**")
+                    .hasAnyRole("ADMIN", "CAMARERO", "CAJERO")
+                .requestMatchers(HttpMethod.POST, "/api/clientes/**")
+                    .hasAnyRole("ADMIN", "CAMARERO", "CAJERO")
+                .requestMatchers(HttpMethod.PUT,    "/api/clientes/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/clientes/**").hasRole("ADMIN")
 
-                // --- Pedidos: ADMIN, CAMARERO, COCINA y CAJERO ---
-                .requestMatchers("/api/pedidos/**").hasAnyRole("ADMIN", "CAMARERO", "COCINA", "CAJERO")
+                // ═══════════════════════════════════════════════════════════════
+                // PEDIDOS — acceso base URL-level; control fino vía @PreAuthorize
+                //   GET    → ADMIN/CAMARERO/COCINA/CAJERO
+                //   POST   → ADMIN/CAMARERO/CAJERO
+                //   PUT    → ADMIN/CAMARERO
+                //   DELETE → ADMIN/CAMARERO
+                //   PATCH  → se delega a @PreAuthorize por semántica de estado
+                // ═══════════════════════════════════════════════════════════════
+                .requestMatchers(HttpMethod.GET, "/api/pedidos/**")
+                    .hasAnyRole("ADMIN", "CAMARERO", "COCINA", "CAJERO")
+                .requestMatchers(HttpMethod.POST,   "/api/pedidos/**")
+                    .hasAnyRole("ADMIN", "CAMARERO", "CAJERO")
+                .requestMatchers(HttpMethod.PUT,    "/api/pedidos/**")
+                    .hasAnyRole("ADMIN", "CAMARERO")
+                .requestMatchers(HttpMethod.DELETE, "/api/pedidos/**")
+                    .hasAnyRole("ADMIN", "CAMARERO")
+                .requestMatchers(HttpMethod.PATCH,  "/api/pedidos/**")
+                    .hasAnyRole("ADMIN", "CAMARERO", "COCINA", "CAJERO")
 
-                // --- Cuentas: ADMIN, CAMARERO y CAJERO ---
-                .requestMatchers("/api/cuentas/**").hasAnyRole("ADMIN", "CAMARERO", "CAJERO")
+                // ═══════════════════════════════════════════════════════════════
+                // CUENTAS (nota: /api/cuentas/** cubre también los pagos anidados)
+                //   GET    → ADMIN/CAMARERO/CAJERO
+                //   POST   → ADMIN/CAMARERO/CAJERO (crear cuenta, agregar pedido a cuenta)
+                //   PATCH  → ADMIN/CAJERO          (cambiar estado = cobrar)
+                // ═══════════════════════════════════════════════════════════════
+                .requestMatchers(HttpMethod.GET,   "/api/cuentas/**")
+                    .hasAnyRole("ADMIN", "CAMARERO", "CAJERO")
+                .requestMatchers(HttpMethod.POST,  "/api/cuentas/**")
+                    .hasAnyRole("ADMIN", "CAMARERO", "CAJERO")
+                .requestMatchers(HttpMethod.PATCH, "/api/cuentas/**")
+                    .hasAnyRole("ADMIN", "CAJERO")
 
-                // --- Pagos: ADMIN, CAMARERO y CAJERO ---
-                .requestMatchers("/api/pagos/**").hasAnyRole("ADMIN", "CAMARERO", "CAJERO")
+                // ═══════════════════════════════════════════════════════════════
+                // CAJA — solo ADMIN/CAJERO
+                // ═══════════════════════════════════════════════════════════════
+                .requestMatchers("/api/caja/**").hasAnyRole("ADMIN", "CAJERO")
 
-                // --- Caja: ADMIN, CAMARERO y CAJERO ---
-                .requestMatchers("/api/caja/**").hasAnyRole("ADMIN", "CAMARERO", "CAJERO")
-
-                // --- Reportes: solo ADMIN ---
+                // ═══════════════════════════════════════════════════════════════
+                // REPORTES — solo ADMIN
+                // ═══════════════════════════════════════════════════════════════
                 .requestMatchers("/api/reportes/**").hasRole("ADMIN")
 
-                // --- Cualquier otro endpoint requiere autenticación ---
+                // ═══════════════════════════════════════════════════════════════
+                // COMEDOR — solo ADMIN (gestión de salones)
+                // ═══════════════════════════════════════════════════════════════
+                .requestMatchers("/api/comedores/**").hasRole("ADMIN")
+
+                // ═══════════════════════════════════════════════════════════════
+                // CUALQUIER OTRO ENDPOINT — requiere autenticación
+                // ═══════════════════════════════════════════════════════════════
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex
@@ -119,7 +196,6 @@ public class SeguridadConfig {
                 .filter(s -> !s.isEmpty())
                 .collect(Collectors.toList());
         config.setAllowedOrigins(origins);
-        config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(false);

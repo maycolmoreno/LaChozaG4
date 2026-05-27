@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:views="clr-namespace:ChozaMaui.Views"
+       x:Class="ChozaMaui.Views.AppShell"
+       Title="La Choza POS"
+       Shell.NavBarIsVisible="False"
+       Shell.TabBarIsVisible="True">
+
+    <Shell.Resources>
+        <!-- Tab bar premium mobile-first -->
+        <Style TargetType="TabBar">
+            <Setter Property="Shell.TabBarBackgroundColor" Value="#FFFFFF" />
+            <Setter Property="Shell.TabBarForegroundColor" Value="#F97316" />
+            <Setter Property="Shell.TabBarTitleColor" Value="#F97316" />
+            <Setter Property="Shell.TabBarUnselectedColor" Value="#94A3B8" />
+        </Style>
+        <Style TargetType="Tab">
+            <Setter Property="Shell.TabBarTitleColor" Value="#F97316" />
+        </Style>
+    </Shell.Resources>
+
+    <!-- Rutas modales sin tab propio -->
+    <Shell.Routes>
+    </Shell.Routes>
+
+    <TabBar>
+
+        <!-- 1: Inicio / Mesas -->
+        <Tab Title="Mesas" Icon="tab_mesas.png">
+            <ShellContent ContentTemplate="{DataTemplate views:MapaPage}" Route="mapa" />
+        </Tab>
+
+        <!-- 2: Pedidos -->
+        <Tab Title="Pedidos" Icon="tab_pedidos.png">
+            <ShellContent ContentTemplate="{DataTemplate views:PedidosPage}" Route="pedidos" />
+        </Tab>
+
+        <!-- 3: Notificaciones -->
+        <Tab Title="Avisos" Icon="tab_notif.png">
+            <ShellContent ContentTemplate="{DataTemplate views:NotificacionesPage}" Route="notificaciones" />
+        </Tab>
+
+        <!-- 4: Perfil -->
+        <Tab Title="Perfil" Icon="tab_perfil.png">
+            <ShellContent ContentTemplate="{DataTemplate views:PerfilPage}" Route="perfil" />
+        </Tab>
+
+    </TabBar>
+
+</Shell>

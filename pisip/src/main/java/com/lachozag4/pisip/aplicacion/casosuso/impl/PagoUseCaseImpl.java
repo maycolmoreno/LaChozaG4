@@ -11,9 +11,11 @@ import com.lachozag4.pisip.aplicacion.excepciones.BusinessException;
 import com.lachozag4.pisip.aplicacion.excepciones.NotFoundException;
 import com.lachozag4.pisip.dominio.entidades.CajaTurno;
 import com.lachozag4.pisip.dominio.entidades.Cuenta;
+import com.lachozag4.pisip.dominio.entidades.Mesa;
 import com.lachozag4.pisip.dominio.entidades.Pago;
 import com.lachozag4.pisip.dominio.repositorios.ICajaTurnoRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.ICuentaRepositorio;
+import com.lachozag4.pisip.dominio.repositorios.IMesaRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.IPagoRepositorio;
 
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class PagoUseCaseImpl implements IPagoUseCase {
 	private final IPagoRepositorio pagoRepositorio;
 	private final ICuentaRepositorio cuentaRepositorio;
 	private final ICajaTurnoRepositorio cajaRepositorio;
+	private final IMesaRepositorio mesaRepositorio;
 
 	@Override
 	@Transactional
@@ -72,6 +75,10 @@ public class PagoUseCaseImpl implements IPagoUseCase {
 		if (nuevoTotalPagado + EPSILON >= cuenta.getTotal()) {
 			Cuenta pagada = cuenta.conEstado(Cuenta.ESTADO_PAGADA, LocalDateTime.now());
 			cuentaRepositorio.actualizar(pagada);
+			Mesa mesa = cuenta.getFkMesa();
+			if (mesa != null) {
+				mesaRepositorio.actualizar(mesa.conEstado(true));
+			}
 		}
 
 		return guardado;

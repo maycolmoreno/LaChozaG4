@@ -108,7 +108,7 @@
                             </div>
                         </div>
                         <!-- Mesas sin comedor -->
-                        <div th:if="${!mesasSinComedor.isEmpty()}" class="tp-comedor-zone">
+                        <div th:if="${mesasSinComedor != null and !mesasSinComedor.isEmpty()}" class="tp-comedor-zone">
                             <div class="tp-comedor-header">
                                 <span class="tp-comedor-name">Sin Asignar</span>
                                 <span class="tp-comedor-count" th:text="${mesasSinComedor.size()}"></span>

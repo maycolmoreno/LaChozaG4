@@ -11,12 +11,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "pago")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class PagoJpa implements Serializable {
 
@@ -48,4 +50,17 @@ public class PagoJpa implements Serializable {
 	@ManyToOne
 	@JoinColumn(name = "fkCajaTurno", nullable = false)
 	private CajaTurnoJpa fkCajaTurno;
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof PagoJpa that)) return false;
+		return idpago != 0 && idpago == that.idpago;
+	}
+
+	@Override
+	public int hashCode() { return getClass().hashCode(); }
+
+	@Override
+	public String toString() { return "PagoJpa(id=" + idpago + ")"; }
 }

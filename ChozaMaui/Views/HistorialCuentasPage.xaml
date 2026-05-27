@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ChozaMaui.ViewModels"
+             xmlns:models="clr-namespace:ChozaMaui.Models"
+             xmlns:controls="clr-namespace:ChozaMaui.Views.Controls"
+             x:Class="ChozaMaui.Views.HistorialCuentasPage"
+             x:DataType="vm:HistorialCuentasViewModel"
+             Title="Cobros"
+             BackgroundColor="#F6F8FC">
+
+    <Grid RowDefinitions="Auto,*">
+        <Grid Grid.Row="0"
+              BackgroundColor="#F97316"
+              Padding="16,46,16,18"
+              ColumnDefinitions="*,Auto">
+            <VerticalStackLayout Grid.Column="0"
+                                 Spacing="2">
+                <Label Text="Cobros"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       TextColor="White" />
+                <Label Text="{Binding TotalPendientes, StringFormat='Caja abierta • {0} pendientes'}"
+                       FontSize="14"
+                       TextColor="#FFEDD5" />
+            </VerticalStackLayout>
+
+            <controls:ConnectivityActionsView Grid.Column="1"
+                                              RefreshCommand="{Binding CargarCommand}"
+                                              VerticalOptions="Center" />
+        </Grid>
+
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Cuentas}"
+                        SelectionMode="None">
+            <CollectionView.Header>
+                <VerticalStackLayout Padding="16,14,16,10"
+                                     Spacing="14">
+                    <Border BackgroundColor="White"
+                            Stroke="#E5E7EB"
+                            StrokeShape="RoundRectangle 22"
+                            Padding="10,2">
+                        <SearchBar Placeholder="Buscar por mesa, cuenta o cliente..."
+                                   Text="{Binding TextoBusqueda}"
+                                   FontSize="14"
+                                   BackgroundColor="Transparent"
+                                   CancelButtonColor="#F97316" />
+                    </Border>
+
+                    <Border BackgroundColor="#FFFFFF"
+                            Stroke="#E5E7EB"
+                            StrokeShape="RoundRectangle 20"
+                            Padding="4">
+                        <Grid ColumnDefinitions="*,*,*"
+                              ColumnSpacing="6">
+                            <Button Grid.Column="0"
+                                    Command="{Binding MostrarPendientesCommand}"
+                                    Text="{Binding TotalPendientes, StringFormat='Pendientes {0}'}"
+                                    BackgroundColor="{Binding TabPendientesActivo, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#F97316|#FFFFFF'}"
+                                    TextColor="{Binding TabPendientesActivo, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#FFFFFF|#667085'}"
+                                    CornerRadius="16"
+                                    FontAttributes="Bold"
+                                    HeightRequest="44" />
+
+                            <Button Grid.Column="1"
+                                    Command="{Binding MostrarCobradasCommand}"
+                                    Text="{Binding TotalCobradas, StringFormat='Cobradas {0}'}"
+                                    BackgroundColor="{Binding TabCobradasActivo, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#F97316|#FFFFFF'}"
+                                    TextColor="{Binding TabCobradasActivo, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#FFFFFF|#667085'}"
+                                    CornerRadius="16"
+                                    FontAttributes="Bold"
+                                    HeightRequest="44" />
+
+                            <Button Grid.Column="2"
+                                    Command="{Binding MostrarTodasCommand}"
+                                    Text="Todas"
+                                    BackgroundColor="{Binding TabTodasActivo, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#F97316|#FFFFFF'}"
+                                    TextColor="{Binding TabTodasActivo, Converter={StaticResource BoolToColorConverter}, ConverterParameter='#FFFFFF|#667085'}"
+                                    CornerRadius="16"
+                                    FontAttributes="Bold"
+                                    HeightRequest="44" />
+                        </Grid>
+                    </Border>
+
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}"
+                                       Color="#F97316"
+                                       HorizontalOptions="Center" />
+
+                    <Label Text="{Binding Mensaje}"
+                           IsVisible="{Binding Mensaje, Converter={StaticResource StringToBoolConverter}}"
+                           FontSize="13"
+                           TextColor="#F97316"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </CollectionView.Header>
+
+            <CollectionView.EmptyView>
+                <Label Text="No hay cuentas para este filtro."
+                       Padding="20"
+                       FontSize="14"
+                       TextColor="#667085"
+                       HorizontalTextAlignment="Center"
+                       IsVisible="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}" />
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:CuentaResponse">
+                    <Border Margin="16,0,16,12"
+                            Padding="14"
+                            BackgroundColor="White"
+                            Stroke="#E9EEF5"
+                            StrokeShape="RoundRectangle 22">
+                        <Grid ColumnDefinitions="Auto,*,Auto"
+                              ColumnSpacing="14">
+                            <Border Grid.Column="0"
+                                    BackgroundColor="#FFF1E8"
+                                    Stroke="Transparent"
+                                    StrokeShape="RoundRectangle 26"
+                                    WidthRequest="52"
+                                    HeightRequest="52">
+                                <Label Text="🍽"
+                                       FontSize="24"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                            </Border>
+
+                            <VerticalStackLayout Grid.Column="1"
+                                                 Spacing="4"
+                                                 VerticalOptions="Center">
+                                <Label Text="{Binding MesaTexto}"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="#0F172A" />
+                                <Label Text="{Binding ClienteTexto}"
+                                       FontSize="14"
+                                       TextColor="#667085" />
+                                <Label Text="{Binding FechaApertura, StringFormat='Abierta: {0:hh:mm tt}'}"
+                                       FontSize="12"
+                                       TextColor="#94A3B8" />
+                                <Label Text="{Binding Idcuenta, StringFormat='Cuenta #{0}'}"
+                                       FontSize="12"
+                                       TextColor="#94A3B8" />
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Column="2"
+                                                 Spacing="10"
+                                                 HorizontalOptions="End"
+                                                 VerticalOptions="Center">
+                                <Label Text="{Binding Total, StringFormat='${0:F2}'}"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       HorizontalTextAlignment="End"
+                                       TextColor="#F97316" />
+
+                                <Button Text="COBRAR"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.CobrarCuentaCommand}"
+                                        CommandParameter="{Binding .}"
+                                        BackgroundColor="#F97316"
+                                        TextColor="White"
+                                        CornerRadius="14"
+                                        FontAttributes="Bold"
+                                        HeightRequest="42"
+                                        WidthRequest="120">
+                                    <Button.Triggers>
+                                        <DataTrigger TargetType="Button"
+                                                     Binding="{Binding Estado}"
+                                                     Value="ABIERTA">
+                                            <Setter Property="IsVisible" Value="True" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Button"
+                                                     Binding="{Binding Estado}"
+                                                     Value="PAGADA">
+                                            <Setter Property="IsVisible" Value="False" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Button"
+                                                     Binding="{Binding Estado}"
+                                                     Value="CERRADA">
+                                            <Setter Property="IsVisible" Value="False" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Button"
+                                                     Binding="{Binding Estado}"
+                                                     Value="ANULADA">
+                                            <Setter Property="IsVisible" Value="False" />
+                                        </DataTrigger>
+                                    </Button.Triggers>
+                                </Button>
+
+                                <Border Padding="10,6"
+                                        BackgroundColor="#F8FAFC"
+                                        Stroke="#E5E7EB"
+                                        StrokeShape="RoundRectangle 12"
+                                        IsVisible="False">
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border"
+                                                     Binding="{Binding Estado}"
+                                                     Value="PAGADA">
+                                            <Setter Property="IsVisible" Value="True" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border"
+                                                     Binding="{Binding Estado}"
+                                                     Value="CERRADA">
+                                            <Setter Property="IsVisible" Value="True" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border"
+                                                     Binding="{Binding Estado}"
+                                                     Value="ANULADA">
+                                            <Setter Property="IsVisible" Value="True" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Label Text="{Binding Estado}"
+                                           FontSize="11"
+                                           FontAttributes="Bold"
+                                           TextColor="#667085" />
+                                </Border>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

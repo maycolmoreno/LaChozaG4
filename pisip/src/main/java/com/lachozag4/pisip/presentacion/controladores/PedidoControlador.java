@@ -7,7 +7,9 @@ import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-// import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -20,6 +22,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.IPedidoUseCase;
+import com.lachozag4.pisip.aplicacion.servicios.NotificacionService;
+import com.lachozag4.pisip.dominio.entidades.Pedido;
+import com.lachozag4.pisip.infraestructura.seguridad.Roles;
 import com.lachozag4.pisip.presentacion.dto.request.CambiarEstadoRequestDTO;
 import com.lachozag4.pisip.presentacion.dto.request.PedidoRequestDTO;
 import com.lachozag4.pisip.presentacion.dto.response.PedidoPaginadoResponseDTO;
@@ -36,15 +41,16 @@ import lombok.RequiredArgsConstructor;
 public class PedidoControlador {
 
     private final IPedidoUseCase pedidoUseCase;
-    private final IPedidoDtoMapper responseMapper;       // Dominio -> ResponseDTO
-    private final PedidoRequestMapper pedidoRequestMapper;    // RequestDTO -> Dominio
+    private final IPedidoDtoMapper responseMapper;         // Dominio -> ResponseDTO
+    private final PedidoRequestMapper pedidoRequestMapper; // RequestDTO -> Dominio
+    private final NotificacionService notificaciones;
 
     // =======================
     //         QUERIES
     // =======================
 
     @GetMapping
-    // @PreAuthorize("hasAnyRole('ADMIN','CAMARERO','COCINERO')")
+    @PreAuthorize(Roles.TODOS)
     public ResponseEntity<List<PedidoResponseDTO>> listar() {
         var lista = pedidoUseCase.listar()
                 .stream()
@@ -54,9 +60,16 @@ public class PedidoControlador {
     }
 
     @GetMapping("/{id:\\d+}")
-    // @PreAuthorize("hasAnyRole('ADMIN','CAMARERO','COCINERO')")
+    @PreAuthorize(Roles.TODOS)
     public ResponseEntity<PedidoResponseDTO> obtenerPorId(@PathVariable("id") int idpedido) {
         var pedido = pedidoUseCase.obtenerPorId(idpedido);
+        return ResponseEntity.ok(responseMapper.toResponseDTO(pedido));
+    }
+
+    @GetMapping("/cuenta/{idCuenta:\\d+}/reciente")
+    @PreAuthorize(Roles.TODOS)
+    public ResponseEntity<PedidoResponseDTO> obtenerRecientePorCuenta(@PathVariable("idCuenta") int idcuenta) {
+        var pedido = pedidoUseCase.obtenerRecientePorCuenta(idcuenta);
         return ResponseEntity.ok(responseMapper.toResponseDTO(pedido));
     }
 
@@ -65,6 +78,7 @@ public class PedidoControlador {
      * Ejemplo: GET /api/pedidos/paginado?page=0&size=10&estado=PENDIENTE&q=mesa&fechaDesde=2024-01-01
      */
     @GetMapping("/paginado")
+    @PreAuthorize(Roles.TODOS)
     public ResponseEntity<PedidoPaginadoResponseDTO> listarPaginado(
             @RequestParam(required = false) String estado,
             @RequestParam(required = false) String q,
@@ -101,7 +115,7 @@ public class PedidoControlador {
     // =======================
 
     @PostMapping(consumes = "application/json")
-    // @PreAuthorize("hasAnyRole('ADMIN','CAMARERO')")
+        @PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO)
     public ResponseEntity<PedidoResponseDTO> crear(@Valid @RequestBody PedidoRequestDTO request) {
 		var dominio = pedidoRequestMapper.toDomain(request);
         var creado  = pedidoUseCase.crear(dominio);
@@ -112,7 +126,7 @@ public class PedidoControlador {
     }
 
     @PutMapping(value = "/{id:\\d+}", consumes = "application/json")
-    // @PreAuthorize("hasAnyRole('ADMIN','CAMARERO')")
+    @PreAuthorize(Roles.ADMIN_CAMARERO)
     public ResponseEntity<PedidoResponseDTO> actualizar(@PathVariable("id") int idpedido,
                                                         @Valid @RequestBody PedidoRequestDTO request) {
 		var dominio      = pedidoRequestMapper.toDomain(request);
@@ -121,33 +135,145 @@ public class PedidoControlador {
     }
 
     /**
-     * Cambiar estado del pedido (ej.: PENDIENTE -> EN_COCINA -> ENTREGADO -> CERRADO/CANCELADO).
-     * Si prefieres PUT, puedes mantenerlo, pero PATCH es más semántico para cambios parciales.
+     * Endpoint genérico de compatibilidad para clientes que aún usan
+     * PATCH /api/pedidos/{id}/estado con body {"estado":"..."}.
      */
     @PatchMapping(value = "/{id:\\d+}/estado", consumes = "application/json")
-    // @PreAuthorize("hasAnyRole('ADMIN','CAMARERO','COCINERO')")
+    @PreAuthorize(Roles.TODOS)
     public ResponseEntity<PedidoResponseDTO> cambiarEstado(@PathVariable("id") int idpedido,
-                                                           @Valid @RequestBody CambiarEstadoRequestDTO request) {
+                                                           @Valid @RequestBody CambiarEstadoRequestDTO request,
+                                                           Authentication authentication) {
+        validarPermisoCambioEstadoCompat(request.getEstado(), authentication);
         var actualizado = pedidoUseCase.cambiarEstado(idpedido, request.getEstado());
         return ResponseEntity.ok(responseMapper.toResponseDTO(actualizado));
     }
 
-    // Soporte adicional para PUT /{id}/estado para el front consumochoza
-    @PutMapping(value = "/{id:\\d+}/estado", consumes = "application/json")
-    public ResponseEntity<PedidoResponseDTO> cambiarEstadoPut(@PathVariable("id") int idpedido,
-                                                              @Valid @RequestBody CambiarEstadoRequestDTO request) {
-        var actualizado = pedidoUseCase.cambiarEstado(idpedido, request.getEstado());
+    // ─── Transiciones de estado (semánticas) ──────────────────────────────────
+
+    /**
+     * CAMARERO o CAJERO confirman el pedido y lo envían a cocina.
+     * Transición: PENDIENTE → EN_COCINA
+     */
+    @PatchMapping("/{id:\\d+}/confirmar")
+    @PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO)
+    public ResponseEntity<PedidoResponseDTO> confirmar(@PathVariable("id") int idpedido,
+                                                       Authentication authentication) {
+        var actualizado = pedidoUseCase.cambiarEstado(idpedido, Pedido.ESTADO_EN_COCINA);
+        var origen = obtenerRolOperativo(authentication);
+        notificaciones.notificarCocina(idpedido, actualizado.getEstado(), origen);
         return ResponseEntity.ok(responseMapper.toResponseDTO(actualizado));
     }
 
     /**
-     * Semánticamente, en tu caso de uso `eliminar` realiza una "cancelación".
-     * Si quieres hacerlo explícito, puedes exponer POST /{id}/cancelar y conservar DELETE para borrado físico.
+     * COCINA comienza a preparar el pedido.
+     * Transición: PENDIENTE → EN_COCINA (asignación directa desde cocina)
      */
+    @PatchMapping("/{id:\\d+}/preparando")
+    @PreAuthorize(Roles.ADMIN_COCINA)
+    public ResponseEntity<PedidoResponseDTO> preparando(@PathVariable("id") int idpedido) {
+        var actualizado = pedidoUseCase.cambiarEstado(idpedido, Pedido.ESTADO_EN_COCINA);
+        notificaciones.notificarCocinaPrepara(idpedido, actualizado.getEstado(), "COCINA");
+        return ResponseEntity.ok(responseMapper.toResponseDTO(actualizado));
+    }
+
+    /**
+     * COCINA marca el pedido como listo para entregar.
+     * Transición: EN_COCINA | EN_BAR → LISTO_PARA_ENTREGA
+     */
+    @PatchMapping("/{id:\\d+}/listo")
+    @PreAuthorize(Roles.ADMIN_COCINA)
+    public ResponseEntity<PedidoResponseDTO> listo(@PathVariable("id") int idpedido) {
+        var actualizado = pedidoUseCase.cambiarEstado(idpedido, Pedido.ESTADO_LISTO_PARA_ENTREGA);
+        notificaciones.notificarCamareroListo(idpedido, actualizado.getEstado(), "COCINA");
+        return ResponseEntity.ok(responseMapper.toResponseDTO(actualizado));
+    }
+
+    /**
+     * CAMARERO entrega el pedido y lo marca como completado.
+     * Transición: LISTO_PARA_ENTREGA → COMPLETADO
+     */
+    @PatchMapping("/{id:\\d+}/entregado")
+    @PreAuthorize(Roles.ADMIN_CAMARERO)
+    public ResponseEntity<PedidoResponseDTO> entregado(@PathVariable("id") int idpedido) {
+        var actualizado = pedidoUseCase.cambiarEstado(idpedido, Pedido.ESTADO_COMPLETADO);
+        notificaciones.notificarCamareroEntregado(idpedido, actualizado.getEstado(), "CAMARERO");
+        return ResponseEntity.ok(responseMapper.toResponseDTO(actualizado));
+    }
+
+    /**
+     * ADMIN cancela el pedido en cualquier estado activo.
+     * Transición: PENDIENTE | EN_COCINA | EN_BAR | LISTO_PARA_ENTREGA → CANCELADO
+     */
+    @PatchMapping("/{id:\\d+}/cancelar")
+    @PreAuthorize(Roles.SOLO_ADMIN)
+    public ResponseEntity<PedidoResponseDTO> cancelar(@PathVariable("id") int idpedido) {
+        var actualizado = pedidoUseCase.cambiarEstado(idpedido, Pedido.ESTADO_CANCELADO);
+        notificaciones.notificarCancelado(idpedido, actualizado.getEstado(), "ADMIN");
+        return ResponseEntity.ok(responseMapper.toResponseDTO(actualizado));
+    }
+
     @DeleteMapping("/{id:\\d+}")
-    // @PreAuthorize("hasAnyRole('ADMIN','CAMARERO')")
+    @PreAuthorize(Roles.ADMIN_CAMARERO)
     public ResponseEntity<Void> eliminar(@PathVariable("id") int idpedido) {
         pedidoUseCase.eliminar(idpedido);
         return ResponseEntity.noContent().build();
+    }
+
+    private void validarPermisoCambioEstadoCompat(String estadoSolicitado, Authentication authentication) {
+        var estado = (estadoSolicitado == null ? "" : estadoSolicitado.trim().toUpperCase());
+        if (estado.isEmpty()) {
+            return;
+        }
+
+        boolean esAdmin = tieneRol(authentication, Roles.ADMIN);
+        boolean esCamarero = tieneRol(authentication, Roles.CAMARERO);
+        boolean esCocina = tieneRol(authentication, Roles.COCINA);
+        boolean esCajero = tieneRol(authentication, Roles.CAJERO);
+
+        boolean permitido;
+        switch (estado) {
+            case Pedido.ESTADO_EN_COCINA:
+            permitido = esAdmin || esCamarero || esCajero;
+                break;
+            case "LISTO":
+            case Pedido.ESTADO_LISTO_PARA_ENTREGA:
+                permitido = esAdmin || esCocina;
+                break;
+            case Pedido.ESTADO_COMPLETADO:
+            case "ENTREGADO":
+                permitido = esAdmin || esCamarero;
+                break;
+            case Pedido.ESTADO_CANCELADO:
+                permitido = esAdmin;
+                break;
+            default:
+                permitido = esAdmin;
+                break;
+        }
+
+        if (!permitido) {
+            throw new AccessDeniedException("Tu rol no puede cambiar el pedido a " + estado + ".");
+        }
+    }
+
+    private boolean tieneRol(Authentication authentication, String rol) {
+        String authority = "ROLE_" + rol;
+        return authentication.getAuthorities().stream().anyMatch(a -> authority.equals(a.getAuthority()));
+    }
+
+    private String obtenerRolOperativo(Authentication authentication) {
+        if (tieneRol(authentication, Roles.ADMIN)) {
+            return Roles.ADMIN;
+        }
+        if (tieneRol(authentication, Roles.CAJERO)) {
+            return Roles.CAJERO;
+        }
+        if (tieneRol(authentication, Roles.CAMARERO)) {
+            return Roles.CAMARERO;
+        }
+        if (tieneRol(authentication, Roles.COCINA)) {
+            return Roles.COCINA;
+        }
+        return "SISTEMA";
     }
 }

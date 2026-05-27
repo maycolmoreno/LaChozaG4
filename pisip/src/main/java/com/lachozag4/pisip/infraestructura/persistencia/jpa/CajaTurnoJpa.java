@@ -9,12 +9,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "caja_turno")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class CajaTurnoJpa implements Serializable {
 
@@ -53,4 +55,17 @@ public class CajaTurnoJpa implements Serializable {
 
 	@Column(length = 255)
 	private String observaciones;
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof CajaTurnoJpa that)) return false;
+		return idcaja != 0 && idcaja == that.idcaja;
+	}
+
+	@Override
+	public int hashCode() { return getClass().hashCode(); }
+
+	@Override
+	public String toString() { return "CajaTurnoJpa(id=" + idcaja + ")"; }
 }

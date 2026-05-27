@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.ICajaUseCase;
+import com.lachozag4.pisip.infraestructura.seguridad.Roles;
 import com.lachozag4.pisip.presentacion.dto.request.AperturaCajaRequestDTO;
 import com.lachozag4.pisip.presentacion.dto.request.CierreCajaRequestDTO;
 import com.lachozag4.pisip.presentacion.dto.response.CajaTurnoResponseDTO;
@@ -26,6 +28,7 @@ public class CajaControlador {
 	private final ICajaUseCase cajaUseCase;
 
 	@PostMapping(value = "/apertura", consumes = "application/json")
+	@PreAuthorize(Roles.ADMIN_CAJERO)
 	public ResponseEntity<CajaTurnoResponseDTO> abrirCaja(@Valid @RequestBody AperturaCajaRequestDTO request) {
 		var caja = cajaUseCase.abrirCaja(request.getMontoInicial(), request.getUsuarioApertura(), request.getObservaciones());
 		var response = toResponse(caja);
@@ -33,12 +36,14 @@ public class CajaControlador {
 	}
 
 	@GetMapping("/abierta")
+	@PreAuthorize(Roles.ADMIN_CAJERO)
 	public ResponseEntity<CajaTurnoResponseDTO> obtenerCajaAbierta() {
 		var caja = cajaUseCase.obtenerCajaAbierta();
 		return ResponseEntity.ok(toResponse(caja));
 	}
 
 	@PostMapping(value = "/cierre", consumes = "application/json")
+	@PreAuthorize(Roles.ADMIN_CAJERO)
 	public ResponseEntity<CajaTurnoResponseDTO> cerrarCaja(@Valid @RequestBody CierreCajaRequestDTO request) {
 		var caja = cajaUseCase.cerrarCaja(request.getMontoDeclaradoCierre(), request.getUsuarioCierre(),
 				request.getObservaciones());
@@ -46,6 +51,7 @@ public class CajaControlador {
 	}
 
 	@GetMapping
+	@PreAuthorize(Roles.ADMIN_CAJERO)
 	public ResponseEntity<List<CajaTurnoResponseDTO>> listar() {
 		var lista = cajaUseCase.listar().stream().map(this::toResponse).toList();
 		return ResponseEntity.ok(lista);

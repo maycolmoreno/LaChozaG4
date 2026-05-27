@@ -10,7 +10,6 @@ import com.lachozag4.pisip.dominio.repositorios.IClienteRepositorio;
 import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.IClienteJpaMapper;
 import com.lachozag4.pisip.infraestructura.repositorios.IClienteJpaRepositorio;
 
-
 public class ClienteRepositorioImpl implements IClienteRepositorio {
 
     private final IClienteJpaRepositorio jpaRepository;

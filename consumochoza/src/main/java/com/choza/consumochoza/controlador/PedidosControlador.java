@@ -29,7 +29,6 @@ import com.choza.consumochoza.modelo.dto.ProductoDTO;
 import com.choza.consumochoza.modelo.dto.UsuarioDTO;
 import com.choza.consumochoza.modelo.dto.CuentaDTO;
 import com.choza.consumochoza.service.ICategoriaService;
-import com.choza.consumochoza.service.ICajaService;
 import com.choza.consumochoza.service.IClienteService;
 import com.choza.consumochoza.service.IComedorService;
 import com.choza.consumochoza.service.IMesaService;
@@ -55,7 +54,6 @@ public class PedidosControlador {
     private final IProductoService productoService;
     private final ICategoriaService categoriaService;
     private final ICuentaService cuentaService;
-    private final ICajaService cajaService;
     private final IPagoService pagoService;
     private final IComedorService comedorService;
 
@@ -178,13 +176,6 @@ public class PedidosControlador {
 
     @GetMapping("/nuevo")
     public String mostrarFormularioNuevo(Model model, Authentication authentication, RedirectAttributes redirectAttributes) {
-        try {
-            cajaService.obtenerCajaAbierta();
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensajeError", "Debe aperturar caja antes de realizar ventas.");
-            return "redirect:/caja";
-        }
-
         PedidoDTO pedido = new PedidoDTO();
         
         prepararModeloPos(model, authentication, pedido);
@@ -329,10 +320,6 @@ public class PedidosControlador {
         
         try {
             if (pedido.getIdpedido() == 0) {
-                cajaService.obtenerCajaAbierta();
-            }
-
-            if (pedido.getIdpedido() == 0) {
                 List<PedidoDTO> pedidosCreados = new ArrayList<>();
                 List<PedidoDTO> pedidosAProcesar = new ArrayList<>();
 
@@ -454,9 +441,6 @@ public class PedidosControlador {
                 } else {
                     redirectAttributes.addFlashAttribute("mensajeError", mensajeError);
                 }
-            } else if (mensajeError != null && mensajeError.toLowerCase().contains("aperturar caja")) {
-                redirectAttributes.addFlashAttribute("mensajeError", mensajeError);
-                return "redirect:/caja";
             } else if (mensajeError != null && mensajeError.toLowerCase().contains("mesa")) {
                 if (esNuevo) {
                     redirectAttributes.addFlashAttribute("error", mensajeError);
@@ -497,7 +481,7 @@ public class PedidosControlador {
     }
 
     @GetMapping("/editar/{id}")
-    public String mostrarFormularioEditar(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
+    public String mostrarFormularioEditar(@PathVariable int id, Model model, Authentication authentication, RedirectAttributes redirectAttributes) {
         PedidoDTO pedido = pedidoService.obtenerPorId(id);
         
         // Bloquear edicion si ya esta en cocina, listo para entrega o en estado final
@@ -537,22 +521,7 @@ public class PedidosControlador {
             pedido.setDetalles(pedido.getDetalle());
         }
         
-        model.addAttribute("pedido", pedido);
-        model.addAttribute("usuarios", usuarioService.listarTodos());
-        // Asegura que la mesa asignada estÃƒÂ© en la lista aunque estÃƒÂ© ocupada
-        java.util.List<com.choza.consumochoza.modelo.dto.MesaDTO> mesas = mesaService.listarDisponibles();
-        if (pedido.getIdMesa() != 0 && mesas.stream().noneMatch(m -> m.getIdmesa() == pedido.getIdMesa())) {
-            com.choza.consumochoza.modelo.dto.MesaDTO mesaAsignada = mesaService.obtenerPorId(pedido.getIdMesa());
-            if (mesaAsignada != null) {
-                mesas.add(mesaAsignada);
-            }
-        }
-        model.addAttribute("mesas", mesas);
-        model.addAttribute("clientes", clienteService.listarTodos());
-        model.addAttribute("productos", productoService.listarActivos());
-        model.addAttribute("categorias", categoriaService.listarActivas());
-        // Cuentas abiertas para indicar en el POS si esta mesa ya tiene cuenta
-        model.addAttribute("cuentasAbiertas", cuentaService.listarAbiertas());
+        prepararModeloPos(model, authentication, pedido);
         return "Pedido/POS";
     }
 

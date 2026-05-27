@@ -171,19 +171,61 @@ public class PosApiControlador {
                 .map(c -> c.getIdcategoria())
                 .collect(java.util.stream.Collectors.toSet());
 
+        Map<Integer, ProductoDTO> productosMap = productoService.listarActivos().stream()
+                .collect(Collectors.toMap(ProductoDTO::getIdproducto, p -> p));
+
         return pedidoService.listarTodos().stream()
                 .filter(p -> "EN_COCINA".equals(p.getEstado()))
-                .peek(p -> {
-                    if (p.getDetalle() != null) {
-                        var detalleCocina = p.getDetalle().stream()
-                                .filter(det -> det != null && det.getCantidad() > 0)
-                                .filter(det -> det.getProducto() == null
-                                        || !categoriasBarIds.contains(det.getProducto().getCategoriaId()))
-                                .toList();
-                        p.setDetalle(detalleCocina);
-                    }
-                })
-                .filter(p -> p.getDetalle() != null && !p.getDetalle().isEmpty())
+                .map(this::rehidratarPedidoSiHaceFalta)
+                .peek(p -> p.setDetalle(filtrarDetalleCocina(p, categoriasBarIds, productosMap)))
                 .toList();
+    }
+
+    private PedidoDTO rehidratarPedidoSiHaceFalta(PedidoDTO pedido) {
+        if (pedido == null) {
+            return null;
+        }
+
+        if (pedido.getDetalle() != null && !pedido.getDetalle().isEmpty()) {
+            return pedido;
+        }
+
+        try {
+            PedidoDTO completo = pedidoService.obtenerPorId(pedido.getIdpedido());
+            return completo != null ? completo : pedido;
+        } catch (Exception ex) {
+            return pedido;
+        }
+    }
+
+    private List<com.choza.consumochoza.modelo.dto.PedidoDetalleDTO> filtrarDetalleCocina(
+            PedidoDTO pedido,
+            Set<Integer> categoriasBarIds,
+            Map<Integer, ProductoDTO> productosMap) {
+        if (pedido == null || pedido.getDetalle() == null) {
+            return List.of();
+        }
+
+        return pedido.getDetalle().stream()
+                .filter(det -> det != null && det.getCantidad() > 0)
+                .filter(det -> !esDetalleBar(det, categoriasBarIds, productosMap))
+                .toList();
+    }
+
+    private boolean esDetalleBar(com.choza.consumochoza.modelo.dto.PedidoDetalleDTO detalle,
+                                 Set<Integer> categoriasBarIds,
+                                 Map<Integer, ProductoDTO> productosMap) {
+        if (detalle == null || categoriasBarIds == null || categoriasBarIds.isEmpty()) {
+            return false;
+        }
+        if (detalle.getProducto() != null && detalle.getProducto().getCategoriaId() > 0) {
+            return categoriasBarIds.contains(detalle.getProducto().getCategoriaId());
+        }
+        if (detalle.getIdProducto() <= 0) {
+            return false;
+        }
+
+        ProductoDTO producto = productosMap.get(detalle.getIdProducto());
+        return producto != null && categoriasBarIds.contains(producto.getCategoriaId());
     }
 }

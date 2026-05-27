@@ -4,7 +4,10 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import com.lachozag4.pisip.infraestructura.seguridad.Roles;
 
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.IClienteUseCase;
 import com.lachozag4.pisip.presentacion.dto.request.ClienteRequestDTO;
@@ -24,6 +27,7 @@ public class ClienteControlador {
 
     // CREATE
     @PostMapping
+    @PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO)
     public ResponseEntity<ClienteResponseDTO> crear(
             @Valid @RequestBody ClienteRequestDTO request) {
 
@@ -34,6 +38,7 @@ public class ClienteControlador {
 
     // READ ALL
     @GetMapping
+    @PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO)
     public ResponseEntity<List<ClienteResponseDTO>> listar() {
         var lista = clienteUseCase.listar()
                 .stream()
@@ -45,6 +50,7 @@ public class ClienteControlador {
 
     // READ BY ID
     @GetMapping("/{id}")
+    @PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO)
     public ResponseEntity<ClienteResponseDTO> obtenerPorId(@PathVariable int id) {
         var cliente = clienteUseCase.obtenerPorId(id);
         return ResponseEntity.ok(mapper.toResponseDTO(cliente));
@@ -52,6 +58,7 @@ public class ClienteControlador {
 
     // UPDATE
     @PutMapping("/{id}")
+    @PreAuthorize(Roles.SOLO_ADMIN)
     public ResponseEntity<ClienteResponseDTO> actualizar(
             @PathVariable int id,
             @Valid @RequestBody ClienteRequestDTO request) {
@@ -62,6 +69,7 @@ public class ClienteControlador {
 
     // DELETE
     @DeleteMapping("/{id}")
+    @PreAuthorize(Roles.SOLO_ADMIN)
     public ResponseEntity<Void> eliminar(@PathVariable int id) {
         clienteUseCase.eliminar(id);
         return ResponseEntity.noContent().build();

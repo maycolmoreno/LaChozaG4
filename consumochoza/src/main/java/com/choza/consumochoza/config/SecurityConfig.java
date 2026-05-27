@@ -34,7 +34,13 @@ public class SecurityConfig {
 
 				// === RUTAS POR ROL ===
 
-				// API del POS (para clientes, cuentas, pedidos activos)
+				// API del KDS de cocina
+				.requestMatchers("/api/pos/cocina/**").hasAnyRole("COCINA", "ADMIN")
+
+				// Cambio de estado de pedidos desde POS/KDS
+				.requestMatchers("/api/pos/pedidos/**").hasAnyRole("CAMARERO", "ADMIN", "CAJERO", "COCINA")
+
+				// API del POS (clientes, cuentas, pedidos activos y soporte general)
 				.requestMatchers("/api/pos/**").hasAnyRole("CAMARERO", "ADMIN", "CAJERO")
 
 				// COCINA: ve pedidos pendientes (ADMIN también puede acceder)
@@ -43,8 +49,11 @@ public class SecurityConfig {
 				// CAMARERO: solo acceso al POS y pedidos
 				.requestMatchers("/pedidos/**").hasAnyRole("CAMARERO", "ADMIN", "CAJERO")
 
-				// CAJERO: acceso a cuentas y caja
-				.requestMatchers("/cuentas/**", "/caja/**").hasAnyRole("CAMARERO", "ADMIN", "CAJERO")
+				// CUENTAS: admin, cajero y camarero
+				.requestMatchers("/cuentas/**").hasAnyRole("CAMARERO", "ADMIN", "CAJERO")
+
+				// CAJA: solo admin y cajero
+				.requestMatchers("/caja/**").hasAnyRole("ADMIN", "CAJERO")
 
 				// ADMIN: acceso total a configuración
 				.requestMatchers("/usuario/**", "/categoria/**", "/producto/**", "/mesa/**", "/cliente/**")

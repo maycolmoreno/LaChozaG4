@@ -24,6 +24,9 @@ public class Pedido implements Serializable {
 
 	private final int idpedido;
 	private final LocalDateTime fecha;
+	private final LocalDateTime fechaEnCocina;
+	private final LocalDateTime fechaListoParaEntrega;
+	private final LocalDateTime fechaEntregado;
 	private final String estado;
 	private final String observaciones;
 	private Usuario fkUsuario;
@@ -32,10 +35,15 @@ public class Pedido implements Serializable {
 	private Cuenta fkCuenta;
 	private final List<PedidoDetalle> detalles;
 
-	public Pedido(int idpedido, LocalDateTime fecha, String estado, String observaciones, Usuario fkUsuario,
-			Mesa fkMesa, Cliente fkCliente, Cuenta fkCuenta, List<PedidoDetalle> detalles) {
+	public Pedido(int idpedido, LocalDateTime fecha, LocalDateTime fechaEnCocina,
+			LocalDateTime fechaListoParaEntrega, LocalDateTime fechaEntregado, String estado,
+			String observaciones, Usuario fkUsuario, Mesa fkMesa, Cliente fkCliente, Cuenta fkCuenta,
+			List<PedidoDetalle> detalles) {
 		this.idpedido = idpedido;
 		this.fecha = fecha;
+		this.fechaEnCocina = fechaEnCocina;
+		this.fechaListoParaEntrega = fechaListoParaEntrega;
+		this.fechaEntregado = fechaEntregado;
 		this.estado = estado;
 		this.observaciones = observaciones;
 		this.fkUsuario = fkUsuario;
@@ -55,6 +63,18 @@ public class Pedido implements Serializable {
 
 	public String getEstado() {
 		return estado;
+	}
+
+	public LocalDateTime getFechaEnCocina() {
+		return fechaEnCocina;
+	}
+
+	public LocalDateTime getFechaListoParaEntrega() {
+		return fechaListoParaEntrega;
+	}
+
+	public LocalDateTime getFechaEntregado() {
+		return fechaEntregado;
 	}
 
 	// ── Métodos de consulta de estado ──
@@ -118,16 +138,41 @@ public class Pedido implements Serializable {
 		if (!puedeTransicionarA(nuevoEstado)) {
 			throw new IllegalStateException("Transición de estado no permitida: " + estado + " → " + nuevoEstado);
 		}
-		return new Pedido(idpedido, fecha, nuevoEstado, observaciones, fkUsuario, fkMesa, fkCliente, fkCuenta,
-				detalles);
+
+		LocalDateTime ahora = LocalDateTime.now();
+		LocalDateTime nuevaFechaEnCocina = fechaEnCocina;
+		LocalDateTime nuevaFechaListoParaEntrega = fechaListoParaEntrega;
+		LocalDateTime nuevaFechaEntregado = fechaEntregado;
+
+		if ((ESTADO_EN_COCINA.equals(nuevoEstado) || ESTADO_EN_BAR.equals(nuevoEstado)) && nuevaFechaEnCocina == null) {
+			nuevaFechaEnCocina = ahora;
+		}
+		if (ESTADO_LISTO_PARA_ENTREGA.equals(nuevoEstado)) {
+			nuevaFechaListoParaEntrega = ahora;
+			if (nuevaFechaEnCocina == null) {
+				nuevaFechaEnCocina = ahora;
+			}
+		}
+		if (ESTADO_COMPLETADO.equals(nuevoEstado)) {
+			nuevaFechaEntregado = ahora;
+			if (nuevaFechaListoParaEntrega == null) {
+				nuevaFechaListoParaEntrega = ahora;
+			}
+			if (nuevaFechaEnCocina == null) {
+				nuevaFechaEnCocina = ahora;
+			}
+		}
+
+		return new Pedido(idpedido, fecha, nuevaFechaEnCocina, nuevaFechaListoParaEntrega, nuevaFechaEntregado,
+				nuevoEstado, observaciones, fkUsuario, fkMesa, fkCliente, fkCuenta, detalles);
 	}
 
 	/**
 	 * Crea una copia con estado PENDIENTE (para creación).
 	 */
 	public Pedido comoPendiente() {
-		return new Pedido(idpedido, fecha, ESTADO_PENDIENTE, observaciones, fkUsuario, fkMesa, fkCliente, fkCuenta,
-				detalles);
+		return new Pedido(idpedido, fecha, fechaEnCocina, fechaListoParaEntrega, fechaEntregado, ESTADO_PENDIENTE,
+				observaciones, fkUsuario, fkMesa, fkCliente, fkCuenta, detalles);
 	}
 
 	/**
@@ -136,7 +181,40 @@ public class Pedido implements Serializable {
 	 */
 	public Pedido conDatosActualizados(int id, LocalDateTime fecha, String observaciones, Usuario usuario, Mesa mesa,
 			Cliente cliente, List<PedidoDetalle> detalles) {
-		return new Pedido(id, fecha, this.estado, observaciones, usuario, mesa, cliente, fkCuenta, detalles);
+		return new Pedido(id, fecha, fechaEnCocina, fechaListoParaEntrega, fechaEntregado, this.estado,
+				observaciones, usuario, mesa, cliente, fkCuenta, detalles);
+	}
+
+	/**
+	 * Crea una copia con el estado forzado, sin validar transiciones.
+	 * Uso exclusivo al cerrar una cuenta (cajero finaliza el ciclo).
+	 */
+	public Pedido conEstadoForzado(String estadoForzado) {
+		LocalDateTime ahora = LocalDateTime.now();
+		LocalDateTime nuevaFechaEnCocina = fechaEnCocina;
+		LocalDateTime nuevaFechaListoParaEntrega = fechaListoParaEntrega;
+		LocalDateTime nuevaFechaEntregado = fechaEntregado;
+
+		if ((ESTADO_EN_COCINA.equals(estadoForzado) || ESTADO_EN_BAR.equals(estadoForzado)) && nuevaFechaEnCocina == null) {
+			nuevaFechaEnCocina = ahora;
+		}
+		if (ESTADO_LISTO_PARA_ENTREGA.equals(estadoForzado) && nuevaFechaListoParaEntrega == null) {
+			nuevaFechaListoParaEntrega = ahora;
+		}
+		if (ESTADO_COMPLETADO.equals(estadoForzado) && nuevaFechaEntregado == null) {
+			nuevaFechaEntregado = ahora;
+		}
+
+		return new Pedido(idpedido, fecha, nuevaFechaEnCocina, nuevaFechaListoParaEntrega, nuevaFechaEntregado,
+				estadoForzado, observaciones, fkUsuario, fkMesa, fkCliente, fkCuenta, detalles);
+	}
+
+	/**
+	 * Crea una copia asociando el pedido a la cuenta indicada.
+	 */
+	public Pedido conCuenta(Cuenta cuenta) {
+		return new Pedido(idpedido, fecha, fechaEnCocina, fechaListoParaEntrega, fechaEntregado, estado,
+				observaciones, fkUsuario, fkMesa, fkCliente, cuenta, detalles);
 	}
 
 	public String getObservaciones() {
@@ -181,9 +259,10 @@ public class Pedido implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Pedido{" + "idpedido=" + idpedido + ", fecha=" + fecha + ", estado=" + estado + ", observaciones='"
-				+ observaciones + '\'' + ", usuario=" + fkUsuario + ", mesa=" + fkMesa + ", fkCliente=" + fkCliente
-				+ ", detalles=" + detalles + '}';
+		return "Pedido{" + "idpedido=" + idpedido + ", fecha=" + fecha + ", fechaEnCocina=" + fechaEnCocina
+				+ ", fechaListoParaEntrega=" + fechaListoParaEntrega + ", fechaEntregado=" + fechaEntregado
+				+ ", estado=" + estado + ", observaciones='" + observaciones + '\'' + ", usuario=" + fkUsuario
+				+ ", mesa=" + fkMesa + ", fkCliente=" + fkCliente + ", detalles=" + detalles + '}';
 	}
 
 }

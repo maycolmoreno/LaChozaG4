@@ -11,7 +11,6 @@ import com.lachozag4.pisip.aplicacion.excepciones.NotFoundException;
 import com.lachozag4.pisip.dominio.entidades.Pedido;
 import com.lachozag4.pisip.dominio.entidades.Cuenta;
 import com.lachozag4.pisip.dominio.entidades.ResultadoPaginado;
-import com.lachozag4.pisip.dominio.repositorios.ICajaTurnoRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.IPedidoRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.ICuentaRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.IMesaRepositorio;
@@ -25,13 +24,11 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 	private final IPedidoRepositorio repositorio;
 	private final IGestionStockServicio stockServicio;
     private final ICuentaRepositorio cuentaRepositorio;
-    private final ICajaTurnoRepositorio cajaRepositorio;
     private final IMesaRepositorio mesaRepositorio;
 
 	@Override
 	@Transactional
 	public Pedido crear(Pedido pedido) {
-		validarCajaAbiertaParaVentas();
 		// Ya no restringimos por pedidos activos en la misma mesa.
 		// La mesa puede tener varios pedidos abiertos simultÃ¡neamente.
 		stockServicio.validarYDescontar(pedido.getDetalles());
@@ -49,6 +46,20 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 	public Pedido obtenerPorId(int id) {
 		return repositorio.buscarPorId(id)
 				.orElseThrow(() -> new NotFoundException("Pedido no encontrado con ID: " + id));
+	}
+
+	@Override
+	public Pedido obtenerRecientePorCuenta(int idcuenta) {
+		return repositorio.listarPorCuenta(idcuenta).stream()
+				.sorted((a, b) -> {
+					int activos = Boolean.compare(b.getEstado() != null && !b.esEstadoFinal(), a.getEstado() != null && !a.esEstadoFinal());
+					if (activos != 0) {
+						return activos;
+					}
+					return b.getFecha().compareTo(a.getFecha());
+				})
+				.findFirst()
+				.orElseThrow(() -> new NotFoundException("No se encontraron pedidos para la cuenta con ID: " + idcuenta));
 	}
 
 	@Override
@@ -103,12 +114,7 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 		if ((Pedido.ESTADO_COMPLETADO.equals(nuevoEstado) || Pedido.ESTADO_CANCELADO.equals(nuevoEstado))
 				&& guardado.getFkMesa() != null) {
 			int idMesa = guardado.getFkMesa().getIdmesa();
-			boolean tieneOtrosPedidosActivos = repositorio.listarTodos().stream()
-					.anyMatch(p -> p.getFkMesa() != null
-							&& p.getFkMesa().getIdmesa() == idMesa
-							&& p.getIdpedido() != guardado.getIdpedido()
-							&& !Pedido.ESTADO_COMPLETADO.equals(p.getEstado())
-							&& !Pedido.ESTADO_CANCELADO.equals(p.getEstado()));
+			boolean tieneOtrosPedidosActivos = repositorio.existePedidoActivoPorMesa(idMesa, guardado.getIdpedido());
 			if (!tieneOtrosPedidosActivos) {
 				mesaRepositorio.buscarPorId(idMesa).ifPresent(mesa ->
 					mesaRepositorio.guardar(mesa.conEstado(true))
@@ -198,11 +204,6 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 		}
 		if (Cuenta.ESTADO_PAGADA.equals(estadoCuenta) && Pedido.ESTADO_CANCELADO.equals(nuevoEstado)) {
 			throw new BusinessException("No se puede cancelar el pedido porque su cuenta ya esta " + estadoCuenta);
-		}
-	}
-	private void validarCajaAbiertaParaVentas() {
-		if (cajaRepositorio.buscarCajaAbierta().isEmpty()) {
-			throw new BusinessException("Debe aperturar caja antes de registrar ventas.");
 		}
 	}
 }

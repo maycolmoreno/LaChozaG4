@@ -10,6 +10,8 @@ public interface ICuentaUseCase {
 
 	Cuenta obtenerPorId(int idcuenta);
 
+	Cuenta obtenerAbiertaPorMesa(int idMesa);
+
 	List<Cuenta> listar();
 
 	List<Cuenta> listarAbiertas();

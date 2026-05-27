@@ -37,7 +37,7 @@ public class ProductoUseCaseImpl implements IProductoUseCase {
                 producto.getStockActual(),
                 producto.getDescripcion(),
                 producto.getImagenUrl(),
-                producto.getEstado(),
+                producto.isEstado(),
                 categoria
         );
 
@@ -86,7 +86,7 @@ public class ProductoUseCaseImpl implements IProductoUseCase {
                 producto.getStockActual(),
                 producto.getDescripcion(),
                 producto.getImagenUrl(),
-                producto.getEstado(),
+                producto.isEstado(),
                 categoria
         );
 

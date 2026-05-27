@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.lachozag4.pisip.dominio.entidades.Cuenta;
+import com.lachozag4.pisip.dominio.enums.EstadoCuenta;
 import com.lachozag4.pisip.dominio.repositorios.ICuentaRepositorio;
 import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.ICuentaJpaMapper;
 import com.lachozag4.pisip.infraestructura.repositorios.ICuentaJpaRepositorio;
@@ -34,13 +35,18 @@ public class CuentaRepositorioImpl implements ICuentaRepositorio {
 	}
 
 	@Override
+	public Optional<Cuenta> buscarAbiertaPorMesa(int idMesa) {
+		return jpaRepository.findFirstByEstadoAndFkMesa_Idmesa(EstadoCuenta.ABIERTA, idMesa).map(mapper::toDomain);
+	}
+
+	@Override
 	public List<Cuenta> listarTodas() {
 		return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
 	}
 
 	@Override
 	public List<Cuenta> listarAbiertas() {
-		return jpaRepository.findByEstado("ABIERTA").stream().map(mapper::toDomain).toList();
+		return jpaRepository.findByEstado(EstadoCuenta.ABIERTA).stream().map(mapper::toDomain).toList();
 	}
 
 	@Override

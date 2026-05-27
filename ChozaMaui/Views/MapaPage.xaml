@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ChozaMaui.ViewModels"
+             xmlns:models="clr-namespace:ChozaMaui.Models"
+             xmlns:controls="clr-namespace:ChozaMaui.Views.Controls"
+             x:Class="ChozaMaui.Views.MapaPage"
+             x:DataType="vm:MapaViewModel"
+             Title="Mesas"
+             Shell.NavBarIsVisible="False"
+             Shell.TabBarIsVisible="True"
+             BackgroundColor="{StaticResource Surface}">
+
+    <Grid>
+
+        <!-- ══ CONTENIDO PRINCIPAL ══ -->
+        <Grid RowDefinitions="Auto,*">
+
+            <!-- ── HEADER COMPACTO ── -->
+            <Grid Grid.Row="0"
+                  BackgroundColor="{StaticResource Primary}"
+                  Padding="16,44,16,16"
+                ColumnDefinitions="Auto,*,Auto"
+                  ColumnSpacing="10">
+
+                <!-- Logo -->
+                <Border Grid.Column="0"
+                        BackgroundColor="#FB923C"
+                        StrokeShape="RoundRectangle 10"
+                        Stroke="Transparent"
+                        Padding="8,6">
+                    <Label Text="LC"
+                           FontSize="14"
+                           FontAttributes="Bold"
+                           TextColor="White"
+                           VerticalOptions="Center" />
+                </Border>
+
+                <!-- Usuario + Rol -->
+                <VerticalStackLayout Grid.Column="1"
+                                     Spacing="1"
+                                     VerticalOptions="Center">
+                    <Label Text="{Binding NombreUsuario}"
+                           FontSize="15"
+                           FontAttributes="Bold"
+                           TextColor="White" />
+                    <Label Text="{Binding RolUsuario}"
+                           FontSize="11"
+                           TextColor="#FFEDD5"
+                           FontAttributes="Bold"
+                           CharacterSpacing="1" />
+                </VerticalStackLayout>
+
+                <controls:ConnectivityActionsView Grid.Column="2"
+                                                  RefreshCommand="{Binding CargarCommand}"
+                                                  VerticalOptions="Center" />
+            </Grid>
+
+            <!-- ── SCROLL PRINCIPAL ── -->
+            <RefreshView Grid.Row="1"
+                         IsRefreshing="{Binding IsBusy}"
+                         Command="{Binding CargarCommand}"
+                         RefreshColor="{StaticResource Primary}">
+                <CollectionView ItemsSource="{Binding Grupos}"
+                                ItemsUpdatingScrollMode="KeepScrollOffset"
+                                SelectionMode="None"
+                                Margin="16,0,16,0">
+                    <CollectionView.Header>
+                        <VerticalStackLayout Spacing="0">
+
+                            <!-- KPIs de mesas — strip horizontal -->
+                            <ScrollView Orientation="Horizontal"
+                                        HorizontalScrollBarVisibility="Never"
+                                        Padding="0,14,0,10">
+                                <HorizontalStackLayout Spacing="10">
+
+                                    <Border BackgroundColor="White"
+                                            Stroke="{StaticResource Border}"
+                                            StrokeShape="RoundRectangle 14"
+                                            Padding="14,10"
+                                            MinimumWidthRequest="80">
+                                        <VerticalStackLayout Spacing="3" HorizontalOptions="Center">
+                                            <BoxView WidthRequest="10" HeightRequest="10"
+                                                     CornerRadius="5" Color="{StaticResource MesaLibre}"
+                                                     HorizontalOptions="Center" />
+                                            <Label Text="{Binding TotalDisponibles}"
+                                                   FontSize="22" FontAttributes="Bold"
+                                                   TextColor="{StaticResource TextPrimary}"
+                                                   HorizontalOptions="Center" />
+                                            <Label Text="Libres"
+                                                   FontSize="11"
+                                                   TextColor="{StaticResource TextSecondary}"
+                                                   HorizontalOptions="Center" />
+                                        </VerticalStackLayout>
+                                    </Border>
+
+                                    <Border BackgroundColor="White"
+                                            Stroke="{StaticResource Border}"
+                                            StrokeShape="RoundRectangle 14"
+                                            Padding="14,10"
+                                            MinimumWidthRequest="80">
+                                        <VerticalStackLayout Spacing="3" HorizontalOptions="Center">
+                                            <BoxView WidthRequest="10" HeightRequest="10"
+                                                     CornerRadius="5" Color="{StaticResource MesaOcupada}"
+                                                     HorizontalOptions="Center" />
+                                            <Label Text="{Binding TotalOcupadas}"
+                                                   FontSize="22" FontAttributes="Bold"
+                                                   TextColor="{StaticResource TextPrimary}"
+                                                   HorizontalOptions="Center" />
+                                            <Label Text="Ocupadas"
+                                                   FontSize="11"
+                                                   TextColor="{StaticResource TextSecondary}"
+                                                   HorizontalOptions="Center" />
+                                        </VerticalStackLayout>
+                                    </Border>
+
+                                    <Border BackgroundColor="White"
+                                            Stroke="{StaticResource Border}"
+                                            StrokeShape="RoundRectangle 14"
+                                            Padding="14,10"
+                                            MinimumWidthRequest="80">
+                                        <VerticalStackLayout Spacing="3" HorizontalOptions="Center">
+                                            <BoxView WidthRequest="10" HeightRequest="10"
+                                                     CornerRadius="5" Color="{StaticResource MesaPreparando}"
+                                                     HorizontalOptions="Center" />
+                                            <Label Text="{Binding TotalEnPreparacion}"
+                                                   FontSize="22" FontAttributes="Bold"
+                                                   TextColor="{StaticResource TextPrimary}"
+                                                   HorizontalOptions="Center" />
+                                            <Label Text="Cocina"
+                                                   FontSize="11"
+                                                   TextColor="{StaticResource TextSecondary}"
+                                                   HorizontalOptions="Center" />
+                                        </VerticalStackLayout>
+                                    </Border>
+
+                                    <Border BackgroundColor="White"
+                                            Stroke="{StaticResource Border}"
+                                            StrokeShape="RoundRectangle 14"
+                                            Padding="14,10"
+                                            MinimumWidthRequest="80">
+                                        <VerticalStackLayout Spacing="3" HorizontalOptions="Center">
+                                            <BoxView WidthRequest="10" HeightRequest="10"
+                                                     CornerRadius="5" Color="{StaticResource MesaPendientePago}"
+                                                     HorizontalOptions="Center" />
+                                            <Label Text="{Binding TotalPendientePago}"
+                                                   FontSize="22" FontAttributes="Bold"
+                                                   TextColor="{StaticResource TextPrimary}"
+                                                   HorizontalOptions="Center" />
+                                            <Label Text="Por cobrar"
+                                                   FontSize="11"
+                                                   TextColor="{StaticResource TextSecondary}"
+                                                   HorizontalOptions="Center" />
+                                        </VerticalStackLayout>
+                                    </Border>
+
+                                </HorizontalStackLayout>
+                            </ScrollView>
+
+                            <!-- Loading -->
+                            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                               IsVisible="{Binding IsBusy}"
+                                               Color="{StaticResource Primary}"
+                                               HorizontalOptions="Center"
+                                               Margin="0,24" />
+
+                            <!-- Mensaje vacío -->
+                            <VerticalStackLayout IsVisible="{Binding Mensaje, Converter={StaticResource StringToBoolConverter}}"
+                                                 HorizontalOptions="Center"
+                                                 Spacing="8"
+                                                 Margin="0,40">
+                                <Label Text="🪑" FontSize="48" HorizontalOptions="Center" />
+                                <Label Text="{Binding Mensaje}"
+                                       FontSize="15"
+                                       TextColor="{StaticResource TextSecondary}"
+                                       HorizontalTextAlignment="Center" />
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </CollectionView.Header>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:GrupoMesaVisual">
+
+                            <!-- Card por comedor -->
+                            <Border BackgroundColor="White"
+                                    Stroke="{StaticResource Border}"
+                                    StrokeShape="RoundRectangle 18"
+                                    Padding="16"
+                                    Margin="0,0,0,12">
+                                <VerticalStackLayout Spacing="14">
+
+                                            <!-- Cabecera del comedor -->
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <Label Grid.Column="0"
+                                                       Text="{Binding Nombre}"
+                                                       FontSize="15"
+                                                       FontAttributes="Bold"
+                                                       TextColor="{StaticResource TextPrimary}"
+                                                       TextTransform="Uppercase"
+                                                       CharacterSpacing="0.8"
+                                                       VerticalOptions="Center" />
+                                                <Border Grid.Column="1"
+                                                        BackgroundColor="{StaticResource SurfaceSunken}"
+                                                        Stroke="Transparent"
+                                                        StrokeShape="RoundRectangle 10"
+                                                        Padding="10,4">
+                                                    <Label Text="{Binding TotalMesas, StringFormat='{0} mesas'}"
+                                                           FontSize="11"
+                                                           FontAttributes="Bold"
+                                                           TextColor="{StaticResource TextSecondary}" />
+                                                </Border>
+                                            </Grid>
+
+                                            <!-- Grid de mesas -->
+                                            <FlexLayout BindableLayout.ItemsSource="{Binding .}"
+                                                        Wrap="Wrap"
+                                                        JustifyContent="Start"
+                                                        AlignItems="Start"
+                                                        Direction="Row">
+                                                <BindableLayout.ItemTemplate>
+                                                    <DataTemplate x:DataType="models:MesaVisual">
+
+                                                        <!-- Mesa Card -->
+                                                        <Border BackgroundColor="{Binding EstadoColor, Converter={StaticResource HexToColorConverter}}"
+                                                                StrokeShape="RoundRectangle 16"
+                                                                Stroke="Transparent"
+                                                                WidthRequest="96"
+                                                                HeightRequest="88"
+                                                                Margin="0,0,8,8">
+                                                            <Border.Shadow>
+                                                                <Shadow Brush="{Binding EstadoColor, Converter={StaticResource HexToColorConverter}}"
+                                                                        Offset="0,3"
+                                                                        Radius="8"
+                                                                        Opacity="0.3" />
+                                                            </Border.Shadow>
+                                                            <Border.GestureRecognizers>
+                                                                <TapGestureRecognizer
+                                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.VerDetalleMesaCommand}"
+                                                                    CommandParameter="{Binding .}" />
+                                                            </Border.GestureRecognizers>
+
+                                                            <Grid RowDefinitions="Auto,*,Auto"
+                                                                  Padding="8,8,8,6">
+
+                                                                <!-- Número + ícono estado -->
+                                                                <Grid Grid.Row="0"
+                                                                      ColumnDefinitions="*,Auto">
+                                                                    <Label Grid.Column="0"
+                                                                           Text="{Binding NumeroTexto}"
+                                                                           FontSize="22"
+                                                                           FontAttributes="Bold"
+                                                                           TextColor="White" />
+                                                                    <Label Grid.Column="1"
+                                                                           Text="{Binding EstadoIcono}"
+                                                                           FontSize="14"
+                                                                           TextColor="White"
+                                                                           VerticalOptions="Start" />
+                                                                </Grid>
+
+                                                                <!-- Badge pedido -->
+                                                                <Label Grid.Row="1"
+                                                                       Text="{Binding PedidoBadgeTexto}"
+                                                                       FontSize="10"
+                                                                       FontAttributes="Bold"
+                                                                       TextColor="White"
+                                                                       Opacity="0.9"
+                                                                       HorizontalTextAlignment="Center"
+                                                                       VerticalTextAlignment="Center" />
+
+                                                                <!-- Capacidad -->
+                                                                <Label Grid.Row="2"
+                                                                       Text="{Binding Capacidad, StringFormat='👥 {0}'}"
+                                                                       FontSize="11"
+                                                                       TextColor="White"
+                                                                       Opacity="0.85"
+                                                                       HorizontalTextAlignment="Center" />
+                                                            </Grid>
+                                                        </Border>
+
+                                                    </DataTemplate>
+                                                </BindableLayout.ItemTemplate>
+                                            </FlexLayout>
+
+                                </VerticalStackLayout>
+                            </Border>
+
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+
+                    <CollectionView.Footer>
+                        <Border Margin="0,0,0,24"
+                                BackgroundColor="White"
+                                Stroke="{StaticResource Border}"
+                                StrokeShape="RoundRectangle 14"
+                                Padding="14,12">
+                            <Grid ColumnDefinitions="*,*"
+                                  RowDefinitions="Auto,Auto,Auto"
+                                  RowSpacing="8"
+                                  ColumnSpacing="8">
+                                <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="6">
+                                    <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5"
+                                             Color="{StaticResource MesaLibre}" VerticalOptions="Center" />
+                                    <Label Text="Libre" FontSize="12" TextColor="{StaticResource TextSecondary}" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Grid.Row="0" Grid.Column="1" Spacing="6">
+                                    <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5"
+                                             Color="{StaticResource MesaOcupada}" VerticalOptions="Center" />
+                                    <Label Text="Ocupada" FontSize="12" TextColor="{StaticResource TextSecondary}" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Spacing="6">
+                                    <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5"
+                                             Color="{StaticResource MesaPreparando}" VerticalOptions="Center" />
+                                    <Label Text="Cocina" FontSize="12" TextColor="{StaticResource TextSecondary}" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Grid.Row="1" Grid.Column="1" Spacing="6">
+                                    <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5"
+                                             Color="{StaticResource MesaLista}" VerticalOptions="Center" />
+                                    <Label Text="Lista" FontSize="12" TextColor="{StaticResource TextSecondary}" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Grid.Row="2" Grid.Column="0" Spacing="6">
+                                    <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5"
+                                             Color="{StaticResource MesaPendientePago}" VerticalOptions="Center" />
+                                    <Label Text="Por cobrar" FontSize="12" TextColor="{StaticResource TextSecondary}" />
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Border>
+                    </CollectionView.Footer>
+
+                </CollectionView>
+            </RefreshView>
+
+        </Grid>
+
+        <!-- ══ BACKDROP ══ -->
+        <BoxView Color="#80000000"
+                 IsVisible="{Binding MostrarSheet}">
+            <BoxView.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CerrarSheetCommand}" />
+            </BoxView.GestureRecognizers>
+        </BoxView>
+
+        <!-- ══ BOTTOM SHEET PREMIUM ══ -->
+        <Border VerticalOptions="End"
+                IsVisible="{Binding MostrarSheet}"
+                BackgroundColor="White"
+                StrokeShape="RoundRectangle 28,28,0,0"
+                Stroke="{StaticResource Border}"
+                StrokeThickness="1">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,-4" Radius="20" Opacity="0.1" />
+            </Border.Shadow>
+            <VerticalStackLayout Spacing="0" Padding="0,12,0,32">
+
+                <!-- Drag handle -->
+                <BoxView WidthRequest="36" HeightRequest="4"
+                         Color="{StaticResource Border}"
+                         CornerRadius="2"
+                         HorizontalOptions="Center"
+                         Margin="0,0,0,20" />
+
+                <!-- Badge de estado de mesa -->
+                <Border BackgroundColor="{Binding SheetEstadoColor, Converter={StaticResource HexToColorConverter}}"
+                        StrokeShape="RoundRectangle 40"
+                        Stroke="Transparent"
+                        WidthRequest="68" HeightRequest="68"
+                        HorizontalOptions="Center"
+                        Margin="0,0,0,12">
+                    <Label Text="🪑"
+                           FontSize="32"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Border>
+
+                <Label Text="{Binding SheetTitulo}"
+                       FontSize="22"
+                       FontAttributes="Bold"
+                       TextColor="{StaticResource TextPrimary}"
+                       HorizontalOptions="Center" />
+                <Label Text="{Binding SheetComedorTexto}"
+                       FontSize="13"
+                       TextColor="{StaticResource TextSecondary}"
+                       HorizontalOptions="Center"
+                       Margin="0,2" />
+                <Label Text="{Binding SheetCapacidadTexto}"
+                       FontSize="12"
+                       TextColor="{StaticResource TextMuted}"
+                       HorizontalOptions="Center" />
+
+                <Border BackgroundColor="{Binding SheetEstadoColor, Converter={StaticResource HexToColorConverter}}"
+                        StrokeShape="RoundRectangle 20"
+                        Stroke="Transparent"
+                        Padding="14,5"
+                        HorizontalOptions="Center"
+                        Margin="0,10,0,20">
+                    <Label Text="{Binding SheetEstadoTexto}"
+                           FontSize="12"
+                           FontAttributes="Bold"
+                           TextColor="White" />
+                </Border>
+
+                <BoxView HeightRequest="1" Color="{StaticResource Border}" Margin="16,0" />
+
+                <Border Margin="16,16,16,0"
+                        BackgroundColor="White"
+                        Stroke="{StaticResource Border}"
+                        StrokeShape="RoundRectangle 18"
+                        Padding="16"
+                        IsVisible="{Binding SheetTienePedido}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="{Binding SheetPedidoTitulo}"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}" />
+
+                        <Label Text="{Binding SheetPedidoResumen}"
+                               FontSize="14"
+                               TextColor="{StaticResource TextPrimary}" />
+
+                           <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="Total"
+                                FontSize="13"
+                                FontAttributes="Bold"
+                                TextColor="{StaticResource TextSecondary}" />
+                            <Label Grid.Column="1"
+                                Text="{Binding SheetPedidoTotalTexto}"
+                                FontSize="18"
+                                FontAttributes="Bold"
+                                TextColor="{StaticResource Primary}" />
+                           </Grid>
+
+                        <Border BackgroundColor="{StaticResource SurfaceSunken}"
+                                Stroke="{StaticResource Border}"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="12,10">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="Observaciones"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource TextSecondary}" />
+                                <Label Text="{Binding SheetPedidoObservaciones}"
+                                       FontSize="13"
+                                       TextColor="{StaticResource TextPrimary}" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Button Text="🍳  ENVIAR A COCINA"
+                                Command="{Binding EnviarPedidoACocinaCommand}"
+                                IsVisible="{Binding SheetPuedeEnviarACocina}"
+                                Style="{StaticResource BtnPrimary}"
+                                HeightRequest="50"
+                                FontSize="14" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Acción: Ver / Continuar pedido -->
+                <Grid ColumnDefinitions="44,*,24"
+                      Padding="20,16"
+                      ColumnSpacing="12"
+                      IsVisible="{Binding SheetTienePedido, Converter={StaticResource InvertBoolConverter}}">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding IrAlPosCommand}" />
+                    </Grid.GestureRecognizers>
+                    <Border Grid.Column="0"
+                            BackgroundColor="{StaticResource PrimaryLight}"
+                            StrokeShape="RoundRectangle 12"
+                            Stroke="Transparent"
+                            HeightRequest="44" WidthRequest="44">
+                        <Label Text="📋" FontSize="20"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                        <Label Text="Ver / Continuar pedido"
+                               FontSize="15"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}" />
+                        <Label Text="Agregar o editar items"
+                               FontSize="12"
+                               TextColor="{StaticResource TextSecondary}" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="›"
+                           FontSize="22"
+                           TextColor="{StaticResource TextMuted}"
+                           VerticalOptions="Center" />
+                </Grid>
+
+                <!-- Acción: Cobrar -->
+                <Grid ColumnDefinitions="44,*,24"
+                      Padding="20,16"
+                      ColumnSpacing="12"
+                                            IsVisible="{Binding PuedeCobrar, Converter={StaticResource InvertBoolConverter}}">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding IrAPagoCommand}" />
+                    </Grid.GestureRecognizers>
+                    <Border Grid.Column="0"
+                            BackgroundColor="#EDE9FE"
+                            StrokeShape="RoundRectangle 12"
+                            Stroke="Transparent"
+                            HeightRequest="44" WidthRequest="44">
+                        <Label Text="💰" FontSize="20"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                        <Label Text="Cobrar cuenta"
+                               FontSize="15"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource MesaPendientePago}" />
+                        <Label Text="Procesar pago de la mesa"
+                               FontSize="12"
+                               TextColor="{StaticResource TextSecondary}" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="›"
+                           FontSize="22"
+                           TextColor="{StaticResource TextMuted}"
+                           VerticalOptions="Center" />
+                </Grid>
+
+                <BoxView HeightRequest="1" Color="{StaticResource Border}" Margin="16,0" />
+
+                <!-- Acción: Detalles -->
+                <Grid ColumnDefinitions="44,*,24"
+                      Padding="20,16"
+                                            ColumnSpacing="12"
+                                            IsVisible="{Binding SheetTienePedido, Converter={StaticResource InvertBoolConverter}}">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding IrADetalleCommand}" />
+                    </Grid.GestureRecognizers>
+                    <Border Grid.Column="0"
+                            BackgroundColor="{StaticResource SurfaceSunken}"
+                            StrokeShape="RoundRectangle 12"
+                            Stroke="Transparent"
+                            HeightRequest="44" WidthRequest="44">
+                        <Label Text="ℹ️" FontSize="20"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <Label Grid.Column="1"
+                           Text="Detalles de la mesa"
+                           FontSize="15"
+                           TextColor="{StaticResource TextPrimary}"
+                           VerticalOptions="Center" />
+                    <Label Grid.Column="2" Text="›"
+                           FontSize="22"
+                           TextColor="{StaticResource TextMuted}"
+                           VerticalOptions="Center" />
+                </Grid>
+
+                <BoxView HeightRequest="1" Color="{StaticResource Border}" Margin="16,0" />
+
+                <!-- Cerrar -->
+                <Grid ColumnDefinitions="44,*"
+                      Padding="20,14"
+                      ColumnSpacing="12">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding CerrarSheetCommand}" />
+                    </Grid.GestureRecognizers>
+                    <Border Grid.Column="0"
+                            BackgroundColor="{StaticResource DangerLight}"
+                            StrokeShape="RoundRectangle 12"
+                            Stroke="Transparent"
+                            HeightRequest="44" WidthRequest="44">
+                        <Label Text="✕" FontSize="16"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource Danger}"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <Label Grid.Column="1"
+                           Text="Cancelar"
+                           FontSize="15"
+                           TextColor="{StaticResource Danger}"
+                           VerticalOptions="Center" />
+                </Grid>
+
+            </VerticalStackLayout>
+        </Border>
+
+    </Grid>
+</ContentPage>

@@ -42,6 +42,9 @@ public class PedidoRequestMapper {
         Pedido pedido = new Pedido(
                 0,
                 dto.getFecha(),
+            null,
+            null,
+            null,
                 Pedido.ESTADO_PENDIENTE,
                 dto.getObservaciones(),
                 usuario,

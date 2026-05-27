@@ -2,7 +2,9 @@ package com.choza.consumochoza.controlador;
 
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,8 +15,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.choza.consumochoza.modelo.dto.ComprobanteDTO;
 import com.choza.consumochoza.modelo.dto.CuentaDTO;
 import com.choza.consumochoza.modelo.dto.PagoDTO;
 import com.choza.consumochoza.service.IClienteService;
@@ -180,10 +184,25 @@ public class CuentasControlador {
             saldoPendiente = 0.0;
         }
 
+        Map<Integer, ComprobanteDTO> comprobantesPorPago = new LinkedHashMap<>();
+        pagos.stream()
+                .filter(p -> "TRANSFERENCIA".equalsIgnoreCase(p.getMetodo()))
+                .forEach(p -> {
+                    try {
+                        ComprobanteDTO comprobante = pagoService.obtenerComprobante(idcuenta, p.getIdpago());
+                        if (comprobante != null) {
+                            comprobantesPorPago.put(p.getIdpago(), comprobante);
+                        }
+                    } catch (Exception ex) {
+                        // No bloquear la vista si un comprobante puntual no puede recuperarse.
+                    }
+                });
+
         model.addAttribute("cuenta", cuenta);
         model.addAttribute("pagos", pagos);
         model.addAttribute("totalPagado", totalPagado);
         model.addAttribute("saldoPendiente", saldoPendiente);
+        model.addAttribute("comprobantesPorPago", comprobantesPorPago);
         model.addAttribute("origen", origen);
         model.addAttribute("clientes", clienteService.listarTodos());
         return "Cuenta/PagosCuenta";
@@ -197,6 +216,7 @@ public class CuentasControlador {
             @RequestParam(name = "montoRecibido", required = false) Double montoRecibido,
             @RequestParam(name = "canalTransferencia", required = false) String canalTransferencia,
             @RequestParam(name = "nroOperacion", required = false) String nroOperacion,
+            @RequestParam(name = "archivoComprobante", required = false) MultipartFile archivoComprobante,
             @RequestParam(name = "origen", required = false) String origen,
             RedirectAttributes redirectAttributes) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -205,6 +225,7 @@ public class CuentasControlador {
         try {
             String metodoNormalizado = metodo == null ? "" : metodo.trim().toUpperCase();
             String referenciaFinal = referencia == null ? "" : referencia.trim();
+            boolean esTransferencia = "TRANSFERENCIA".equals(metodoNormalizado);
 
             if ("EFECTIVO".equals(metodoNormalizado) && montoRecibido != null) {
                 if (montoRecibido < monto) {
@@ -214,9 +235,12 @@ public class CuentasControlador {
                 referenciaFinal = String.format("RECIBIDO: %.2f | CAMBIO: %.2f", montoRecibido, cambio);
             }
 
-            if ("TRANSFERENCIA".equals(metodoNormalizado)) {
+            if (esTransferencia) {
                 if (canalTransferencia == null || canalTransferencia.isBlank()) {
                     throw new IllegalArgumentException("Debe seleccionar la plataforma de transferencia.");
+                }
+                if (archivoComprobante == null || archivoComprobante.isEmpty()) {
+                    throw new IllegalArgumentException("Debe adjuntar la imagen del comprobante de transferencia.");
                 }
                 String canalNormalizado = canalTransferencia.trim().toUpperCase();
                 String canalDescripcion;
@@ -235,8 +259,14 @@ public class CuentasControlador {
                 referenciaFinal = ref.toString();
             }
 
-            pagoService.registrarPago(idcuenta, monto, metodoNormalizado, referenciaFinal, username);
-            redirectAttributes.addFlashAttribute("mensajeExito", "Pago registrado correctamente.");
+            PagoDTO pago = pagoService.registrarPago(idcuenta, monto, metodoNormalizado, referenciaFinal, username);
+            if (esTransferencia) {
+                pagoService.subirComprobante(idcuenta, pago.getIdpago(), archivoComprobante, username);
+                redirectAttributes.addFlashAttribute("mensajeExito",
+                        "Pago registrado y comprobante subido correctamente a Dropbox.");
+            } else {
+                redirectAttributes.addFlashAttribute("mensajeExito", "Pago registrado correctamente.");
+            }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensajeError", "No se pudo registrar el pago: " + e.getMessage());
         }

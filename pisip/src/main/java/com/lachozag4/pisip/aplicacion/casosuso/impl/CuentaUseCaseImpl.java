@@ -12,6 +12,7 @@ import com.lachozag4.pisip.dominio.entidades.Cuenta;
 import com.lachozag4.pisip.dominio.entidades.Pedido;
 import com.lachozag4.pisip.dominio.repositorios.IClienteRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.ICuentaRepositorio;
+import com.lachozag4.pisip.dominio.repositorios.IMesaRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.IPedidoRepositorio;
 
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class CuentaUseCaseImpl implements ICuentaUseCase {
 	private final ICuentaRepositorio repositorio;
 	private final IPedidoRepositorio pedidoRepositorio;
 	private final IClienteRepositorio clienteRepositorio;
+	private final IMesaRepositorio mesaRepositorio;
 
 	@Override
 	@Transactional
@@ -45,6 +47,12 @@ public class CuentaUseCaseImpl implements ICuentaUseCase {
 	}
 
 	@Override
+	public Cuenta obtenerAbiertaPorMesa(int idMesa) {
+		return repositorio.buscarAbiertaPorMesa(idMesa)
+				.orElseThrow(() -> new NotFoundException("No existe cuenta abierta para la mesa con ID: " + idMesa));
+	}
+
+	@Override
 	public List<Cuenta> listar() {
 		return repositorio.listarTodas();
 	}
@@ -63,23 +71,29 @@ public class CuentaUseCaseImpl implements ICuentaUseCase {
 			throw new BusinessException("La cuenta ya está cerrada con estado " + existente.getEstado());
 		}
 
-		// Antes de cobrar o anular, validar que no haya pedidos abiertos
-		if (Cuenta.ESTADO_PAGADA.equals(nuevoEstado) || Cuenta.ESTADO_ANULADA.equals(nuevoEstado)) {
-			boolean hayPedidosNoFinalizados = pedidoRepositorio.listarPorCuenta(idcuenta).stream()
-					.anyMatch(p -> !p.esEstadoFinal());
-			if (hayPedidosNoFinalizados) {
-				throw new BusinessException(
-					"No se puede cerrar la cuenta porque tiene pedidos que aún no están completados o cancelados");
-			}
-		}
-
 		if (!Cuenta.ESTADO_PAGADA.equals(nuevoEstado) && !Cuenta.ESTADO_ANULADA.equals(nuevoEstado)) {
 			throw new BusinessException("Estado de cuenta no válido: " + nuevoEstado);
 		}
 
+		// Al pagar, marcar como COMPLETADO todos los pedidos activos de la cuenta
+		if (Cuenta.ESTADO_PAGADA.equals(nuevoEstado)) {
+			pedidoRepositorio.listarPorCuenta(idcuenta).stream()
+					.filter(p -> !p.esEstadoFinal())
+					.map(p -> p.conEstadoForzado(Pedido.ESTADO_COMPLETADO))
+					.forEach(pedidoRepositorio::actualizar);
+		}
+
 		LocalDateTime ahora = LocalDateTime.now();
 		Cuenta actualizada = existente.conEstado(nuevoEstado, ahora);
-		return repositorio.actualizar(actualizada);
+		Cuenta resultado = repositorio.actualizar(actualizada);
+
+		// Liberar la mesa al cerrar la cuenta (PAGADA o ANULADA)
+		if (existente.getFkMesa() != null) {
+			mesaRepositorio.buscarPorId(existente.getFkMesa().getIdmesa())
+					.ifPresent(mesa -> mesaRepositorio.actualizar(mesa.conEstado(true)));
+		}
+
+		return resultado;
 	}
 
 	@Override
@@ -91,8 +105,7 @@ public class CuentaUseCaseImpl implements ICuentaUseCase {
 		}
 		var cliente = clienteRepositorio.buscarPorId(idCliente)
 				.orElseThrow(() -> new NotFoundException("Cliente no encontrado con ID: " + idCliente));
-		cuenta.setFkCliente(cliente);
-		return repositorio.actualizar(cuenta);
+		return repositorio.actualizar(cuenta.conCliente(cliente));
 	}
 
 	@Override
@@ -117,8 +130,7 @@ public class CuentaUseCaseImpl implements ICuentaUseCase {
 				.orElseThrow(() -> new NotFoundException("Pedido no encontrado con ID: " + idpedido));
 
 		// Asociar el pedido a la cuenta
-		pedido.setFkCuenta(cuenta);
-		pedidoRepositorio.actualizar(pedido);
+		pedidoRepositorio.actualizar(pedido.conCuenta(cuenta));
 
 		// Recalcular total de la cuenta como suma de todos los pedidos asociados
 		// ignorando los que ya están cancelados

@@ -12,6 +12,8 @@ public interface IPedidoUseCase {
 
 	Pedido obtenerPorId(int idpedido);
 
+	Pedido obtenerRecientePorCuenta(int idcuenta);
+
 	List<Pedido> listar();
 
 	Pedido actualizar(int idpedido, Pedido pedido);

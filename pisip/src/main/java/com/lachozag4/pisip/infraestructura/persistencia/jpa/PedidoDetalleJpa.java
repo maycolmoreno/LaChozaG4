@@ -4,12 +4,14 @@ import java.io.Serializable;
 
 import jakarta.persistence.*;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "pedido_detalle")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class PedidoDetalleJpa implements Serializable {
 
@@ -33,4 +35,16 @@ public class PedidoDetalleJpa implements Serializable {
     @Column(nullable = false)
     private double precioUnitario;
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof PedidoDetalleJpa that)) return false;
+		return idpedidodetalle != 0 && idpedidodetalle == that.idpedidodetalle;
+	}
+
+	@Override
+	public int hashCode() { return getClass().hashCode(); }
+
+	@Override
+	public String toString() { return "PedidoDetalleJpa(id=" + idpedidodetalle + ")"; }
 }

@@ -10,7 +10,6 @@ import com.lachozag4.pisip.dominio.repositorios.IUsuarioRepositorio;
 import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.IUsuarioJpaMapper;
 import com.lachozag4.pisip.infraestructura.repositorios.IUsuarioJpaRepositorio;
 
-
 public class UsuarioRepositorioImpl implements IUsuarioRepositorio {
 
 	private final IUsuarioJpaRepositorio jpaRepository;

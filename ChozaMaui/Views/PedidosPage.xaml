@@ -1,0 +1,541 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:ChozaMaui.ViewModels"
+             xmlns:models="clr-namespace:ChozaMaui.Models"
+             xmlns:controls="clr-namespace:ChozaMaui.Views.Controls"
+             x:Class="ChozaMaui.Views.PedidosPage"
+             x:DataType="vm:PedidosViewModel"
+             Shell.NavBarIsVisible="False"
+             Shell.TabBarIsVisible="True"
+             BackgroundColor="{StaticResource Surface}">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- ── HEADER COMPACTO ── -->
+        <Grid Grid.Row="0"
+              BackgroundColor="{StaticResource Primary}"
+              Padding="16,44,16,14"
+              ColumnDefinitions="Auto,*,Auto"
+              ColumnSpacing="10">
+
+            <Border Grid.Column="0"
+                    BackgroundColor="#FB923C"
+                    StrokeShape="RoundRectangle 10"
+                    Stroke="Transparent"
+                    Padding="8,6">
+                <Label Text="LC"
+                       FontSize="14"
+                       FontAttributes="Bold"
+                       TextColor="White" />
+            </Border>
+
+            <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                <Label Text="Pedidos"
+                       FontSize="16"
+                       FontAttributes="Bold"
+                       TextColor="White" />
+                <Label Text="Estado en tiempo real"
+                       FontSize="11"
+                       TextColor="#FFEDD5" />
+            </VerticalStackLayout>
+
+            <controls:ConnectivityActionsView Grid.Column="2"
+                                              RefreshCommand="{Binding CargarCommand}"
+                                              VerticalOptions="Center" />
+        </Grid>
+
+        <!-- ── LISTA CON HEADER INTEGRADO ── -->
+        <RefreshView Grid.Row="1"
+                     IsRefreshing="{Binding IsBusy}"
+                     Command="{Binding CargarCommand}"
+                     RefreshColor="{StaticResource Primary}">
+            <CollectionView ItemsSource="{Binding Pedidos}"
+                            SelectionMode="None">
+
+                <!-- HEADER: KPIs + Chips + Búsqueda -->
+                <CollectionView.Header>
+                    <VerticalStackLayout BackgroundColor="{StaticResource Surface}" Spacing="0">
+
+                        <!-- KPIs strip -->
+                        <ScrollView Orientation="Horizontal"
+                                    HorizontalScrollBarVisibility="Never"
+                                    Padding="16,14,16,0">
+                            <HorizontalStackLayout Spacing="10">
+
+                                <Border BackgroundColor="White" Stroke="{StaticResource Border}"
+                                        StrokeShape="RoundRectangle 14" Padding="14,10">
+                                    <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                                        <Label Text="{Binding TotalEnPreparacion}"
+                                               FontSize="20" FontAttributes="Bold"
+                                               TextColor="{StaticResource Warning}"
+                                               HorizontalOptions="Center" />
+                                        <Label Text="Cocina"
+                                               FontSize="11" TextColor="{StaticResource TextSecondary}"
+                                               HorizontalOptions="Center" />
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <Border BackgroundColor="White" Stroke="{StaticResource Border}"
+                                        StrokeShape="RoundRectangle 14" Padding="14,10">
+                                    <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                                        <Label Text="{Binding TotalListos}"
+                                               FontSize="20" FontAttributes="Bold"
+                                               TextColor="{StaticResource Success}"
+                                               HorizontalOptions="Center" />
+                                        <Label Text="Listos"
+                                               FontSize="11" TextColor="{StaticResource TextSecondary}"
+                                               HorizontalOptions="Center" />
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <Border BackgroundColor="White" Stroke="{StaticResource Border}"
+                                        StrokeShape="RoundRectangle 14" Padding="14,10">
+                                    <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                                        <Label Text="{Binding TotalEntregadosHoy}"
+                                               FontSize="20" FontAttributes="Bold"
+                                               TextColor="{StaticResource Info}"
+                                               HorizontalOptions="Center" />
+                                        <Label Text="Hoy"
+                                               FontSize="11" TextColor="{StaticResource TextSecondary}"
+                                               HorizontalOptions="Center" />
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <Border BackgroundColor="White" Stroke="{StaticResource Border}"
+                                        StrokeShape="RoundRectangle 14" Padding="14,10">
+                                    <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                                        <Label Text="{Binding TotalCancelados}"
+                                               FontSize="20" FontAttributes="Bold"
+                                               TextColor="{StaticResource Danger}"
+                                               HorizontalOptions="Center" />
+                                        <Label Text="Cancelados"
+                                               FontSize="11" TextColor="{StaticResource TextSecondary}"
+                                               HorizontalOptions="Center" />
+                                    </VerticalStackLayout>
+                                </Border>
+
+                            </HorizontalStackLayout>
+                        </ScrollView>
+
+                        <!-- CHIPS DE FILTRO -->
+                        <ScrollView Orientation="Horizontal"
+                                    HorizontalScrollBarVisibility="Never"
+                                    Padding="16,12,16,4">
+                            <HorizontalStackLayout Spacing="8">
+
+                                <Border StrokeShape="RoundRectangle 20" StrokeThickness="1.5" Padding="14,8">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SeleccionarFiltroCommand}"
+                                                              CommandParameter="TODOS" />
+                                    </Border.GestureRecognizers>
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="TODOS">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                                            <Setter Property="Stroke" Value="{StaticResource Primary}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="EN_PREPARACION">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="LISTOS">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="ENTREGADOS">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="CANCELADOS">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Label FontSize="13">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="TODOS">
+                                                <Setter Property="Text" Value="Todos" />
+                                                <Setter Property="TextColor" Value="White" />
+                                                <Setter Property="FontAttributes" Value="Bold" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="EN_PREPARACION">
+                                                <Setter Property="Text" Value="Todos" />
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="LISTOS">
+                                                <Setter Property="Text" Value="Todos" />
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="ENTREGADOS">
+                                                <Setter Property="Text" Value="Todos" />
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="CANCELADOS">
+                                                <Setter Property="Text" Value="Todos" />
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </Border>
+
+                                <Border StrokeShape="RoundRectangle 20" StrokeThickness="1.5" Padding="14,8">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SeleccionarFiltroCommand}"
+                                                              CommandParameter="EN_PREPARACION" />
+                                    </Border.GestureRecognizers>
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="EN_PREPARACION">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource Warning}" />
+                                            <Setter Property="Stroke" Value="{StaticResource Warning}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="TODOS">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="LISTOS">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="ENTREGADOS">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="CANCELADOS">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Label Text="🍳 Cocina" FontSize="13">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="EN_PREPARACION">
+                                                <Setter Property="TextColor" Value="White" />
+                                                <Setter Property="FontAttributes" Value="Bold" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="TODOS">
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="LISTOS">
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="ENTREGADOS">
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="CANCELADOS">
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </Border>
+
+                                <Border StrokeShape="RoundRectangle 20" StrokeThickness="1.5" Padding="14,8">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SeleccionarFiltroCommand}"
+                                                              CommandParameter="LISTOS" />
+                                    </Border.GestureRecognizers>
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="LISTOS">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource Success}" />
+                                            <Setter Property="Stroke" Value="{StaticResource Success}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="TODOS">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="EN_PREPARACION">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="ENTREGADOS">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="CANCELADOS">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Label Text="✓ Listos" FontSize="13">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="LISTOS">
+                                                <Setter Property="TextColor" Value="White" />
+                                                <Setter Property="FontAttributes" Value="Bold" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="TODOS">
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="EN_PREPARACION">
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="ENTREGADOS">
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="CANCELADOS">
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </Border>
+
+                                <Border StrokeShape="RoundRectangle 20" StrokeThickness="1.5" Padding="14,8">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SeleccionarFiltroCommand}"
+                                                              CommandParameter="ENTREGADOS" />
+                                    </Border.GestureRecognizers>
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="ENTREGADOS">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource Info}" />
+                                            <Setter Property="Stroke" Value="{StaticResource Info}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="TODOS">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="EN_PREPARACION">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="LISTOS">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="CANCELADOS">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Label Text="🚚 Entregados" FontSize="13">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="ENTREGADOS">
+                                                <Setter Property="TextColor" Value="White" />
+                                                <Setter Property="FontAttributes" Value="Bold" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="TODOS">
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="EN_PREPARACION">
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="LISTOS">
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="CANCELADOS">
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </Border>
+
+                                <Border StrokeShape="RoundRectangle 20" StrokeThickness="1.5" Padding="14,8">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SeleccionarFiltroCommand}"
+                                                              CommandParameter="CANCELADOS" />
+                                    </Border.GestureRecognizers>
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="CANCELADOS">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource Danger}" />
+                                            <Setter Property="Stroke" Value="{StaticResource Danger}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="TODOS">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="EN_PREPARACION">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="LISTOS">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Border" Binding="{Binding FiltroEstado}" Value="ENTREGADOS">
+                                            <Setter Property="BackgroundColor" Value="White" />
+                                            <Setter Property="Stroke" Value="{StaticResource Border}" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Label Text="✗ Cancelados" FontSize="13">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="CANCELADOS">
+                                                <Setter Property="TextColor" Value="White" />
+                                                <Setter Property="FontAttributes" Value="Bold" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="TODOS">
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="EN_PREPARACION">
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="LISTOS">
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Label" Binding="{Binding FiltroEstado}" Value="ENTREGADOS">
+                                                <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                </Border>
+
+                            </HorizontalStackLayout>
+                        </ScrollView>
+
+                        <!-- BÚSQUEDA -->
+                        <Border Margin="16,4,16,12"
+                                BackgroundColor="White"
+                                Stroke="{StaticResource Border}"
+                                StrokeShape="RoundRectangle 14"
+                                Padding="12,0"
+                                HeightRequest="48">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                <Label Text="🔍"
+                                       FontSize="15"
+                                       TextColor="{StaticResource TextMuted}"
+                                       VerticalOptions="Center" />
+                                <Entry Grid.Column="1"
+                                       Placeholder="Buscar por mesa, cliente..."
+                                       PlaceholderColor="{StaticResource TextMuted}"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       BackgroundColor="Transparent"
+                                       Text="{Binding Busqueda}"
+                                       FontSize="13" />
+                            </Grid>
+                        </Border>
+
+                    </VerticalStackLayout>
+                </CollectionView.Header>
+
+                <!-- ESTADO VACÍO -->
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout HorizontalOptions="Center"
+                                         VerticalOptions="Center"
+                                         Spacing="12"
+                                         Margin="0,60">
+                        <Label Text="📋" FontSize="52" HorizontalOptions="Center" />
+                        <Label Text="Sin pedidos para este filtro"
+                               TextColor="{StaticResource TextSecondary}"
+                               FontSize="15"
+                               HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <!-- ── TARJETA DE PEDIDO ── -->
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:PedidoResponse">
+
+                        <Border BackgroundColor="White"
+                                StrokeShape="RoundRectangle 18"
+                                Stroke="{StaticResource Border}"
+                                Margin="16,0,16,10"
+                                Padding="16">
+                            <VerticalStackLayout Spacing="0">
+
+                                <!-- Fila principal -->
+                                <Grid ColumnDefinitions="52,*,Auto" ColumnSpacing="12">
+
+                                    <!-- Ícono de estado -->
+                                    <Border Grid.Column="0"
+                                            WidthRequest="52" HeightRequest="52"
+                                            BackgroundColor="{Binding CircleColor, Converter={StaticResource HexToColorConverter}}"
+                                            StrokeShape="RoundRectangle 16"
+                                            Stroke="Transparent"
+                                            VerticalOptions="Center">
+                                        <Label Text="🪑" FontSize="24"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center" />
+                                    </Border>
+
+                                    <!-- Info del pedido -->
+                                    <VerticalStackLayout Grid.Column="1"
+                                                         Spacing="3"
+                                                         VerticalOptions="Center">
+                                        <Label Text="{Binding Mesa.Etiqueta}"
+                                               FontSize="16" FontAttributes="Bold"
+                                               TextColor="{StaticResource TextPrimary}" />
+                                        <Label Text="{Binding Mesa.NombreComedor}"
+                                               FontSize="12"
+                                               TextColor="{StaticResource TextSecondary}" />
+                                        <Label Text="{Binding FechaYNumTexto, StringFormat='🕐 {0}'}"
+                                               FontSize="11"
+                                               TextColor="{StaticResource TextMuted}" />
+                                    </VerticalStackLayout>
+
+                                    <!-- Total + badge -->
+                                    <VerticalStackLayout Grid.Column="2"
+                                                         HorizontalOptions="End"
+                                                         Spacing="6"
+                                                         VerticalOptions="Center">
+                                        <Label Text="{Binding Total, StringFormat='${0:0.00}'}"
+                                               FontSize="17" FontAttributes="Bold"
+                                               TextColor="{StaticResource TextPrimary}"
+                                               HorizontalOptions="End" />
+                                        <Border BackgroundColor="{Binding BadgeLightBackground, Converter={StaticResource HexToColorConverter}}"
+                                                StrokeShape="RoundRectangle 8"
+                                                Stroke="Transparent"
+                                                Padding="8,4"
+                                                HorizontalOptions="End">
+                                            <Label Text="{Binding BadgeTexto}"
+                                                   FontSize="10" FontAttributes="Bold"
+                                                   TextColor="{Binding BadgeTextColor, Converter={StaticResource HexToColorConverter}}" />
+                                        </Border>
+                                    </VerticalStackLayout>
+
+                                </Grid>
+
+                                <BoxView Style="{StaticResource Divider}" />
+
+                                <!-- Botones de acción -->
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+
+                                    <Border Grid.Column="0"
+                                            Stroke="{StaticResource Primary}"
+                                            StrokeShape="RoundRectangle 12"
+                                            StrokeThickness="1.5"
+                                            Padding="0,12"
+                                            BackgroundColor="Transparent">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.VerDetalleCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        </Border.GestureRecognizers>
+                                        <Label Text="{Binding TextoBotonPrincipal}"
+                                               TextColor="{StaticResource Primary}"
+                                               FontSize="13" FontAttributes="Bold"
+                                               HorizontalOptions="Center" />
+                                    </Border>
+
+                                    <Button Grid.Column="1"
+                                            Text="Abrir"
+                                            IsVisible="{Binding EsAbrible}"
+                                            BackgroundColor="{StaticResource Primary}"
+                                            TextColor="White"
+                                            CornerRadius="12"
+                                            FontAttributes="Bold"
+                                            FontSize="13"
+                                            WidthRequest="90"
+                                            HeightRequest="46"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.AbrirEnPosCommand}"
+                                            CommandParameter="{Binding .}" />
+
+                                    <Button Grid.Column="1"
+                                            Text="✓ Entregar"
+                                            IsVisible="{Binding EsEntregable}"
+                                            BackgroundColor="{StaticResource Success}"
+                                            TextColor="White"
+                                            CornerRadius="12"
+                                            FontAttributes="Bold"
+                                            FontSize="13"
+                                            WidthRequest="100"
+                                            HeightRequest="46"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EntregarRapidoCommand}"
+                                            CommandParameter="{Binding .}" />
+                                </Grid>
+
+                            </VerticalStackLayout>
+                        </Border>
+
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+        </RefreshView>
+
+    </Grid>
+</ContentPage>

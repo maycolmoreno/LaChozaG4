@@ -20,6 +20,9 @@ public class PedidoResponseDTO {
     
     private int idpedido;
     private LocalDateTime fecha;
+    private LocalDateTime fechaEnCocina;
+    private LocalDateTime fechaListoParaEntrega;
+    private LocalDateTime fechaEntregado;
     private String estado;
     private String observaciones;
     
@@ -37,6 +40,8 @@ public class PedidoResponseDTO {
     private List<PedidoDetalleResponseDTO> detalle;
     
     // ✅ Campos calculados
+    private double subtotal;
+    private double impuestos;
     private double total;
     private int cantidadProductos;
 }

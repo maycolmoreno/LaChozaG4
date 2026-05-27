@@ -1,0 +1,15 @@
+<api>
+  <jcw-types>
+    <type name="MainActivity" package="crc649fcb757ca458eff9" application_java_class="android.app.Application" mono_runtime_initialization="mono.MonoPackageManager.LoadApplication (context);" extends_type="crc6488302ad6e9e4df1a.MauiAppCompatActivity" partial_assembly_qualified_name="ChozaMaui.MainActivity, ChozaMaui">
+      <constructors>
+        <constructor name="MainActivity" method="n_.ctor:()V:" jni_signature="()V" managed_parameters="" retval="void" is_dynamically_registered="True" />
+        <constructor name="MainActivity" method="n_.ctor:(I)V:" jni_signature="(I)V" managed_parameters="System.Int32, System.Private.CoreLib" params="int p0" retval="void" is_dynamically_registered="True" super_call="p0" activate_call="p0" />
+      </constructors>
+    </type>
+    <type name="MainApplication" package="crc649fcb757ca458eff9" application_java_class="android.app.Application" mono_runtime_initialization="mono.MonoPackageManager.LoadApplication (context);" extends_type="crc6488302ad6e9e4df1a.MauiApplication" is_application="True" partial_assembly_qualified_name="ChozaMaui.MainApplication, ChozaMaui" application_constructor="MainApplication" />
+  </jcw-types>
+  <acw-types partial-assembly-name="ChozaMaui" module-name="ChozaMaui.dll">
+    <type assembly-qualified-name="ChozaMaui.MainActivity, ChozaMaui, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" compat-jni-name="chozamaui.MainActivity" java-key="crc649fcb757ca458eff9.MainActivity" managed-key="ChozaMaui.MainActivity" partial-assembly-qualified-name="ChozaMaui.MainActivity, ChozaMaui" />
+    <type assembly-qualified-name="ChozaMaui.MainApplication, ChozaMaui, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" compat-jni-name="chozamaui.MainApplication" java-key="crc649fcb757ca458eff9.MainApplication" managed-key="ChozaMaui.MainApplication" partial-assembly-qualified-name="ChozaMaui.MainApplication, ChozaMaui" />
+  </acw-types>
+</api>

@@ -11,12 +11,14 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "producto", uniqueConstraints = { @UniqueConstraint(columnNames = { "nombre", "idcategoria" }) })
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class ProductoJpa implements Serializable {
 
@@ -48,4 +50,16 @@ public class ProductoJpa implements Serializable {
 	@JoinColumn(name = "fkCategoriaId", nullable = false)
 	private CategoriaJpa fkCategoriaId;
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof ProductoJpa that)) return false;
+		return idproducto != 0 && idproducto == that.idproducto;
+	}
+
+	@Override
+	public int hashCode() { return getClass().hashCode(); }
+
+	@Override
+	public String toString() { return "ProductoJpa(id=" + idproducto + ")"; }
 }

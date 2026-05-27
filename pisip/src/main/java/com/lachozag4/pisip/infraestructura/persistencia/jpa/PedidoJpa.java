@@ -8,6 +8,8 @@ import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,12 +18,16 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import com.lachozag4.pisip.dominio.enums.EstadoPedido;
 
 @Entity
 @Table(name = "pedido")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class PedidoJpa implements Serializable {
 
@@ -34,8 +40,18 @@ public class PedidoJpa implements Serializable {
 	@Column(nullable = false)
 	private LocalDateTime fecha;
 
+	@Column(name = "fecha_en_cocina")
+	private LocalDateTime fechaEnCocina;
+
+	@Column(name = "fecha_listo_para_entrega")
+	private LocalDateTime fechaListoParaEntrega;
+
+	@Column(name = "fecha_entregado")
+	private LocalDateTime fechaEntregado;
+
+	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 30)
-	private String estado; // PENDIENTE, EN_COCINA, LISTO_PARA_ENTREGA, COMPLETADO, CANCELADO
+	private EstadoPedido estado;
 
 	@Column(length = 255)
 	private String observaciones;
@@ -63,4 +79,17 @@ public class PedidoJpa implements Serializable {
 	// ✅ RELACIÓN: Un pedido tiene muchos detalles
 	@OneToMany(mappedBy = "fkPedido", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<PedidoDetalleJpa> detalles = new ArrayList<>();
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof PedidoJpa that)) return false;
+		return idpedido != 0 && idpedido == that.idpedido;
+	}
+
+	@Override
+	public int hashCode() { return getClass().hashCode(); }
+
+	@Override
+	public String toString() { return "PedidoJpa(id=" + idpedido + ")"; }
 }

@@ -1,5 +1,6 @@
 package com.lachozag4.pisip.infraestructura.persistencia.adaptadores;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import com.lachozag4.pisip.dominio.entidades.Pago;
@@ -26,6 +27,13 @@ public class PagoRepositorioImpl implements IPagoRepositorio {
 	@Override
 	public List<Pago> listarPorCuenta(int idcuenta) {
 		return jpaRepositorio.findByFkCuenta_Idcuenta(idcuenta).stream().map(this::toDomain).toList();
+	}
+
+	@Override
+	public List<Pago> listarPorFecha(LocalDate fecha) {
+		var desde = fecha.atStartOfDay();
+		var hasta = fecha.plusDays(1).atStartOfDay();
+		return jpaRepositorio.findByFechaBetween(desde, hasta).stream().map(this::toDomain).toList();
 	}
 
 	@Override

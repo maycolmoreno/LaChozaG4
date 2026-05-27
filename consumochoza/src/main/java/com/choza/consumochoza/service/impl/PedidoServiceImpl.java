@@ -48,23 +48,28 @@ public class PedidoServiceImpl implements IPedidoService {
     public PedidosPaginadosDTO listarConFiltros(String estado, String busqueda,
                                                  LocalDate fechaDesde, LocalDate fechaHasta,
                                                  int page, int size) {
-        return webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path(ENDPOINT + "/paginado")
-                        .queryParamIfPresent("estado",
-                                Optional.ofNullable(estado).filter(s -> !s.isBlank() && !"TODOS".equalsIgnoreCase(s)))
-                        .queryParamIfPresent("q",
-                                Optional.ofNullable(busqueda).filter(s -> !s.isBlank()))
-                        .queryParamIfPresent("fechaDesde",
-                                Optional.ofNullable(fechaDesde))
-                        .queryParamIfPresent("fechaHasta",
-                                Optional.ofNullable(fechaHasta))
-                        .queryParam("page", page)
-                        .queryParam("size", size)
-                        .build())
-                .retrieve()
-                .bodyToMono(PedidosPaginadosDTO.class)
-                .block(TIMEOUT);
+        try {
+            return webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path(ENDPOINT + "/paginado")
+                            .queryParamIfPresent("estado",
+                                    Optional.ofNullable(estado).filter(s -> !s.isBlank() && !"TODOS".equalsIgnoreCase(s)))
+                            .queryParamIfPresent("q",
+                                    Optional.ofNullable(busqueda).filter(s -> !s.isBlank()))
+                            .queryParamIfPresent("fechaDesde",
+                                    Optional.ofNullable(fechaDesde))
+                            .queryParamIfPresent("fechaHasta",
+                                    Optional.ofNullable(fechaHasta))
+                            .queryParam("page", page)
+                            .queryParam("size", size)
+                            .build())
+                    .retrieve()
+                    .bodyToMono(PedidosPaginadosDTO.class)
+                    .block(TIMEOUT);
+        } catch (Exception e) {
+            log.error("Error al listar pedidos paginados: {}", e.getMessage());
+            return new PedidosPaginadosDTO(Collections.emptyList(), 0, 0, page, size);
+        }
     }
 
     @Override
@@ -98,7 +103,7 @@ public class PedidoServiceImpl implements IPedidoService {
 
     @Override
     public PedidoDTO cambiarEstado(int id, String estado) {
-        return webClient.put()
+        return webClient.patch()
                 .uri(ENDPOINT + "/{id}/estado", id)
                 .bodyValue(java.util.Map.of("estado", estado))
                 .retrieve()

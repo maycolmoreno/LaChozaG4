@@ -5,6 +5,155 @@
 
 <head>
     <title>Pagos de Cuenta</title>
+    <style>
+        .pago-hero-card {
+            border: 0;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        }
+
+        .pago-hero-card .card-header {
+            background: linear-gradient(135deg, #f26522 0%, #ff8a3d 100%);
+            color: #fff;
+            border: 0;
+            padding: 1rem 1.25rem;
+        }
+
+        .pago-section {
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            border-radius: 18px;
+            background: #fff;
+            padding: 1rem;
+            height: 100%;
+        }
+
+        .pago-section-title {
+            display: flex;
+            align-items: center;
+            gap: .55rem;
+            font-size: .92rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: .85rem;
+        }
+
+        .pago-section-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(242, 101, 34, 0.12);
+            color: var(--naranja-choza);
+        }
+
+        .pago-helper {
+            display: block;
+            margin-top: .45rem;
+            font-size: .78rem;
+            color: #64748b;
+        }
+
+        .pago-transfer-panel {
+            border: 1px dashed rgba(59, 130, 246, 0.28);
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(239, 246, 255, 0.75) 0%, rgba(248, 250, 252, 0.9) 100%);
+            padding: 1rem;
+        }
+
+        .pago-efectivo-panel {
+            border: 1px dashed rgba(34, 197, 94, 0.28);
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(240, 253, 244, 0.85) 0%, rgba(248, 250, 252, 0.95) 100%);
+            padding: 1rem;
+        }
+
+        .pago-transfer-caption {
+            font-size: .8rem;
+            color: #475569;
+            margin-bottom: .9rem;
+        }
+
+        .pago-file-state {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            padding: .75rem .9rem;
+            font-size: .84rem;
+            color: #475569;
+        }
+
+        .pago-file-preview {
+            display: none;
+            margin-top: .9rem;
+            padding: .8rem;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .pago-file-preview.is-visible {
+            display: flex;
+            align-items: center;
+            gap: .9rem;
+        }
+
+        .pago-file-preview img {
+            width: 82px;
+            height: 82px;
+            object-fit: cover;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+            background: #fff;
+        }
+
+        .pago-file-preview-meta {
+            min-width: 0;
+        }
+
+        .pago-file-preview-meta strong {
+            display: block;
+            color: #0f172a;
+            word-break: break-word;
+        }
+
+        .pago-file-preview-meta span {
+            display: block;
+            font-size: .8rem;
+            color: #64748b;
+            margin-top: .2rem;
+        }
+
+        .pago-submit-btn.is-submitting {
+            opacity: .8;
+            pointer-events: none;
+        }
+
+        .pago-submit-btn .spinner-border {
+            width: 1rem;
+            height: 1rem;
+            border-width: .14em;
+        }
+
+        .pago-submit-btn {
+            min-height: 52px;
+            border-radius: 16px;
+            font-weight: 700;
+            letter-spacing: .01em;
+        }
+
+        .pago-history-link {
+            border-radius: 999px;
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body>
@@ -177,51 +326,123 @@
         </div>
     </div>
 
-    <div class="card mb-3" th:if="${cuenta.estado == 'ABIERTA'}">
+    <div class="card pago-hero-card mb-3" th:if="${cuenta.estado == 'ABIERTA'}">
         <div class="card-header">
-            <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Registrar pago</h5>
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-2">
+                <div>
+                    <h5 class="mb-1 fw-bold"><i class="bi bi-plus-circle me-2"></i>Registrar pago</h5>
+                    <small class="opacity-75">Completa el método de cobro y, si aplica, adjunta el comprobante para guardarlo en Dropbox.</small>
+                </div>
+                <div class="text-lg-end">
+                    <div class="small opacity-75">Saldo pendiente actual</div>
+                    <div class="fs-4 fw-bold" th:text="'$' + ${#numbers.formatDecimal(saldoPendiente,1,2)}"></div>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <form th:action="@{'/cuentas/' + ${cuenta.idcuenta} + '/pagos'}" method="post" class="row g-2 align-items-end" id="formPagoCuenta">
+        <div class="card-body p-4">
+            <form th:action="@{'/cuentas/' + ${cuenta.idcuenta} + '/pagos'}" method="post" enctype="multipart/form-data" id="formPagoCuenta">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                 <input type="hidden" name="origen" th:value="${origen}">
-                <div class="col-md-3">
-                    <label class="form-label">Monto a cobrar</label>
-                    <input type="number" step="0.01" min="0.01" name="monto" id="montoPago" class="form-control" required
-                           th:value="${#numbers.formatDecimal(saldoPendiente,1,2)}">
-                    <small class="text-muted">Saldo pendiente: $<span th:text="${#numbers.formatDecimal(saldoPendiente,1,2)}"></span></small>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Metodo</label>
-                    <select name="metodo" id="metodoPago" class="form-select" required>
-                        <option value="EFECTIVO">Efectivo</option>
-                        <option value="TRANSFERENCIA">Transferencia</option>
-                    </select>
-                </div>
-                <div class="col-md-2" id="bloqueRecibido">
-                    <label class="form-label">Valor recibido</label>
-                    <input type="number" step="0.01" min="0.00" name="montoRecibido" id="montoRecibido" class="form-control"
-                           placeholder="Ej: 10.00">
-                </div>
-                <div class="col-md-2" id="bloqueCambio">
-                    <label class="form-label">Cambio</label>
-                    <input type="text" id="cambioCalculado" class="form-control bg-light" value="0.00" readonly>
-                </div>
-                <div class="col-md-2 d-none" id="bloqueCanalTransferencia">
-                    <label class="form-label">Canal</label>
-                    <select name="canalTransferencia" id="canalTransferencia" class="form-select">
-                        <option value="AHORITA">Ahorita - Banco de Loja</option>
-                        <option value="DE_UNA">De Una - Banco Pichincha</option>
-                    </select>
-                </div>
-                <div class="col-md-3 d-none" id="bloqueNroOperacion">
-                    <label class="form-label">Nro. operacion</label>
-                    <input type="text" name="nroOperacion" id="nroOperacion" class="form-control" maxlength="120" placeholder="Opcional">
-                </div>
                 <input type="hidden" name="referencia" value="">
-                <div class="col-md-1 text-end">
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-cash"></i>
+
+                <div class="row g-3 align-items-stretch">
+                    <div class="col-lg-4">
+                        <div class="pago-section">
+                            <div class="pago-section-title">
+                                <span class="pago-section-icon"><i class="bi bi-currency-dollar"></i></span>
+                                <span>Resumen del cobro</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Monto a cobrar</label>
+                                <input type="number" step="0.01" min="0.01" name="monto" id="montoPago" class="form-control form-control-lg" required
+                                       th:value="${#numbers.formatDecimal(saldoPendiente,1,2)}">
+                                <span class="pago-helper">No puede exceder el saldo pendiente de la cuenta.</span>
+                            </div>
+                            <div>
+                                <label class="form-label fw-semibold">Método de pago</label>
+                                <select name="metodo" id="metodoPago" class="form-select form-select-lg" required>
+                                    <option value="EFECTIVO">Efectivo</option>
+                                    <option value="TRANSFERENCIA">Transferencia</option>
+                                </select>
+                                <span class="pago-helper">El formulario cambia automáticamente según el método seleccionado.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div class="pago-section pago-efectivo-panel" id="panelEfectivo">
+                            <div class="pago-section-title">
+                                <span class="pago-section-icon"><i class="bi bi-cash-coin"></i></span>
+                                <span>Datos para pago en efectivo</span>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6" id="bloqueRecibido">
+                                    <label class="form-label fw-semibold">Valor recibido</label>
+                                    <input type="number" step="0.01" min="0.00" name="montoRecibido" id="montoRecibido" class="form-control form-control-lg"
+                                           placeholder="Ej: 10.00">
+                                    <span class="pago-helper">Debe ser igual o mayor al monto a cobrar.</span>
+                                </div>
+                                <div class="col-md-6" id="bloqueCambio">
+                                    <label class="form-label fw-semibold">Cambio a entregar</label>
+                                    <input type="text" id="cambioCalculado" class="form-control form-control-lg bg-light" value="0.00" readonly>
+                                    <span class="pago-helper">Se calcula automáticamente según el valor recibido.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pago-section pago-transfer-panel" id="panelTransferencia" hidden style="display:none;">
+                            <div class="pago-section-title">
+                                <span class="pago-section-icon"><i class="bi bi-bank"></i></span>
+                                <span>Datos para transferencia</span>
+                            </div>
+                            <p class="pago-transfer-caption mb-3">Registra el canal, el número de operación y adjunta la imagen del comprobante para almacenarla en Dropbox.</p>
+                            <div class="row g-3">
+                                <div class="col-md-4" id="bloqueCanalTransferencia">
+                                    <label class="form-label fw-semibold">Canal</label>
+                                    <select name="canalTransferencia" id="canalTransferencia" class="form-select form-select-lg">
+                                        <option value="AHORITA">Ahorita - Banco de Loja</option>
+                                        <option value="DE_UNA">De Una - Banco Pichincha</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4" id="bloqueNroOperacion">
+                                    <label class="form-label fw-semibold">Nro. operación</label>
+                                    <input type="text" name="nroOperacion" id="nroOperacion" class="form-control form-control-lg" maxlength="120" placeholder="Ej: 5487961230">
+                                    <span class="pago-helper">Útil para conciliación y auditoría.</span>
+                                </div>
+                                <div class="col-md-4" id="bloqueArchivoComprobante">
+                                    <label class="form-label fw-semibold">Imagen del comprobante</label>
+                                    <input type="file" name="archivoComprobante" id="archivoComprobante" class="form-control form-control-lg"
+                                           accept="image/png,image/jpeg,image/webp">
+                                    <span class="pago-helper">Formatos permitidos: JPG, PNG o WEBP. Máximo 5 MB.</span>
+                                </div>
+                                <div class="col-12">
+                                    <div class="pago-file-state" id="estadoArchivoComprobante">
+                                        <i class="bi bi-paperclip"></i>
+                                        <span>Aún no se ha seleccionado ningún archivo.</span>
+                                    </div>
+                                    <div class="pago-file-preview" id="previewArchivoComprobante">
+                                        <img id="previewArchivoComprobanteImg" alt="Vista previa del comprobante">
+                                        <div class="pago-file-preview-meta">
+                                            <strong id="previewArchivoComprobanteNombre">Sin archivo</strong>
+                                            <span id="previewArchivoComprobanteDetalle">La imagen seleccionada aparecerá aquí antes de enviar.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4 pt-2 border-top">
+                    <div class="text-muted small">
+                        <i class="bi bi-shield-check me-1"></i>
+                        El pago se registra en el backend principal y el comprobante se almacena en Dropbox.
+                    </div>
+                    <button type="submit" class="btn btn-primary px-4 pago-submit-btn" id="btnConfirmarPago">
+                        <span class="d-inline-flex align-items-center gap-2" id="btnConfirmarPagoContenido">
+                            <i class="bi bi-check2-circle"></i>
+                            <span>Confirmar pago</span>
+                        </span>
                     </button>
                 </div>
             </form>
@@ -242,6 +463,7 @@
                         <th style="font-size:.8rem;text-transform:uppercase;color:#888;font-weight:600">Fecha</th>
                         <th style="font-size:.8rem;text-transform:uppercase;color:#888;font-weight:600">Método</th>
                         <th style="font-size:.8rem;text-transform:uppercase;color:#888;font-weight:600">Referencia</th>
+                        <th style="font-size:.8rem;text-transform:uppercase;color:#888;font-weight:600">Comprobante</th>
                         <th style="font-size:.8rem;text-transform:uppercase;color:#888;font-weight:600">Usuario</th>
                         <th class="text-end pe-3" style="font-size:.8rem;text-transform:uppercase;color:#888;font-weight:600">Monto</th>
                     </tr>
@@ -260,11 +482,20 @@
                             <span th:if="${p.metodo != 'EFECTIVO' && p.metodo != 'TRANSFERENCIA'}" th:text="${p.metodo}"></span>
                         </td>
                         <td th:text="${p.referencia != null && !p.referencia.isBlank()} ? ${p.referencia} : '-'" class="text-muted"></td>
+                        <td>
+                            <a th:if="${comprobantesPorPago[p.idpago] != null}"
+                               th:href="${comprobantesPorPago[p.idpago].urlDescarga}"
+                               target="_blank" rel="noopener noreferrer"
+                               class="btn btn-sm btn-outline-primary pago-history-link">
+                                <i class="bi bi-image"></i> Ver
+                            </a>
+                            <span th:if="${comprobantesPorPago[p.idpago] == null}" class="text-muted">-</span>
+                        </td>
                         <td th:text="${p.usuario}"></td>
                         <td class="text-end pe-3 fw-bold" th:text="'$' + ${#numbers.formatDecimal(p.monto,1,2)}"></td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(pagos)}">
-                        <td colspan="6" class="text-center text-muted py-4">
+                        <td colspan="7" class="text-center text-muted py-4">
                             <i class="bi bi-inbox" style="font-size:2rem;display:block;margin-bottom:8px;opacity:.4"></i>
                             Sin pagos registrados
                         </td>
@@ -274,8 +505,7 @@
             </div>
         </div>
     </div>
-</div>
-<script th:inline="javascript">
+    <script th:inline="javascript">
     (function () {
         const saldoPendiente = parseFloat(/*[[${saldoPendiente}]]*/ 0);
         const form = document.getElementById('formPagoCuenta');
@@ -289,7 +519,19 @@
         const bloqueCambio = document.getElementById('bloqueCambio');
         const bloqueCanal = document.getElementById('bloqueCanalTransferencia');
         const bloqueOperacion = document.getElementById('bloqueNroOperacion');
+        const bloqueArchivo = document.getElementById('bloqueArchivoComprobante');
+        const panelEfectivo = document.getElementById('panelEfectivo');
+        const panelTransferencia = document.getElementById('panelTransferencia');
         const canal = document.getElementById('canalTransferencia');
+        const archivoComprobante = document.getElementById('archivoComprobante');
+        const estadoArchivoComprobante = document.getElementById('estadoArchivoComprobante');
+        const previewArchivoComprobante = document.getElementById('previewArchivoComprobante');
+        const previewArchivoComprobanteImg = document.getElementById('previewArchivoComprobanteImg');
+        const previewArchivoComprobanteNombre = document.getElementById('previewArchivoComprobanteNombre');
+        const previewArchivoComprobanteDetalle = document.getElementById('previewArchivoComprobanteDetalle');
+        const btnConfirmarPago = document.getElementById('btnConfirmarPago');
+        const btnConfirmarPagoContenido = document.getElementById('btnConfirmarPagoContenido');
+        let previewArchivoUrl = null;
 
         function to2(v) {
             return Number.isFinite(v) ? v.toFixed(2) : '0.00';
@@ -302,28 +544,80 @@
             cambio.value = to2(c > 0 ? c : 0);
         }
 
+        function mostrarPanel(panel, visible) {
+            if (!panel) return;
+            panel.hidden = !visible;
+            panel.style.display = visible ? '' : 'none';
+        }
+
         function actualizarMetodo() {
             const esEfectivo = metodo.value === 'EFECTIVO';
-            bloqueRecibido.classList.toggle('d-none', !esEfectivo);
-            bloqueCambio.classList.toggle('d-none', !esEfectivo);
-            bloqueCanal.classList.toggle('d-none', esEfectivo);
-            bloqueOperacion.classList.toggle('d-none', esEfectivo);
+            mostrarPanel(panelEfectivo, esEfectivo);
+            mostrarPanel(panelTransferencia, !esEfectivo);
+            mostrarPanel(bloqueRecibido, esEfectivo);
+            mostrarPanel(bloqueCambio, esEfectivo);
             montoRecibido.required = esEfectivo;
             canal.required = !esEfectivo;
-                if (!esEfectivo) {
-                    montoRecibido.value = '';
-                    cambio.value = '0.00';
-                    if (!canal.value) {
-                        canal.value = 'AHORITA';
-                    }
+            archivoComprobante.required = !esEfectivo;
+            if (!esEfectivo) {
+                montoRecibido.value = '';
+                cambio.value = '0.00';
+                if (!canal.value) {
+                    canal.value = 'AHORITA';
                 }
+            } else if (archivoComprobante) {
+                archivoComprobante.value = '';
+                actualizarEstadoArchivo();
             }
+        }
+
+        function limpiarPreviewArchivo() {
+            if (previewArchivoUrl) {
+                URL.revokeObjectURL(previewArchivoUrl);
+                previewArchivoUrl = null;
+            }
+            previewArchivoComprobante.classList.remove('is-visible');
+            previewArchivoComprobanteImg.removeAttribute('src');
+            previewArchivoComprobanteNombre.textContent = 'Sin archivo';
+            previewArchivoComprobanteDetalle.textContent = 'La imagen seleccionada aparecerá aquí antes de enviar.';
+        }
+
+        function actualizarEstadoArchivo() {
+            if (!estadoArchivoComprobante) return;
+            if (!archivoComprobante.files || archivoComprobante.files.length === 0) {
+                estadoArchivoComprobante.innerHTML = '<i class="bi bi-paperclip"></i><span>Aún no se ha seleccionado ningún archivo.</span>';
+                limpiarPreviewArchivo();
+                return;
+            }
+
+            const archivo = archivoComprobante.files[0];
+            const tamanoMb = (archivo.size / (1024 * 1024)).toFixed(2);
+            estadoArchivoComprobante.innerHTML = '<i class="bi bi-file-earmark-check text-success"></i><span><strong>'
+                + archivo.name + '</strong> seleccionado (' + tamanoMb + ' MB).</span>';
+
+            if (previewArchivoUrl) {
+                URL.revokeObjectURL(previewArchivoUrl);
+            }
+            previewArchivoUrl = URL.createObjectURL(archivo);
+            previewArchivoComprobanteImg.src = previewArchivoUrl;
+            previewArchivoComprobanteNombre.textContent = archivo.name;
+            previewArchivoComprobanteDetalle.textContent = 'Tamaño: ' + tamanoMb + ' MB';
+            previewArchivoComprobante.classList.add('is-visible');
+        }
+
+        function activarEstadoEnvio() {
+            if (!btnConfirmarPago || !btnConfirmarPagoContenido) return;
+            btnConfirmarPago.disabled = true;
+            btnConfirmarPago.classList.add('is-submitting');
+            btnConfirmarPagoContenido.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span><span>Procesando pago...</span>';
+        }
 
         actualizarMetodo();
         recalcularCambio();
         metodo.addEventListener('change', actualizarMetodo);
         monto.addEventListener('input', recalcularCambio);
         montoRecibido.addEventListener('input', recalcularCambio);
+        archivoComprobante.addEventListener('change', actualizarEstadoArchivo);
 
         form.addEventListener('submit', function (e) {
             const m = parseFloat(monto.value || '0');
@@ -350,11 +644,33 @@
             if (!canal.value) {
                 e.preventDefault();
                 alert('Seleccione la plataforma de transferencia.');
+                return;
+            }
+
+            if (!archivoComprobante.files || archivoComprobante.files.length === 0) {
+                e.preventDefault();
+                alert('Adjunta la imagen del comprobante de transferencia.');
+                return;
+            }
+
+            const archivo = archivoComprobante.files[0];
+            if (archivo.size > 5 * 1024 * 1024) {
+                e.preventDefault();
+                alert('El comprobante no puede superar los 5 MB.');
+                return;
+            }
+
+            activarEstadoEnvio();
+        });
+
+        window.addEventListener('beforeunload', function () {
+            if (previewArchivoUrl) {
+                URL.revokeObjectURL(previewArchivoUrl);
             }
         });
     })();
 </script>
-<script th:inline="javascript">
+    <script th:inline="javascript">
     // ===== BUSCADOR DE CLIENTE EN PAGOS CUENTA =====
     var __cuentaClientes = /*[[${clientes}]]*/ [];
     var __cuentaCsrf = /*[[${_csrf.token}]]*/ '';
@@ -469,5 +785,6 @@
         }
     });
 </script>
+</div>
 </body>
 </html>

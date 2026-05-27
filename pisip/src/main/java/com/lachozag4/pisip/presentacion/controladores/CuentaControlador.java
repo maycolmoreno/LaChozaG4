@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.ICuentaUseCase;
+import com.lachozag4.pisip.infraestructura.seguridad.Roles;
 import com.lachozag4.pisip.presentacion.dto.request.CambiarEstadoRequestDTO;
 import com.lachozag4.pisip.presentacion.dto.request.CuentaRequestDTO;
 import com.lachozag4.pisip.presentacion.dto.response.CuentaResponseDTO;
@@ -32,24 +34,35 @@ public class CuentaControlador {
 	private final CuentaRequestMapper requestMapper;
 
 	@GetMapping
+	@PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO)
 	public ResponseEntity<List<CuentaResponseDTO>> listarTodas() {
 		var lista = cuentaUseCase.listar().stream().map(responseMapper::toResponseDTO).toList();
 		return ResponseEntity.ok(lista);
 	}
 
 	@GetMapping("/abiertas")
+	@PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO)
 	public ResponseEntity<List<CuentaResponseDTO>> listarAbiertas() {
 		var lista = cuentaUseCase.listarAbiertas().stream().map(responseMapper::toResponseDTO).toList();
 		return ResponseEntity.ok(lista);
 	}
 
 	@GetMapping("/{id:\\d+}")
+	@PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO)
 	public ResponseEntity<CuentaResponseDTO> obtenerPorId(@PathVariable("id") int idcuenta) {
 		var cuenta = cuentaUseCase.obtenerPorId(idcuenta);
 		return ResponseEntity.ok(responseMapper.toResponseDTO(cuenta));
 	}
 
+	@GetMapping("/mesa/{idMesa:\\d+}/abierta")
+	@PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO)
+	public ResponseEntity<CuentaResponseDTO> obtenerAbiertaPorMesa(@PathVariable("idMesa") int idMesa) {
+		var cuenta = cuentaUseCase.obtenerAbiertaPorMesa(idMesa);
+		return ResponseEntity.ok(responseMapper.toResponseDTO(cuenta));
+	}
+
 	@PostMapping(consumes = "application/json")
+	@PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO)
 	public ResponseEntity<CuentaResponseDTO> crear(@Valid @RequestBody CuentaRequestDTO request) {
 		var dominio = requestMapper.toDomain(request);
 		var creada = cuentaUseCase.crear(dominio);
@@ -58,21 +71,15 @@ public class CuentaControlador {
 	}
 
 	@PatchMapping(value = "/{id:\\d+}/estado", consumes = "application/json")
+	@PreAuthorize(Roles.ADMIN_CAJERO)
 	public ResponseEntity<CuentaResponseDTO> cambiarEstado(@PathVariable("id") int idcuenta,
 			@Valid @RequestBody CambiarEstadoRequestDTO request) {
 		var actualizada = cuentaUseCase.cambiarEstado(idcuenta, request.getEstado());
 		return ResponseEntity.ok(responseMapper.toResponseDTO(actualizada));
 	}
 
-	// Soporte adicional para PUT /{id}/estado (algunos clientes usan PUT en lugar de PATCH)
-	@org.springframework.web.bind.annotation.PutMapping(value = "/{id:\\d+}/estado", consumes = "application/json")
-	public ResponseEntity<CuentaResponseDTO> cambiarEstadoPut(@PathVariable("id") int idcuenta,
-			@Valid @RequestBody CambiarEstadoRequestDTO request) {
-		var actualizada = cuentaUseCase.cambiarEstado(idcuenta, request.getEstado());
-		return ResponseEntity.ok(responseMapper.toResponseDTO(actualizada));
-	}
-
 	@PostMapping("/{idCuenta:\\d+}/pedidos/{idPedido:\\d+}")
+	@PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO)
 	public ResponseEntity<CuentaResponseDTO> agregarPedido(@PathVariable("idCuenta") int idcuenta,
 			@PathVariable("idPedido") int idpedido) {
 		var actualizada = cuentaUseCase.agregarPedido(idcuenta, idpedido);
@@ -80,6 +87,7 @@ public class CuentaControlador {
 	}
 
 	@PatchMapping(value = "/{id:\\d+}/cliente", consumes = "application/json")
+	@PreAuthorize(Roles.ADMIN_CAJERO)
 	public ResponseEntity<CuentaResponseDTO> asignarCliente(@PathVariable("id") int idcuenta,
 			@RequestBody java.util.Map<String, Integer> body) {
 		Integer idCliente = body.get("idCliente");

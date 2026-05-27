@@ -86,6 +86,10 @@ public class Cuenta implements Serializable {
 		return new Cuenta(idcuenta, fechaApertura, fechaCierre, estado, nuevoTotal, fkMesa, fkCliente);
 	}
 
+	public Cuenta conCliente(Cliente nuevoCliente) {
+		return new Cuenta(idcuenta, fechaApertura, fechaCierre, estado, total, fkMesa, nuevoCliente);
+	}
+
 	@Override
 	public String toString() {
 		return "Cuenta{" + "idcuenta=" + idcuenta + ", fechaApertura=" + fechaApertura + ", fechaCierre="

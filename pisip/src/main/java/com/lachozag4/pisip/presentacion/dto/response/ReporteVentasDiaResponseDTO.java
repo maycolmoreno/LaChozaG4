@@ -12,6 +12,10 @@ public class ReporteVentasDiaResponseDTO {
     private double totalVentas;
     private int numeroPedidos;
     private double ticketPromedio;
+    private double totalEfectivo;
+    private double totalTarjeta;
+    private double totalTransferencias;
+    private double totalOtros;
     private int totalProductos;
 
     private List<PedidoResponseDTO> pedidos;

@@ -1,5 +1,6 @@
 package com.lachozag4.pisip.infraestructura.persistencia.adaptadores;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Sort;
 
 import com.lachozag4.pisip.dominio.entidades.Pedido;
 import com.lachozag4.pisip.dominio.entidades.ResultadoPaginado;
+import com.lachozag4.pisip.dominio.enums.EstadoPedido;
 import com.lachozag4.pisip.dominio.repositorios.IPedidoRepositorio;
 import com.lachozag4.pisip.infraestructura.persistencia.jpa.PedidoJpa;
 import com.lachozag4.pisip.infraestructura.persistencia.mapeadores.IPedidoJpaMapper;
@@ -37,17 +39,17 @@ public class PedidoRepositorioImpl implements IPedidoRepositorio {
 
 	@Override
 	public List<Pedido> listarTodos() {
-		return jpaRepository.findAll().stream().map(mapper::toDomain).toList();
+		return jpaRepository.findAllWithRelations().stream().map(mapper::toDomain).toList();
 	}
 
 	@Override
 	public List<Pedido> listarPendientes() {
-		return jpaRepository.findByEstado("PENDIENTE").stream().map(mapper::toDomain).toList();
+		return jpaRepository.findByEstado(EstadoPedido.PENDIENTE).stream().map(mapper::toDomain).toList();
 	}
 
 	@Override
 	public List<Pedido> listarCompletados() {
-		return jpaRepository.findByEstado("COMPLETADO").stream().map(mapper::toDomain).toList();
+		return jpaRepository.findByEstado(EstadoPedido.COMPLETADO).stream().map(mapper::toDomain).toList();
 	}
 
 	@Override
@@ -68,8 +70,21 @@ public class PedidoRepositorioImpl implements IPedidoRepositorio {
 	}
 
 	@Override
-	public Optional<Pedido> buscarPedidoActivoPorMesa(int idMesa) {
-		return jpaRepository.findPedidoActivoByMesa(idMesa).map(mapper::toDomain);
+	public List<Pedido> buscarPedidosActivosPorMesa(int idMesa) {
+		return jpaRepository.findPedidosActivosByMesa(idMesa).stream().map(mapper::toDomain).toList();
+	}
+
+	@Override
+	public boolean existePedidoActivoPorMesa(int idMesa, int excluirIdPedido) {
+		return jpaRepository.existePedidoActivoPorMesaExcluyendo(idMesa, excluirIdPedido);
+	}
+
+	@Override
+	public List<Pedido> listarCompletadosPorFecha(LocalDate fecha) {
+		LocalDateTime inicio = fecha.atStartOfDay();
+		LocalDateTime fin = fecha.plusDays(1).atStartOfDay();
+		return jpaRepository.findCompletadosBetween(inicio, fin)
+				.stream().map(mapper::toDomain).toList();
 	}
 
 	@Override

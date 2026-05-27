@@ -53,7 +53,7 @@ public class Producto implements Serializable {
 		return imagenUrl;
 	}
 
-	public boolean getEstado() {
+	public boolean isEstado() {
 		return estado;
 	}
 

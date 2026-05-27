@@ -27,6 +27,9 @@ public interface IPedidoDtoMapper {
     // Dominio -> Response
     @Mapping(target = "idpedido",     source = "idpedido")
     @Mapping(target = "fecha",        source = "fecha")
+    @Mapping(target = "fechaEnCocina", source = "fechaEnCocina")
+    @Mapping(target = "fechaListoParaEntrega", source = "fechaListoParaEntrega")
+    @Mapping(target = "fechaEntregado", source = "fechaEntregado")
     @Mapping(target = "estado",       source = "estado")
     @Mapping(target = "observaciones",source = "observaciones")
     @Mapping(target = "fkUsuario",      source = "fkUsuario") // se resuelve con IUsuarioDtoMapper
@@ -36,7 +39,9 @@ public interface IPedidoDtoMapper {
 
     // Calcularemos después de mapear
     @Mapping(target = "cantidadProductos", ignore = true)
-    @Mapping(target = "total",              ignore = true)
+    @Mapping(target = "subtotal",          ignore = true)
+    @Mapping(target = "impuestos",         ignore = true)
+    @Mapping(target = "total",             ignore = true)
 
     PedidoResponseDTO toResponseDTO(Pedido pedido);
 
@@ -56,7 +61,11 @@ public interface IPedidoDtoMapper {
                         .orElse(0.0))
                 .sum();
 
+        double impuestos = 0.0;
+
         target.setCantidadProductos(cantidadProductos);
+        target.setSubtotal(total);
+        target.setImpuestos(impuestos);
         target.setTotal(total);
     }
 }

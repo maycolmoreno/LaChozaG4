@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:ChozaMaui.Models"
+             xmlns:viewModels="clr-namespace:ChozaMaui.ViewModels"
+             xmlns:controls="clr-namespace:ChozaMaui.Views.Controls"
+             x:Class="ChozaMaui.Views.PedidoDetallePage"
+             x:DataType="viewModels:PedidoDetalleViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#F8FAFC">
+    <Grid RowDefinitions="Auto,*">
+    <Grid BackgroundColor="#F97316"
+          Padding="14,40,14,12"
+          ColumnDefinitions="44,*,Auto"
+          ColumnSpacing="8">
+        <Button Grid.Column="0"
+            Command="{Binding VolverCommand}"
+            Text="‹"
+            FontSize="30"
+            TextColor="White"
+            BackgroundColor="Transparent"
+            BorderWidth="0"
+            Padding="0"
+            WidthRequest="44"
+            HeightRequest="44" />
+
+        <VerticalStackLayout Grid.Column="1"
+                 Spacing="2"
+                 VerticalOptions="Center">
+        <Label Text="{Binding TituloPedido}"
+               FontSize="20"
+               FontAttributes="Bold"
+               TextColor="White"
+               MaxLines="1"
+               LineBreakMode="TailTruncation" />
+        <Label Text="{Binding SubtituloPedido}"
+               FontSize="13"
+               TextColor="#FFEDD5"
+               MaxLines="1"
+               LineBreakMode="TailTruncation" />
+        </VerticalStackLayout>
+
+        <controls:ConnectivityActionsView Grid.Column="2"
+                          RefreshCommand="{Binding CargarCommand}"
+                          VerticalOptions="Center" />
+    </Grid>
+
+    <CollectionView Grid.Row="1"
+                    ItemsSource="{Binding Detalles}"
+                    SelectionMode="None"
+                    Margin="16,14,16,0">
+        <CollectionView.Header>
+            <VerticalStackLayout Spacing="14">
+
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}"
+                                   Color="#F97316"
+                                   HorizontalOptions="Center" />
+
+                <Label Text="{Binding ErrorMessage}"
+                       TextColor="#EF4444"
+                       FontSize="13"
+                       IsVisible="{Binding ErrorMessage, Converter={StaticResource StringToBoolConverter}}" />
+
+                <Border BackgroundColor="White"
+                        Stroke="#E2E8F0"
+                        StrokeShape="RoundRectangle 18"
+                        Padding="14">
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="Auto,*"
+                              ColumnSpacing="12">
+                            <Border BackgroundColor="#FFF7ED"
+                                    Stroke="Transparent"
+                                    StrokeShape="RoundRectangle 26"
+                                    WidthRequest="52"
+                                    HeightRequest="52">
+                                <Label Text="🪑"
+                                       FontSize="24"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1"
+                                                 Spacing="2"
+                                                 VerticalOptions="Center">
+                                <Label Text="{Binding MesaTexto}"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       TextColor="#0F172A" />
+                                <Label Text="{Binding MesaCapacidadTexto}"
+                                       FontSize="13"
+                                       TextColor="#64748B" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <BoxView HeightRequest="1"
+                                 Color="#E2E8F0" />
+
+                        <VerticalStackLayout Spacing="8">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                <Label Text="👤" FontSize="18" />
+                                <VerticalStackLayout Grid.Column="1" Spacing="1">
+                                    <Label Text="{Binding ClienteTexto}"
+                                           FontSize="14"
+                                           FontAttributes="Bold"
+                                           TextColor="#0F172A" />
+                                    <Label Text="{Binding ClienteTelefonoTexto}"
+                                           FontSize="12"
+                                           TextColor="#64748B" />
+                                </VerticalStackLayout>
+                            </Grid>
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                <Label Text="🙋" FontSize="18" />
+                                <VerticalStackLayout Grid.Column="1" Spacing="1">
+                                    <Label Text="{Binding MeseroTexto}"
+                                           FontSize="14"
+                                           FontAttributes="Bold"
+                                           TextColor="#0F172A" />
+                                    <Label Text="{Binding MeseroHoraTexto}"
+                                           FontSize="12"
+                                           TextColor="#64748B" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border BackgroundColor="White"
+                        Stroke="#E2E8F0"
+                        StrokeShape="RoundRectangle 18"
+                        Padding="14,14,14,6">
+                    <Label Text="Productos"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="#0F172A" />
+                </Border>
+            </VerticalStackLayout>
+        </CollectionView.Header>
+
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="models:PedidoDetalleResponse">
+                <Border BackgroundColor="White"
+                        Stroke="#E2E8F0"
+                        StrokeThickness="0"
+                        Padding="14,7">
+                    <Grid ColumnDefinitions="48,*,Auto"
+                          ColumnSpacing="10">
+                        <Border BackgroundColor="#F1F5F9"
+                                Stroke="Transparent"
+                                StrokeShape="RoundRectangle 12"
+                                HeightRequest="48"
+                                WidthRequest="48">
+                            <Label Text="{Binding Cantidad, StringFormat='{0}x'}"
+                                   FontAttributes="Bold"
+                                   FontSize="14"
+                                   TextColor="#0F172A"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+                        </Border>
+
+                        <VerticalStackLayout Grid.Column="1"
+                                             Spacing="2"
+                                             VerticalOptions="Center">
+                            <Label Text="{Binding Producto.Nombre}"
+                                   TextColor="#0F172A"
+                                   FontSize="14"
+                                   FontAttributes="Bold"
+                                   LineBreakMode="TailTruncation" />
+                            <Label Text="{Binding PrecioUnitario, StringFormat='${0:0.00}'}"
+                                   TextColor="#F97316"
+                                   FontSize="13"
+                                   FontAttributes="Bold" />
+                        </VerticalStackLayout>
+
+                        <Label Grid.Column="2"
+                               Text="{Binding Subtotal, StringFormat='${0:0.00}'}"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="#0F172A"
+                               VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+
+        <CollectionView.Footer>
+            <VerticalStackLayout Spacing="14" Padding="0,0,0,24">
+                <Border BackgroundColor="White"
+                        Stroke="#E2E8F0"
+                        StrokeShape="RoundRectangle 18"
+                        Padding="14">
+                    <VerticalStackLayout Spacing="12">
+                        <BoxView HeightRequest="1"
+                                 Color="#E2E8F0" />
+
+                        <Grid ColumnDefinitions="*,Auto"
+                              RowDefinitions="Auto,Auto"
+                              RowSpacing="6">
+                            <Label Text="Consumo"
+                                   FontSize="14"
+                                   TextColor="#64748B" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding Subtotal, StringFormat='${0:0.00}'}"
+                                   FontSize="14"
+                                   TextColor="#0F172A" />
+
+                            <Label Grid.Row="1"
+                                   Text="Total pedido"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="#0F172A" />
+                            <Label Grid.Row="1"
+                                   Grid.Column="1"
+                                   Text="{Binding Total, StringFormat='${0:0.00}'}"
+                                   FontSize="28"
+                                   FontAttributes="Bold"
+                                   TextColor="#F97316" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border BackgroundColor="White"
+                        Stroke="#E2E8F0"
+                        StrokeShape="RoundRectangle 18"
+                        Padding="14">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Observaciones"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="#0F172A" />
+                        <Label Text="{Binding Observaciones}"
+                               FontSize="14"
+                               TextColor="#475569" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <VerticalStackLayout Spacing="10">
+                    <Button Text="🍳  ENVIAR A COCINA"
+                            FontAttributes="Bold"
+                            FontSize="15"
+                            HeightRequest="54"
+                            CornerRadius="16"
+                            BackgroundColor="#F97316"
+                            TextColor="White"
+                            Command="{Binding CambiarEstadoRapidoCommand}"
+                            CommandParameter="EN_COCINA"
+                            IsVisible="{Binding PuedeEnviarCocina}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}" />
+
+                    <Button Text="✓  MARCAR COMO LISTO"
+                            FontAttributes="Bold"
+                            FontSize="15"
+                            HeightRequest="54"
+                            CornerRadius="16"
+                            BackgroundColor="#F59E0B"
+                            TextColor="White"
+                            Command="{Binding CambiarEstadoRapidoCommand}"
+                            CommandParameter="LISTO_PARA_ENTREGA"
+                            IsVisible="{Binding PuedeMarcarListo}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}" />
+
+                    <Button Text="ENTREGAR AL CLIENTE"
+                            FontAttributes="Bold"
+                            FontSize="15"
+                            HeightRequest="54"
+                            CornerRadius="16"
+                            BackgroundColor="#22C55E"
+                            TextColor="White"
+                            Command="{Binding CambiarEstadoRapidoCommand}"
+                            CommandParameter="COMPLETADO"
+                            IsVisible="{Binding PuedeEntregarCliente}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}" />
+                </VerticalStackLayout>
+
+                <Label Text="{Binding MensajeCambio}"
+                       FontSize="13"
+                       TextColor="#22C55E"
+                       HorizontalOptions="Center"
+                       IsVisible="{Binding MensajeCambio, Converter={StaticResource StringToBoolConverter}}" />
+
+                <Border BackgroundColor="White"
+                        Stroke="#E2E8F0"
+                        StrokeShape="RoundRectangle 18"
+                        Padding="14">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Historial"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="#0F172A" />
+
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Historial}"
+                                             Spacing="0">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="viewModels:PedidoTimelineItem">
+                                    <Grid ColumnDefinitions="58,18,*"
+                                          Padding="0,5"
+                                          ColumnSpacing="8">
+                                        <Label Text="{Binding Hora}"
+                                               FontSize="12"
+                                               TextColor="#64748B" />
+
+                                        <Grid Grid.Column="1"
+                                              RowDefinitions="14,*">
+                                            <Border BackgroundColor="{Binding DotColor, Converter={StaticResource HexToColorConverter}}"
+                                                    Stroke="White"
+                                                    StrokeThickness="2"
+                                                    WidthRequest="14"
+                                                    HeightRequest="14"
+                                                    StrokeShape="RoundRectangle 7"
+                                                    HorizontalOptions="Center" />
+
+                                            <BoxView Grid.Row="1"
+                                                     WidthRequest="2"
+                                                     Color="#CBD5E1"
+                                                     HorizontalOptions="Center"
+                                                     IsVisible="{Binding MostrarLinea}" />
+                                        </Grid>
+
+                                        <VerticalStackLayout Grid.Column="2"
+                                                             Spacing="1">
+                                            <Label Text="{Binding Evento}"
+                                                   FontSize="14"
+                                                   TextColor="#0F172A" />
+                                            <Label Text="{Binding Responsable}"
+                                                   FontSize="12"
+                                                   TextColor="#64748B"
+                                                   IsVisible="{Binding Responsable, Converter={StaticResource StringToBoolConverter}}" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Button Text="Ir a pagar"
+                        Command="{Binding IrAPagarCommand}"
+                        HeightRequest="54"
+                        BackgroundColor="#F59E0B"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        CornerRadius="16"
+                        IsVisible="{Binding PuedeIrAPagar}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}" />
+
+                <Button Text="Cancelar pedido"
+                        BackgroundColor="White"
+                        BorderColor="#FCA5A5"
+                        BorderWidth="1"
+                        TextColor="#EF4444"
+                        FontAttributes="Bold"
+                        CornerRadius="16"
+                        HeightRequest="50"
+                        Command="{Binding CancelarPedidoCommand}"
+                        IsVisible="{Binding PuedeCancelarPedido}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InvertBoolConverter}}" />
+            </VerticalStackLayout>
+        </CollectionView.Footer>
+    </CollectionView>
+    </Grid>
+</ContentPage>

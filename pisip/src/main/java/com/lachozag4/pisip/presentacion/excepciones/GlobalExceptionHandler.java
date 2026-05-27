@@ -52,6 +52,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleGeneric(Exception ex) {
         log.error("Error interno del servidor: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error interno del servidor: " + ex.getMessage());
+                .body("Ha ocurrido un error interno. Contacte al administrador.");
     }
 }

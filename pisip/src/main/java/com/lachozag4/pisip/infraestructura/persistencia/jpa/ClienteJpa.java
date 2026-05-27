@@ -8,12 +8,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "cliente")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class ClienteJpa implements Serializable {
 
@@ -41,4 +43,16 @@ public class ClienteJpa implements Serializable {
 	@Column(nullable = false)
 	private boolean estado;
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof ClienteJpa that)) return false;
+		return idcliente != 0 && idcliente == that.idcliente;
+	}
+
+	@Override
+	public int hashCode() { return getClass().hashCode(); }
+
+	@Override
+	public String toString() { return "ClienteJpa(id=" + idcliente + ")"; }
 }
