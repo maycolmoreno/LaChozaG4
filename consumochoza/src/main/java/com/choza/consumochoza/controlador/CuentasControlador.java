@@ -20,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.choza.consumochoza.modelo.dto.ComprobanteDTO;
 import com.choza.consumochoza.modelo.dto.CuentaDTO;
+import com.choza.consumochoza.modelo.dto.DropboxEstadoDTO;
 import com.choza.consumochoza.modelo.dto.PagoDTO;
 import com.choza.consumochoza.service.IClienteService;
 import com.choza.consumochoza.service.ICuentaService;
@@ -48,7 +49,17 @@ public class CuentasControlador {
             estado = "ABIERTA";
         }
 
-        List<CuentaDTO> cuentas = cuentaService.listarTodas();
+        List<CuentaDTO> cuentas;
+        try {
+            cuentas = cuentaService.listarTodas();
+        } catch (Exception ex) {
+            model.addAttribute("cuentas", List.of());
+            model.addAttribute("filtroEstado", estado.toUpperCase());
+            model.addAttribute("fechaDesde", fechaDesde);
+            model.addAttribute("fechaHasta", fechaHasta);
+            model.addAttribute("mensajeError", ex.getMessage());
+            return "Cuenta/Cuentas";
+        }
 
         // Filtro por estado (ABIERTA, PAGADA, ANULADA)
         if (estado != null && !estado.isBlank() && !"TODAS".equalsIgnoreCase(estado)) {
@@ -171,12 +182,18 @@ public class CuentasControlador {
             @RequestParam(name = "origen", required = false) String origen,
             Model model) {
         CuentaDTO cuenta = cuentaService.obtenerPorId(idcuenta);
-        List<PagoDTO> pagos = pagoService.listarPorCuenta(idcuenta).stream()
-                .sorted(Comparator
-                        .comparing(PagoDTO::getFecha, Comparator.nullsLast(Comparator.naturalOrder()))
-                        .reversed()
-                        .thenComparing(PagoDTO::getIdpago, Comparator.reverseOrder()))
-                .toList();
+        List<PagoDTO> pagos;
+        try {
+            pagos = pagoService.listarPorCuenta(idcuenta).stream()
+                    .sorted(Comparator
+                            .comparing(PagoDTO::getFecha, Comparator.nullsLast(Comparator.naturalOrder()))
+                            .reversed()
+                            .thenComparing(PagoDTO::getIdpago, Comparator.reverseOrder()))
+                    .toList();
+        } catch (Exception ex) {
+            pagos = List.of();
+            model.addAttribute("mensajeError", ex.getMessage());
+        }
 
         double totalPagado = pagos.stream().mapToDouble(PagoDTO::getMonto).sum();
         double saldoPendiente = cuenta.getTotal() - totalPagado;
@@ -185,6 +202,7 @@ public class CuentasControlador {
         }
 
         Map<Integer, ComprobanteDTO> comprobantesPorPago = new LinkedHashMap<>();
+        DropboxEstadoDTO dropboxEstado = pagoService.obtenerEstadoDropbox(idcuenta);
         pagos.stream()
                 .filter(p -> "TRANSFERENCIA".equalsIgnoreCase(p.getMetodo()))
                 .forEach(p -> {
@@ -203,6 +221,7 @@ public class CuentasControlador {
         model.addAttribute("totalPagado", totalPagado);
         model.addAttribute("saldoPendiente", saldoPendiente);
         model.addAttribute("comprobantesPorPago", comprobantesPorPago);
+        model.addAttribute("dropboxEstado", dropboxEstado);
         model.addAttribute("origen", origen);
         model.addAttribute("clientes", clienteService.listarTodos());
         return "Cuenta/PagosCuenta";
@@ -236,6 +255,12 @@ public class CuentasControlador {
             }
 
             if (esTransferencia) {
+                DropboxEstadoDTO dropboxEstado = pagoService.obtenerEstadoDropbox(idcuenta);
+                if (dropboxEstado == null || !dropboxEstado.isDisponible()) {
+                    throw new IllegalStateException(dropboxEstado != null && dropboxEstado.getMensaje() != null
+                            ? dropboxEstado.getMensaje()
+                            : "Dropbox no disponible en este momento.");
+                }
                 if (canalTransferencia == null || canalTransferencia.isBlank()) {
                     throw new IllegalArgumentException("Debe seleccionar la plataforma de transferencia.");
                 }

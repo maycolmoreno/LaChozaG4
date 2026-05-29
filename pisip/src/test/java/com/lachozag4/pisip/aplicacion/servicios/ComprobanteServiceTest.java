@@ -104,7 +104,6 @@ class ComprobanteServiceTest {
     @Test
     @DisplayName("subirComprobante — lanza excepción si el archivo supera 5 MB")
     void subirComprobante_archivoDemasiadoGrande() {
-        when(archivo.getContentType()).thenReturn("image/jpeg");
         when(archivo.getSize()).thenReturn(6L * 1024 * 1024);
 
         assertThatThrownBy(() -> service.subirComprobante(1, archivo, "cajero1"))
@@ -122,7 +121,7 @@ class ComprobanteServiceTest {
 
         assertThatThrownBy(() -> service.subirComprobante(1, archivo, "cajero1"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("tipo");
+                .hasMessageContaining("Tipo");
 
         verify(pagoRepo, never()).findById(anyInt());
     }
@@ -160,12 +159,13 @@ class ComprobanteServiceTest {
     }
 
     @Test
-    @DisplayName("eliminarComprobante — si no existe comprobante lanza NoSuchElementException")
+    @DisplayName("eliminarComprobante — si no existe comprobante lanza IllegalArgumentException")
     void eliminarComprobante_noExiste() {
         when(comprobanteRepo.findByFkPago_Idpago(1)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.eliminarComprobante(1))
-                .isInstanceOf(java.util.NoSuchElementException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("No existe comprobante");
 
         verify(dropboxService, never()).eliminarArchivo(anyString());
     }

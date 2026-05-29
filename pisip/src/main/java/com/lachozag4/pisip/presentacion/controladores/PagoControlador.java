@@ -18,9 +18,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.IPagoUseCase;
 import com.lachozag4.pisip.aplicacion.servicios.ComprobanteService;
+import com.lachozag4.pisip.dominio.servicios.IDropboxService;
 import com.lachozag4.pisip.infraestructura.seguridad.Roles;
 import com.lachozag4.pisip.presentacion.dto.request.PagoRequestDTO;
 import com.lachozag4.pisip.presentacion.dto.response.ComprobanteResponseDTO;
+import com.lachozag4.pisip.presentacion.dto.response.DropboxEstadoResponseDTO;
 import com.lachozag4.pisip.presentacion.dto.response.PagoResponseDTO;
 import com.lachozag4.pisip.presentacion.dto.response.SaldoCuentaResponseDTO;
 
@@ -43,6 +45,23 @@ public class PagoControlador {
 				request.getUsuario());
 		var response = toResponse(pago);
 		return ResponseEntity.created(URI.create("/api/cuentas/" + idcuenta + "/pagos/" + response.getIdpago()))
+				.body(response);
+	}
+
+	@PostMapping(value = "/con-comprobante", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PreAuthorize(Roles.ADMIN_CAJERO)
+	public ResponseEntity<PagoResponseDTO> registrarPagoConComprobante(
+			@PathVariable("idCuenta") int idcuenta,
+			@RequestParam("monto") double monto,
+			@RequestParam("metodo") String metodo,
+			@RequestParam(value = "referencia", required = false) String referencia,
+			@RequestParam("usuario") String usuario,
+			@RequestParam("archivo") MultipartFile archivo) {
+
+		var pago = pagoUseCase.registrarPagoConComprobante(idcuenta, monto, metodo, referencia, usuario, archivo);
+		var response = toResponse(pago);
+		return ResponseEntity
+				.created(URI.create("/api/cuentas/" + idcuenta + "/pagos/" + response.getIdpago()))
 				.body(response);
 	}
 
@@ -109,8 +128,29 @@ public class PagoControlador {
 			@PathVariable("idCuenta") int idcuenta,
 			@PathVariable("idPago")   int idpago) {
 
-		var comp = comprobanteService.obtenerPorPago(idpago);
+		var comp = comprobanteService.buscarPorPago(idpago);
+		if (comp == null) {
+			return ResponseEntity.notFound().build();
+		}
 		return ResponseEntity.ok(toComprobanteResponse(comp));
+	}
+
+	@GetMapping("/dropbox/estado")
+	@PreAuthorize(Roles.ADMIN_CAJERO)
+	public ResponseEntity<DropboxEstadoResponseDTO> obtenerEstadoDropbox(
+			@PathVariable("idCuenta") int idcuenta) {
+
+		var dto = new DropboxEstadoResponseDTO();
+		try {
+			comprobanteService.validarConexionDropbox();
+			dto.setDisponible(true);
+			dto.setMensaje("Dropbox disponible.");
+			return ResponseEntity.ok(dto);
+		} catch (IDropboxService.DropboxException ex) {
+			dto.setDisponible(false);
+			dto.setMensaje(ex.getMessage());
+			return ResponseEntity.status(503).body(dto);
+		}
 	}
 
 	/**

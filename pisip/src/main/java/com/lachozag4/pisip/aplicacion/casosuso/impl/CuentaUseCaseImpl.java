@@ -28,6 +28,12 @@ public class CuentaUseCaseImpl implements ICuentaUseCase {
 	@Override
 	@Transactional
 	public Cuenta crear(Cuenta cuenta) {
+		if (cuenta.getFkMesa() != null) {
+			repositorio.buscarAbiertaPorMesa(cuenta.getFkMesa().getIdmesa()).ifPresent(abierta -> {
+				throw new BusinessException("Ya existe una cuenta abierta para esta mesa.");
+			});
+		}
+
 		// Siempre se crea como ABIERTA con fecha de apertura ahora si no viene seteada
 		Cuenta nueva = new Cuenta(
 			0,
@@ -128,6 +134,11 @@ public class CuentaUseCaseImpl implements ICuentaUseCase {
 
 		var pedido = pedidoRepositorio.buscarPorId(idpedido)
 				.orElseThrow(() -> new NotFoundException("Pedido no encontrado con ID: " + idpedido));
+
+		if (cuenta.getFkMesa() != null && pedido.getFkMesa() != null
+				&& cuenta.getFkMesa().getIdmesa() != pedido.getFkMesa().getIdmesa()) {
+			throw new BusinessException("El pedido pertenece a una mesa distinta a la cuenta.");
+		}
 
 		// Asociar el pedido a la cuenta
 		pedidoRepositorio.actualizar(pedido.conCuenta(cuenta));

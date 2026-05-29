@@ -28,18 +28,24 @@ public class CajaControlador {
     @GetMapping
     public String verCaja(Model model) {
         CajaTurnoDTO cajaAbierta = null;
+        List<CajaTurnoDTO> historial = List.of();
         try {
             cajaAbierta = cajaService.obtenerCajaAbierta();
         } catch (Exception ignored) {
             cajaAbierta = null;
         }
 
-        List<CajaTurnoDTO> historial = cajaService.listarCajas().stream()
-                .sorted(Comparator
-                        .comparing(CajaTurnoDTO::getFechaApertura, Comparator.nullsLast(Comparator.naturalOrder()))
-                        .reversed()
-                        .thenComparing(CajaTurnoDTO::getIdcaja, Comparator.reverseOrder()))
-                .toList();
+        try {
+            historial = cajaService.listarCajas().stream()
+                    .sorted(Comparator
+                            .comparing(CajaTurnoDTO::getFechaApertura, Comparator.nullsLast(Comparator.naturalOrder()))
+                            .reversed()
+                            .thenComparing(CajaTurnoDTO::getIdcaja, Comparator.reverseOrder()))
+                    .toList();
+        } catch (Exception ex) {
+            model.addAttribute("mensajeError", ex.getMessage());
+        }
+
         model.addAttribute("cajaAbierta", cajaAbierta);
         model.addAttribute("historialCajas", historial);
         return "Caja/Caja";

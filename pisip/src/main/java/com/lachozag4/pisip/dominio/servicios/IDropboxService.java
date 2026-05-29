@@ -42,6 +42,13 @@ public interface IDropboxService {
     void eliminarArchivo(String rutaDropbox);
 
     /**
+     * Valida que la integración con Dropbox esté operativa.
+     *
+     * @throws DropboxException si hay error de autenticación o comunicación
+     */
+    void validarConexion();
+
+    /**
      * Valida que la extensión del archivo sea permitida (jpg, jpeg, png).
      *
      * @param nombreArchivo Nombre original del archivo incluyendo extensión

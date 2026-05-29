@@ -1,7 +1,6 @@
 package com.choza.consumochoza.service.impl;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -75,7 +74,7 @@ public class CajaServiceImpl implements ICajaService {
                     .block(TIMEOUT);
         } catch (Exception e) {
             log.error("Error al listar cajas: {}", e.getMessage());
-            return Collections.emptyList();
+            throw ApiErrorUtil.toApiException("No se pudo cargar el historial de cajas.", e);
         }
     }
 }

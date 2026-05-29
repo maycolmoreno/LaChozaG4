@@ -196,8 +196,9 @@ return new CajaUseCaseImpl(cajaRepositorio, pagoRepositorio);
 
 @Bean
 IPagoUseCase pagoUseCase(IPagoRepositorio pagoRepositorio, ICuentaRepositorio cuentaRepositorio,
-ICajaTurnoRepositorio cajaRepositorio, IMesaRepositorio mesaRepositorio) {
-return new PagoUseCaseImpl(pagoRepositorio, cuentaRepositorio, cajaRepositorio, mesaRepositorio);
+ICajaTurnoRepositorio cajaRepositorio, IMesaRepositorio mesaRepositorio,
+com.lachozag4.pisip.aplicacion.servicios.ComprobanteService comprobanteService) {
+return new PagoUseCaseImpl(pagoRepositorio, cuentaRepositorio, cajaRepositorio, mesaRepositorio, comprobanteService);
 }
 
 @Bean

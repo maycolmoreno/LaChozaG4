@@ -2,7 +2,6 @@ package com.choza.consumochoza.service.impl;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,7 +35,7 @@ public class PedidoServiceImpl implements IPedidoService {
                     .block(TIMEOUT);
         } catch (Exception e) {
             log.error("Error al listar pedidos: {}", e.getMessage());
-            return Collections.emptyList();
+            throw ApiErrorUtil.toApiException("No se pudo cargar la lista de pedidos.", e);
         }
     }
 
@@ -68,7 +67,7 @@ public class PedidoServiceImpl implements IPedidoService {
                     .block(TIMEOUT);
         } catch (Exception e) {
             log.error("Error al listar pedidos paginados: {}", e.getMessage());
-            return new PedidosPaginadosDTO(Collections.emptyList(), 0, 0, page, size);
+            throw ApiErrorUtil.toApiException("No se pudo cargar la lista de pedidos.", e);
         }
     }
 

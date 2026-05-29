@@ -148,6 +148,17 @@ public class DropboxServiceImpl implements IDropboxService {
         }
     }
 
+    @Override
+    public void validarConexion() {
+        try {
+            dropboxClient.users().getCurrentAccount();
+        } catch (DbxException e) {
+            log.error("[Dropbox] Conexion no disponible: {}", e.getMessage());
+            throw new DropboxException(
+                    "Dropbox rechazo el token configurado o no permitio la autenticacion. Revise que sea un access token vigente de la app correcta.", e);
+        }
+    }
+
     // ─── Validación ──────────────────────────────────────────────────────────────
 
     @Override

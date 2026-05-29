@@ -66,6 +66,7 @@ public class PedidosControlador {
             @org.springframework.web.bind.annotation.RequestParam(name = "page", required = false, defaultValue = "0") int page,
             @org.springframework.web.bind.annotation.RequestParam(name = "size", required = false, defaultValue = "10") int size,
             Model model) {
+        try {
 
         // Parsear fechas
         LocalDate desde = (fechaDesde != null && !fechaDesde.isBlank()) ? LocalDate.parse(fechaDesde) : null;
@@ -172,6 +173,31 @@ public class PedidosControlador {
         model.addAttribute("pedidosPorEstado", pedidosPorEstado);
 
         return "Pedido/Pedidos";
+        } catch (Exception ex) {
+            model.addAttribute("pedidos", List.of());
+            model.addAttribute("filtroEstado", (estado == null || estado.isBlank()) ? "TODOS" : estado.toUpperCase());
+            model.addAttribute("q", q);
+            model.addAttribute("fechaDesde", fechaDesde);
+            model.addAttribute("fechaHasta", fechaHasta);
+            model.addAttribute("page", page);
+            model.addAttribute("size", size);
+            model.addAttribute("totalPaginas", 0);
+            model.addAttribute("totalPedidos", 0);
+            model.addAttribute("cuentasPorMesa", Map.of());
+            model.addAttribute("pedidosConCobrar", Set.of());
+            model.addAttribute("pedidosSoloBarIds", Set.of());
+            model.addAttribute("pedidosListosParaEntrega", 0L);
+            Map<String, List<PedidoDTO>> pedidosPorEstado = new HashMap<>();
+            pedidosPorEstado.put("PENDIENTE", List.of());
+            pedidosPorEstado.put("EN_COCINA", List.of());
+            pedidosPorEstado.put("EN_BAR", List.of());
+            pedidosPorEstado.put("LISTO_PARA_ENTREGA", List.of());
+            pedidosPorEstado.put("COMPLETADO", List.of());
+            pedidosPorEstado.put("CANCELADO", List.of());
+            model.addAttribute("pedidosPorEstado", pedidosPorEstado);
+            model.addAttribute("mensajeError", ex.getMessage());
+            return "Pedido/Pedidos";
+        }
     }
 
     @GetMapping("/nuevo")

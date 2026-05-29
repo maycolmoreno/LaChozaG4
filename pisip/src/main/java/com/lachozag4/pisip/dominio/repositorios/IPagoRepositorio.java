@@ -11,6 +11,8 @@ public interface IPagoRepositorio {
 
 	List<Pago> listarPorCuenta(int idcuenta);
 
+	List<Pago> listarPorCaja(int idcaja);
+
 	List<Pago> listarPorFecha(LocalDate fecha);
 
 	double totalPagadoCuenta(int idcuenta);

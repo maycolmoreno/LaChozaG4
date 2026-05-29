@@ -31,35 +31,41 @@ public class ProductoControlador {
                          Model model) {
 
         java.util.List<ProductoDTO> productos;
+        try {
 
-        // 1) Filtro por categoría desde el backend
-        if (categoriaId != null) {
-            productos = productoService.listarPorCategoria(categoriaId);
-        } else if ("activos".equalsIgnoreCase(estado)) {
-            // 2) Solo activos
-            productos = productoService.listarActivos();
-        } else {
-            // 3) Todos (activos + inactivos)
-            productos = productoService.listarTodos();
+            // 1) Filtro por categoría desde el backend
+            if (categoriaId != null) {
+                productos = productoService.listarPorCategoria(categoriaId);
+            } else if ("activos".equalsIgnoreCase(estado)) {
+                // 2) Solo activos
+                productos = productoService.listarActivos();
+            } else {
+                // 3) Todos (activos + inactivos)
+                productos = productoService.listarTodos();
 
-            if ("inactivos".equalsIgnoreCase(estado)) {
+                if ("inactivos".equalsIgnoreCase(estado)) {
+                    productos = productos.stream()
+                            .filter(p -> !p.isEstado())
+                            .toList();
+                }
+            }
+
+            // 4) Búsqueda por nombre / descripción en memoria
+            if (q != null && !q.isBlank()) {
+                String termino = q.toLowerCase();
                 productos = productos.stream()
-                        .filter(p -> !p.isEstado())
+                        .filter(p -> (p.getNombre() != null && p.getNombre().toLowerCase().contains(termino))
+                                || (p.getDescripcion() != null && p.getDescripcion().toLowerCase().contains(termino)))
                         .toList();
             }
-        }
 
-        // 4) Búsqueda por nombre / descripción en memoria
-        if (q != null && !q.isBlank()) {
-            String termino = q.toLowerCase();
-            productos = productos.stream()
-                    .filter(p -> (p.getNombre() != null && p.getNombre().toLowerCase().contains(termino))
-                              || (p.getDescripcion() != null && p.getDescripcion().toLowerCase().contains(termino)))
-                    .toList();
+            model.addAttribute("productos", productos);
+            model.addAttribute("categorias", categoriaService.listarActivas());
+        } catch (Exception ex) {
+            model.addAttribute("productos", java.util.List.of());
+            model.addAttribute("categorias", java.util.List.of());
+            model.addAttribute("mensajeError", ex.getMessage());
         }
-
-        model.addAttribute("productos", productos);
-        model.addAttribute("categorias", categoriaService.listarActivas());
         model.addAttribute("filtroEstado", estado == null ? "todos" : estado);
         model.addAttribute("filtroCategoriaId", categoriaId);
         model.addAttribute("q", q);

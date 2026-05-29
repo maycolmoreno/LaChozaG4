@@ -2,7 +2,6 @@ package com.choza.consumochoza.service.impl;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +16,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.multipart.MultipartFile;
 
 import com.choza.consumochoza.modelo.dto.ComprobanteDTO;
+import com.choza.consumochoza.modelo.dto.DropboxEstadoDTO;
 import com.choza.consumochoza.modelo.dto.PagoDTO;
 import com.choza.consumochoza.service.IPagoService;
 
@@ -58,7 +58,7 @@ public class PagoServiceImpl implements IPagoService {
                     .block(TIMEOUT);
         } catch (Exception e) {
             log.error("Error al listar pagos de cuenta {}: {}", idCuenta, e.getMessage());
-            return Collections.emptyList();
+            throw ApiErrorUtil.toApiException("No se pudo cargar los pagos de la cuenta.", e);
         }
     }
 
@@ -95,6 +95,31 @@ public class PagoServiceImpl implements IPagoService {
                 return null;
             }
             throw ex;
+        }
+    }
+
+    @Override
+    public DropboxEstadoDTO obtenerEstadoDropbox(int idCuenta) {
+        try {
+            return webClient.get()
+                    .uri("/cuentas/{idCuenta}/pagos/dropbox/estado", idCuenta)
+                    .retrieve()
+                    .bodyToMono(DropboxEstadoDTO.class)
+                    .block(TIMEOUT);
+        } catch (WebClientResponseException ex) {
+            var estado = new DropboxEstadoDTO();
+            estado.setDisponible(false);
+            String mensaje = ApiErrorUtil.extractMessage(ex.getResponseBodyAsString());
+            estado.setMensaje(mensaje == null || mensaje.isBlank()
+                    ? "Dropbox no disponible en este momento."
+                    : mensaje);
+            return estado;
+        } catch (Exception ex) {
+            log.warn("No se pudo consultar el estado de Dropbox: {}", ex.getMessage());
+            var estado = new DropboxEstadoDTO();
+            estado.setDisponible(false);
+            estado.setMensaje("No se pudo validar la conexion con Dropbox.");
+            return estado;
         }
     }
 

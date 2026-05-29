@@ -30,28 +30,35 @@ public class DashboardControlador {
 
     @GetMapping
     public String verDashboard(Model model) {
-        LocalDate hoy = LocalDate.now();
-        ReporteVentasDiaDTO reporteDia = reporteService.obtenerVentasDia(hoy);
+        try {
+            LocalDate hoy = LocalDate.now();
+            ReporteVentasDiaDTO reporteDia = reporteService.obtenerVentasDia(hoy);
 
-        // Pedidos en curso: todos los que no están COMPLETADO ni CANCELADO
-        List<PedidoDTO> pedidos = pedidoService.listarTodos();
-        List<PedidoDTO> pedidosEnCurso = pedidos.stream()
-                .filter(p -> p.getEstado() != null)
-                .filter(p -> !"COMPLETADO".equalsIgnoreCase(p.getEstado()))
-                .filter(p -> !"CANCELADO".equalsIgnoreCase(p.getEstado()))
+            // Pedidos en curso: todos los que no están COMPLETADO ni CANCELADO
+            List<PedidoDTO> pedidos = pedidoService.listarTodos();
+            List<PedidoDTO> pedidosEnCurso = pedidos.stream()
+                    .filter(p -> p.getEstado() != null)
+                    .filter(p -> !"COMPLETADO".equalsIgnoreCase(p.getEstado()))
+                    .filter(p -> !"CANCELADO".equalsIgnoreCase(p.getEstado()))
+                    .collect(Collectors.toList());
+
+            // Stock bajo: productos activos con stock menor a un umbral (ej. 10)
+            List<ProductoDTO> productosActivos = productoService.listarActivos();
+            int umbralStockBajo = 10;
+            List<ProductoDTO> stockBajo = productosActivos.stream()
+                .filter(p -> p.getStockActual() <= umbralStockBajo)
+                .sorted(Comparator.comparingInt(ProductoDTO::getStockActual))
                 .collect(Collectors.toList());
 
-        // Stock bajo: productos activos con stock menor a un umbral (ej. 10)
-        List<ProductoDTO> productosActivos = productoService.listarActivos();
-        int umbralStockBajo = 10;
-        List<ProductoDTO> stockBajo = productosActivos.stream()
-            .filter(p -> p.getStockActual() <= umbralStockBajo)
-            .sorted(Comparator.comparingInt(ProductoDTO::getStockActual))
-            .collect(Collectors.toList());
-
-        model.addAttribute("reporteDia", reporteDia);
-        model.addAttribute("pedidosEnCurso", pedidosEnCurso);
-        model.addAttribute("stockBajo", stockBajo);
+            model.addAttribute("reporteDia", reporteDia);
+            model.addAttribute("pedidosEnCurso", pedidosEnCurso);
+            model.addAttribute("stockBajo", stockBajo);
+        } catch (Exception ex) {
+            model.addAttribute("reporteDia", new ReporteVentasDiaDTO());
+            model.addAttribute("pedidosEnCurso", List.of());
+            model.addAttribute("stockBajo", List.of());
+            model.addAttribute("mensajeError", ex.getMessage());
+        }
 
         return "Dashboard/AdminDashboard";
     }

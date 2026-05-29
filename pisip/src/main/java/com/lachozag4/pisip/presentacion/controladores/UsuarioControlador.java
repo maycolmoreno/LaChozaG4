@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.IUsuarioUseCase;
 import com.lachozag4.pisip.infraestructura.seguridad.JwtUtil;
+import com.lachozag4.pisip.infraestructura.seguridad.Roles;
 import com.lachozag4.pisip.presentacion.dto.request.CambiarPasswordRequestDTO;
 import com.lachozag4.pisip.presentacion.dto.request.LoginRequestDTO;
 import com.lachozag4.pisip.presentacion.dto.request.UsuarioRequestDTO;
@@ -76,6 +78,7 @@ public class UsuarioControlador {
 	}
 
 	@PostMapping("/cambiar-password")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<Void> cambiarPassword(@Valid @RequestBody CambiarPasswordRequestDTO request,
 			Authentication authentication) {
 		usuarioUseCase.cambiarPassword(authentication.getName(), request.getPasswordActual(), request.getPasswordNuevo());
@@ -84,23 +87,27 @@ public class UsuarioControlador {
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
+	@PreAuthorize(Roles.SOLO_ADMIN)
 	public UsuarioResponseDTO crear(@Valid @RequestBody UsuarioRequestDTO request) {
 		return mapper.toResponseDTO(usuarioUseCase.crear(mapper.toDomain(request)));
 	}
 
 	@GetMapping
+	@PreAuthorize(Roles.SOLO_ADMIN)
 	public ResponseEntity<List<UsuarioResponseDTO>> listar() {
 		var lista = usuarioUseCase.listar().stream().map(mapper::toResponseDTO).toList();
 		return ResponseEntity.ok(lista);
 	}
 
 	@GetMapping("/{id}")
+	@PreAuthorize(Roles.SOLO_ADMIN)
 	public ResponseEntity<UsuarioResponseDTO> obtenerPorId(@PathVariable("id") int id) {
 		var usuario = usuarioUseCase.obtenerPorId(id);
 		return ResponseEntity.ok(mapper.toResponseDTO(usuario));
 	}
 
 	@GetMapping("/por-username/{username}")
+	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<UsuarioResponseDTO> obtenerPorUsername(@PathVariable("username") String username) {
 		return usuarioUseCase.buscarPorUsername(username)
 				.map(mapper::toResponseDTO)
@@ -109,6 +116,7 @@ public class UsuarioControlador {
 	}
 
 	@PutMapping("/{id}")
+	@PreAuthorize(Roles.SOLO_ADMIN)
 	public ResponseEntity<UsuarioResponseDTO> actualizar(@PathVariable("id") int id,
 			@Valid @RequestBody UsuarioRequestDTO request) {
 		var actualizado = usuarioUseCase.actualizar(id, mapper.toDomain(request));
@@ -116,6 +124,7 @@ public class UsuarioControlador {
 	}
 
 	@DeleteMapping("/{id}")
+	@PreAuthorize(Roles.SOLO_ADMIN)
 	public ResponseEntity<Void> eliminar(@PathVariable("id") int id) {
 		usuarioUseCase.eliminar(id);
 		return ResponseEntity.noContent().build();

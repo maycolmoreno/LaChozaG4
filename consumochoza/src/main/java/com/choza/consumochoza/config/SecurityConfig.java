@@ -44,19 +44,26 @@ public class SecurityConfig {
 				.requestMatchers("/api/pos/**").hasAnyRole("CAMARERO", "ADMIN", "CAJERO")
 
 				// COCINA: ve pedidos pendientes (ADMIN también puede acceder)
-				.requestMatchers("/cocina/**", "/producto/**").hasAnyRole("COCINA", "ADMIN")
+				.requestMatchers("/cocina/**").hasAnyRole("COCINA", "ADMIN")
 
-				// CAMARERO: solo acceso al POS y pedidos
+				// Creación y cambios operativos de pedidos: ADMIN/CAMARERO
+				.requestMatchers("/pedidos/nuevo", "/pedidos/guardar", "/pedidos/editar/**",
+						"/pedidos/eliminar/**", "/pedidos/finalizar/**", "/pedidos/entregar/**",
+						"/pedidos/enviar-cocina/**", "/pedidos/enviar-bar/**", "/pedidos/finalizar-bar/**")
+				.hasAnyRole("CAMARERO", "ADMIN")
+
+				// Consulta de pedidos
 				.requestMatchers("/pedidos/**").hasAnyRole("CAMARERO", "ADMIN", "CAJERO")
 
-				// CUENTAS: admin, cajero y camarero
-				.requestMatchers("/cuentas/**").hasAnyRole("CAMARERO", "ADMIN", "CAJERO")
+				// CUENTAS: admin y cajero gestionan cobros
+				.requestMatchers("/cuentas/**").hasAnyRole("ADMIN", "CAJERO")
 
 				// CAJA: solo admin y cajero
 				.requestMatchers("/caja/**").hasAnyRole("ADMIN", "CAJERO")
 
-				// ADMIN: acceso total a configuración
-				.requestMatchers("/usuario/**", "/categoria/**", "/producto/**", "/mesa/**", "/cliente/**")
+				// ADMIN: acceso total a configuración y reportes
+				.requestMatchers("/usuario/**", "/categoria/**", "/producto/**", "/mesa/**",
+						"/cliente/**", "/comedor/**", "/reportes/**")
 				.hasRole("ADMIN")
 
 				// Todo lo demás requiere autenticación

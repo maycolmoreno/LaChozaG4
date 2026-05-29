@@ -30,6 +30,11 @@ public class PagoRepositorioImpl implements IPagoRepositorio {
 	}
 
 	@Override
+	public List<Pago> listarPorCaja(int idcaja) {
+		return jpaRepositorio.findByFkCajaTurno_Idcaja(idcaja).stream().map(this::toDomain).toList();
+	}
+
+	@Override
 	public List<Pago> listarPorFecha(LocalDate fecha) {
 		var desde = fecha.atStartOfDay();
 		var hasta = fecha.plusDays(1).atStartOfDay();

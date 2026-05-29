@@ -13,6 +13,8 @@ public interface ICuentaRepositorio {
 
 	Optional<Cuenta> buscarPorId(int idcuenta);
 
+	Optional<Cuenta> buscarPorIdParaActualizar(int idcuenta);
+
 	Optional<Cuenta> buscarAbiertaPorMesa(int idMesa);
 
 	List<Cuenta> listarTodas();

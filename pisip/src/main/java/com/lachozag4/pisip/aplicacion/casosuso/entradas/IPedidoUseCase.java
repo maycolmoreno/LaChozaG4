@@ -10,6 +10,8 @@ public interface IPedidoUseCase {
 
 	Pedido crear(Pedido pedido);
 
+	Pedido crearConCuenta(Pedido pedido, String estadoDestino);
+
 	Pedido obtenerPorId(int idpedido);
 
 	Pedido obtenerRecientePorCuenta(int idcuenta);

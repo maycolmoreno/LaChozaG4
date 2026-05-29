@@ -26,30 +26,34 @@ public class CocinaControlador {
 
     @GetMapping
     public String verOrdenes(Model model) {
-        // Categorias BAR: productos que no requieren preparacion en cocina.
-        Set<Integer> categoriasBarIds = categoriaService.listarTodas().stream()
-                .filter(c -> c.getNombre() != null && c.getNombre().trim().equalsIgnoreCase("BAR"))
-                .map(c -> c.getIdcategoria())
-                .collect(Collectors.toSet());
+        try {
+            // Categorias BAR: productos que no requieren preparacion en cocina.
+            Set<Integer> categoriasBarIds = categoriaService.listarTodas().stream()
+                    .filter(c -> c.getNombre() != null && c.getNombre().trim().equalsIgnoreCase("BAR"))
+                    .map(c -> c.getIdcategoria())
+                    .collect(Collectors.toSet());
 
-        // Pedidos en cocina, excluyendo items BAR.
-        var pedidos = pedidoService.listarTodos().stream()
-                .filter(p -> "EN_COCINA".equals(p.getEstado()))
-                .peek(p -> {
-                    if (p.getDetalle() == null) {
-                        return;
-                    }
-                    var detalleCocina = p.getDetalle().stream()
-                            .filter(this::esItemValido)
-                            .filter(det -> det.getProducto() == null
-                                    || !categoriasBarIds.contains(det.getProducto().getCategoriaId()))
-                            .toList();
-                    p.setDetalle(detalleCocina);
-                })
-                .filter(p -> p.getDetalle() != null && !p.getDetalle().isEmpty())
-                .toList();
-
-        model.addAttribute("pedidos", pedidos);
+            // Pedidos en cocina, excluyendo items BAR.
+            var pedidos = pedidoService.listarTodos().stream()
+                    .filter(p -> "EN_COCINA".equals(p.getEstado()))
+                    .peek(p -> {
+                        if (p.getDetalle() == null) {
+                            return;
+                        }
+                        var detalleCocina = p.getDetalle().stream()
+                                .filter(this::esItemValido)
+                                .filter(det -> det.getProducto() == null
+                                        || !categoriasBarIds.contains(det.getProducto().getCategoriaId()))
+                                .toList();
+                        p.setDetalle(detalleCocina);
+                    })
+                    .filter(p -> p.getDetalle() != null && !p.getDetalle().isEmpty())
+                    .toList();
+            model.addAttribute("pedidos", pedidos);
+        } catch (Exception ex) {
+            model.addAttribute("pedidos", java.util.List.of());
+            model.addAttribute("mensajeError", ex.getMessage());
+        }
         return "Cocina/Ordenes";
     }
 

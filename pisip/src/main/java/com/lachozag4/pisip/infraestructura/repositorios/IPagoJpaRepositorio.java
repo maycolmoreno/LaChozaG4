@@ -13,6 +13,8 @@ public interface IPagoJpaRepositorio extends JpaRepository<PagoJpa, Integer> {
 
 	List<PagoJpa> findByFkCuenta_Idcuenta(int idcuenta);
 
+	List<PagoJpa> findByFkCajaTurno_Idcaja(int idcaja);
+
 	List<PagoJpa> findByFechaBetween(LocalDateTime desde, LocalDateTime hasta);
 
 	@Query("SELECT COALESCE(SUM(p.monto), 0) FROM PagoJpa p WHERE p.fkCuenta.idcuenta = :idcuenta")

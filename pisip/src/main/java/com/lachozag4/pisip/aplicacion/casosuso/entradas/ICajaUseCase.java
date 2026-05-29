@@ -3,6 +3,7 @@ package com.lachozag4.pisip.aplicacion.casosuso.entradas;
 import java.util.List;
 
 import com.lachozag4.pisip.dominio.entidades.CajaTurno;
+import com.lachozag4.pisip.dominio.entidades.Pago;
 
 public interface ICajaUseCase {
 
@@ -11,6 +12,8 @@ public interface ICajaUseCase {
 	CajaTurno obtenerCajaAbierta();
 
 	CajaTurno cerrarCaja(double montoDeclaradoCierre, String usuarioCierre, String observaciones);
+
+	List<Pago> listarPagosCaja(int idcaja);
 
 	List<CajaTurno> listar();
 }

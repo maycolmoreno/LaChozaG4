@@ -9,6 +9,7 @@ import com.lachozag4.pisip.aplicacion.casosuso.entradas.ICajaUseCase;
 import com.lachozag4.pisip.aplicacion.excepciones.BusinessException;
 import com.lachozag4.pisip.aplicacion.excepciones.NotFoundException;
 import com.lachozag4.pisip.dominio.entidades.CajaTurno;
+import com.lachozag4.pisip.dominio.entidades.Pago;
 import com.lachozag4.pisip.dominio.repositorios.ICajaTurnoRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.IPagoRepositorio;
 
@@ -63,6 +64,12 @@ public class CajaUseCaseImpl implements ICajaUseCase {
 		CajaTurno cajaCerrada = cajaAbierta.conCierre(montoEsperado, montoDeclaradoCierre, usuarioCierre.trim(),
 				observaciones, LocalDateTime.now());
 		return cajaRepositorio.guardar(cajaCerrada);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<Pago> listarPagosCaja(int idcaja) {
+		return pagoRepositorio.listarPorCaja(idcaja);
 	}
 
 	@Override

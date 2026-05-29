@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.IPagoUseCase;
 import com.lachozag4.pisip.aplicacion.excepciones.BusinessException;
 import com.lachozag4.pisip.aplicacion.excepciones.NotFoundException;
+import com.lachozag4.pisip.aplicacion.servicios.ComprobanteService;
 import com.lachozag4.pisip.dominio.entidades.CajaTurno;
 import com.lachozag4.pisip.dominio.entidades.Cuenta;
 import com.lachozag4.pisip.dominio.entidades.Mesa;
@@ -31,6 +33,7 @@ public class PagoUseCaseImpl implements IPagoUseCase {
 	private final ICuentaRepositorio cuentaRepositorio;
 	private final ICajaTurnoRepositorio cajaRepositorio;
 	private final IMesaRepositorio mesaRepositorio;
+	private final ComprobanteService comprobanteService;
 
 	@Override
 	@Transactional
@@ -49,7 +52,7 @@ public class PagoUseCaseImpl implements IPagoUseCase {
 			throw new BusinessException("El usuario que registra el pago es obligatorio");
 		}
 
-		Cuenta cuenta = cuentaRepositorio.buscarPorId(idcuenta)
+		Cuenta cuenta = cuentaRepositorio.buscarPorIdParaActualizar(idcuenta)
 				.orElseThrow(() -> new NotFoundException("Cuenta no encontrada con ID: " + idcuenta));
 		if (!cuenta.estaAbierta()) {
 			throw new BusinessException("Solo se pueden registrar pagos en cuentas abiertas");
@@ -82,6 +85,15 @@ public class PagoUseCaseImpl implements IPagoUseCase {
 		}
 
 		return guardado;
+	}
+
+	@Override
+	@Transactional
+	public Pago registrarPagoConComprobante(int idcuenta, double monto, String metodo, String referencia,
+			String usuario, MultipartFile archivo) {
+		Pago pago = registrarPago(idcuenta, monto, metodo, referencia, usuario);
+		comprobanteService.subirComprobante(pago.getIdpago(), archivo, usuario);
+		return pago;
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package com.choza.consumochoza.service.impl;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
 
 import org.springframework.core.ParameterizedTypeReference;
@@ -31,7 +30,7 @@ public class ProductoServiceImpl implements IProductoService {
 					.block(TIMEOUT);
 		} catch (Exception e) {
 			log.error("Error al listar productos: {}", e.getMessage());
-			return Collections.emptyList();
+			throw ApiErrorUtil.toApiException("No se pudo cargar la lista de productos.", e);
 		}
 	}
 
@@ -43,7 +42,7 @@ public class ProductoServiceImpl implements IProductoService {
 					.block(TIMEOUT);
 		} catch (Exception e) {
 			log.error("Error al listar productos activos: {}", e.getMessage());
-			return Collections.emptyList();
+			throw ApiErrorUtil.toApiException("No se pudo cargar los productos activos.", e);
 		}
 	}
 
@@ -55,7 +54,7 @@ public class ProductoServiceImpl implements IProductoService {
 					.block(TIMEOUT);
 		} catch (Exception e) {
 			log.error("Error al listar productos por categoría {}: {}", idCategoria, e.getMessage());
-			return Collections.emptyList();
+			throw ApiErrorUtil.toApiException("No se pudo cargar los productos por categoria.", e);
 		}
 	}
 
@@ -69,7 +68,8 @@ public class ProductoServiceImpl implements IProductoService {
 	public ProductoDTO crear(ProductoDTO producto) {
 		return webClient.post().uri(ENDPOINT).bodyValue(producto).retrieve()
 				.onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-						response -> response.bodyToMono(String.class).map(errorBody -> new RuntimeException(errorBody)))
+						response -> response.bodyToMono(String.class)
+								.map(errorBody -> new RuntimeException(ApiErrorUtil.extractMessage(errorBody))))
 				.bodyToMono(ProductoDTO.class).block(TIMEOUT);
 	}
 
@@ -77,7 +77,8 @@ public class ProductoServiceImpl implements IProductoService {
 	public ProductoDTO actualizar(int id, ProductoDTO producto) {
 		return webClient.put().uri(ENDPOINT + "/{id}", id).bodyValue(producto).retrieve()
 				.onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-						response -> response.bodyToMono(String.class).map(errorBody -> new RuntimeException(errorBody)))
+						response -> response.bodyToMono(String.class)
+								.map(errorBody -> new RuntimeException(ApiErrorUtil.extractMessage(errorBody))))
 				.bodyToMono(ProductoDTO.class).block(TIMEOUT);
 	}
 

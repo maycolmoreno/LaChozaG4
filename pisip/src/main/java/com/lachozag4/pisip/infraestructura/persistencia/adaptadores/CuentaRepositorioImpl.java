@@ -35,6 +35,11 @@ public class CuentaRepositorioImpl implements ICuentaRepositorio {
 	}
 
 	@Override
+	public Optional<Cuenta> buscarPorIdParaActualizar(int idcuenta) {
+		return jpaRepository.findByIdForUpdate(idcuenta).map(mapper::toDomain);
+	}
+
+	@Override
 	public Optional<Cuenta> buscarAbiertaPorMesa(int idMesa) {
 		return jpaRepository.findFirstByEstadoAndFkMesa_Idmesa(EstadoCuenta.ABIERTA, idMesa).map(mapper::toDomain);
 	}

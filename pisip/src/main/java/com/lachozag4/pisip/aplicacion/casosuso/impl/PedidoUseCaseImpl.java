@@ -31,6 +31,7 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 	public Pedido crear(Pedido pedido) {
 		// Ya no restringimos por pedidos activos en la misma mesa.
 		// La mesa puede tener varios pedidos abiertos simultÃ¡neamente.
+		stockServicio.validarProductosActivos(pedido.getDetalles());
 		stockServicio.validarYDescontar(pedido.getDetalles());
 		Pedido creado = repositorio.guardar(pedido.comoPendiente());
 		// Marcar la mesa como OCUPADA (estado = false) automáticamente
@@ -40,6 +41,22 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 			);
 		}
 		return creado;
+	}
+
+	@Override
+	@Transactional
+	public Pedido crearConCuenta(Pedido pedido, String estadoDestino) {
+		Pedido creado = crear(pedido);
+		Cuenta cuenta = resolverCuentaParaPedido(creado);
+		Pedido asociado = repositorio.actualizar(creado.conCuenta(cuenta));
+		recalcularTotalCuentaSiAplica(asociado);
+
+		String estadoNormalizado = normalizarEstadoDestino(estadoDestino);
+		if (Pedido.ESTADO_PENDIENTE.equals(estadoNormalizado)) {
+			return asociado;
+		}
+
+		return cambiarEstado(asociado.getIdpedido(), estadoNormalizado);
 	}
 
 	@Override
@@ -205,6 +222,30 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 		if (Cuenta.ESTADO_PAGADA.equals(estadoCuenta) && Pedido.ESTADO_CANCELADO.equals(nuevoEstado)) {
 			throw new BusinessException("No se puede cancelar el pedido porque su cuenta ya esta " + estadoCuenta);
 		}
+	}
+
+	private Cuenta resolverCuentaParaPedido(Pedido pedido) {
+		if (pedido.getFkMesa() == null || pedido.getFkCliente() == null) {
+			throw new BusinessException("El pedido debe tener mesa y cliente para vincularse a una cuenta.");
+		}
+
+		return cuentaRepositorio.buscarAbiertaPorMesa(pedido.getFkMesa().getIdmesa())
+				.orElseGet(() -> cuentaRepositorio.guardar(new Cuenta(
+						0,
+						LocalDateTime.now(),
+						null,
+						Cuenta.ESTADO_ABIERTA,
+						0.0,
+						pedido.getFkMesa(),
+						pedido.getFkCliente())));
+	}
+
+	private String normalizarEstadoDestino(String estadoDestino) {
+		if (estadoDestino == null || estadoDestino.isBlank()) {
+			return Pedido.ESTADO_PENDIENTE;
+		}
+
+		return estadoDestino.trim().toUpperCase();
 	}
 }
 

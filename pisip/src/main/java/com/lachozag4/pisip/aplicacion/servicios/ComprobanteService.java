@@ -1,194 +1,137 @@
 package com.lachozag4.pisip.aplicacion.servicios;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.lachozag4.pisip.dominio.entidades.ComprobantePago;
 import com.lachozag4.pisip.dominio.servicios.IDropboxService;
 import com.lachozag4.pisip.infraestructura.persistencia.jpa.ComprobantePagoJpa;
 import com.lachozag4.pisip.infraestructura.persistencia.jpa.PagoJpa;
 import com.lachozag4.pisip.infraestructura.repositorios.IComprobantePagoJpaRepositorio;
 import com.lachozag4.pisip.infraestructura.repositorios.IPagoJpaRepositorio;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.UUID;
-
-/**
- * Caso de uso: subir, consultar y eliminar comprobantes de pago.
- * <p>
- * Los archivos se almacenan en <strong>Dropbox</strong> bajo la ruta configurada
- * en {@code dropbox.folder-root} (por defecto {@code /LaChoza/Comprobantes}).
- * En la base de datos solo se persiste la URL pública y la ruta en Dropbox;
- * nunca se guarda el binario en la BD.
- * <p>
- * <strong>Regla de negocio:</strong> un pago puede tener a lo sumo un comprobante.
- * Si se intenta subir un segundo comprobante al mismo pago se lanza excepción.
- */
 @Service
 public class ComprobanteService {
 
-    private static final Logger log = LoggerFactory.getLogger(ComprobanteService.class);
+    private static final long TAMANO_MAX_BYTES = 5L * 1024 * 1024;
 
-    private static final List<String> TIPOS_PERMITIDOS =
-            List.of("image/jpeg", "image/png", "image/webp");
-    private static final long TAMANO_MAX = 5L * 1024 * 1024; // 5 MB
+    private final IComprobantePagoJpaRepositorio comprobanteRepositorio;
+    private final IPagoJpaRepositorio pagoRepositorio;
+    private final IDropboxService dropboxService;
 
-    private final IComprobantePagoJpaRepositorio comprobanteRepo;
-    private final IPagoJpaRepositorio            pagoRepo;
-    private final IDropboxService                dropboxService;
-
-    public ComprobanteService(IComprobantePagoJpaRepositorio comprobanteRepo,
-                              IPagoJpaRepositorio pagoRepo,
-                              IDropboxService dropboxService) {
-        this.comprobanteRepo = comprobanteRepo;
-        this.pagoRepo        = pagoRepo;
-        this.dropboxService  = dropboxService;
+    public ComprobanteService(IComprobantePagoJpaRepositorio comprobanteRepositorio,
+            IPagoJpaRepositorio pagoRepositorio,
+            IDropboxService dropboxService) {
+        this.comprobanteRepositorio = comprobanteRepositorio;
+        this.pagoRepositorio = pagoRepositorio;
+        this.dropboxService = dropboxService;
     }
 
-    // ─── Subida ──────────────────────────────────────────────────────────────────
-
-    /**
-     * Sube el comprobante a Dropbox y persiste la URL en la base de datos.
-     *
-     * @param idpago   ID del pago al que se adjunta
-     * @param archivo  Multipart con la imagen (jpg/jpeg/png, máx 5 MB)
-     * @param usuario  Nombre de usuario que registra el comprobante
-     * @return Entidad de dominio con la URL pública de Dropbox
-     */
     public ComprobantePago subirComprobante(int idpago, MultipartFile archivo, String usuario) {
         validarArchivo(archivo);
-        dropboxService.validarExtension(archivo.getOriginalFilename());
 
-        PagoJpa pago = pagoRepo.findById(idpago)
+        var nombreOriginal = archivo.getOriginalFilename();
+        dropboxService.validarExtension(nombreOriginal);
+
+        PagoJpa pago = pagoRepositorio.findById(idpago)
                 .orElseThrow(() -> new IllegalArgumentException("Pago no encontrado: " + idpago));
 
-        // Regla: un pago solo puede tener un comprobante
-        comprobanteRepo.findByFkPago_Idpago(idpago).ifPresent(c -> {
-            throw new IllegalStateException(
-                    "El pago #" + idpago + " ya tiene un comprobante registrado. " +
-                    "Elimine el anterior antes de subir uno nuevo.");
+        comprobanteRepositorio.findByFkPago_Idpago(idpago).ifPresent(existente -> {
+            throw new IllegalStateException("El pago ya tiene un comprobante registrado.");
         });
 
-        String nombreUnico = generarNombreUnico(idpago, archivo.getOriginalFilename());
+        var nombreDropbox = construirNombreDropbox(idpago, nombreOriginal);
 
-        // ── 1. Subir a Dropbox ───────────────────────────────────────────────
-        String rutaDropbox;
         try {
-            rutaDropbox = dropboxService.subirArchivo(nombreUnico, archivo.getInputStream(), archivo.getSize());
-        } catch (IOException e) {
-            throw new RuntimeException("Error al leer el archivo del comprobante", e);
+            var rutaDropbox = dropboxService.subirArchivo(nombreDropbox, archivo.getInputStream(), archivo.getSize());
+            var urlDropbox = dropboxService.obtenerUrlPublica(rutaDropbox);
+
+            var entity = new ComprobantePagoJpa();
+            entity.setFkPago(pago);
+            entity.setNombreArchivo(nombreOriginal);
+            entity.setRutaRelativa(rutaDropbox);
+            entity.setRutaDropbox(rutaDropbox);
+            entity.setUrlDropbox(urlDropbox);
+            entity.setContentType(archivo.getContentType());
+            entity.setTamano(archivo.getSize());
+            entity.setUsuarioRegistro(usuario);
+            entity.setFechaSubida(LocalDateTime.now());
+
+            return toDomain(comprobanteRepositorio.save(entity));
+        } catch (IOException ex) {
+            throw new IllegalStateException("No se pudo leer el comprobante.", ex);
         }
-
-        // ── 2. Obtener URL pública ────────────────────────────────────────────
-        String urlDropbox = dropboxService.obtenerUrlPublica(rutaDropbox);
-        log.info("[ComprobanteService] Comprobante subido a Dropbox. Pago={} URL={}", idpago, urlDropbox);
-
-        // ── 3. Persistir en BD ───────────────────────────────────────────────
-        ComprobantePagoJpa entidad = new ComprobantePagoJpa();
-        entidad.setFkPago(pago);
-        entidad.setNombreArchivo(archivo.getOriginalFilename() != null
-                ? archivo.getOriginalFilename() : nombreUnico);
-        entidad.setRutaRelativa(rutaDropbox);   // reutilizamos columna existente para path Dropbox
-        entidad.setRutaDropbox(rutaDropbox);
-        entidad.setUrlDropbox(urlDropbox);
-        entidad.setContentType(archivo.getContentType());
-        entidad.setTamano(archivo.getSize());
-        entidad.setUsuarioRegistro(usuario);
-        entidad.setFechaSubida(LocalDateTime.now());
-
-        return toDominio(comprobanteRepo.save(entidad));
     }
 
-    // ─── Consulta ────────────────────────────────────────────────────────────────
+    public ComprobantePago buscarPorPago(int idpago) {
+        return comprobanteRepositorio.findByFkPago_Idpago(idpago)
+                .map(this::toDomain)
+                .orElse(null);
+    }
 
-    /**
-     * Obtiene el comprobante asociado a un pago.
-     *
-     * @param idpago ID del pago
-     * @return Entidad de dominio con URL pública de Dropbox
-     */
     public ComprobantePago obtenerPorPago(int idpago) {
-        return comprobanteRepo.findByFkPago_Idpago(idpago)
-                .map(this::toDominio)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "No existe comprobante para el pago #" + idpago));
+        return comprobanteRepositorio.findByFkPago_Idpago(idpago)
+                .map(this::toDomain)
+                .orElseThrow(() -> new IllegalArgumentException("No existe comprobante para el pago: " + idpago));
     }
 
-    // ─── Eliminación ─────────────────────────────────────────────────────────────
-
-    /**
-     * Elimina el comprobante de Dropbox y de la base de datos.
-     *
-     * @param idpago ID del pago cuyo comprobante se elimina
-     */
     public void eliminarComprobante(int idpago) {
-        ComprobantePagoJpa entidad = comprobanteRepo.findByFkPago_Idpago(idpago)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "No existe comprobante para el pago #" + idpago));
+        var comprobante = comprobanteRepositorio.findByFkPago_Idpago(idpago)
+                .orElseThrow(() -> new IllegalArgumentException("No existe comprobante para el pago: " + idpago));
 
-        String rutaDropbox = entidad.getRutaDropbox() != null
-                ? entidad.getRutaDropbox() : entidad.getRutaRelativa();
-
-        // Eliminar de Dropbox (registramos error pero no bloqueamos la eliminación de BD)
-        if (rutaDropbox != null && !rutaDropbox.isBlank()) {
-            try {
-                dropboxService.eliminarArchivo(rutaDropbox);
-            } catch (Exception e) {
-                log.warn("[ComprobanteService] Error al eliminar de Dropbox (ruta={}): {}. " +
-                         "Se elimina el registro de BD de todas formas.", rutaDropbox, e.getMessage());
+        try {
+            if (comprobante.getRutaDropbox() != null && !comprobante.getRutaDropbox().isBlank()) {
+                dropboxService.eliminarArchivo(comprobante.getRutaDropbox());
             }
+        } catch (IDropboxService.DropboxException ex) {
+            // El pago no debe quedar bloqueado por una falla temporal al borrar en Dropbox.
         }
 
-        comprobanteRepo.delete(entidad);
-        log.info("[ComprobanteService] Comprobante eliminado. Pago={}", idpago);
+        comprobanteRepositorio.delete(comprobante);
     }
 
-    // ─── Helpers ─────────────────────────────────────────────────────────────────
+    public void validarConexionDropbox() {
+        dropboxService.validarConexion();
+    }
 
-    private void validarArchivo(MultipartFile archivo) {
+    private static void validarArchivo(MultipartFile archivo) {
         if (archivo == null || archivo.isEmpty()) {
-            throw new IllegalArgumentException("El archivo es obligatorio");
+            throw new IllegalArgumentException("El comprobante es obligatorio.");
         }
-        if (archivo.getSize() > TAMANO_MAX) {
-            throw new IllegalArgumentException("El archivo excede el tamaño máximo de 5 MB");
+        if (archivo.getSize() > TAMANO_MAX_BYTES) {
+            throw new IllegalArgumentException("El comprobante no puede superar 5 MB.");
         }
-        String tipo = archivo.getContentType();
-        if (tipo == null || !TIPOS_PERMITIDOS.contains(tipo.toLowerCase())) {
-            throw new IllegalArgumentException(
-                    "Tipo de archivo no permitido. Use: JPEG, PNG o WebP");
+
+        var contentType = archivo.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Tipo de archivo no permitido. Use una imagen JPG o PNG.");
         }
     }
 
-    /**
-     * Genera un nombre único con formato: {@code yyyyMMdd_pago_{id}_{uuid8}.ext}
-     * para evitar colisiones en Dropbox.
-     */
-    private String generarNombreUnico(int idpago, String nombreOriginal) {
-        String ext = "jpg";
-        if (nombreOriginal != null && nombreOriginal.contains(".")) {
-            ext = nombreOriginal.substring(nombreOriginal.lastIndexOf('.') + 1).toLowerCase();
+    private static String construirNombreDropbox(int idpago, String nombreOriginal) {
+        var extension = "";
+        var punto = nombreOriginal == null ? -1 : nombreOriginal.lastIndexOf('.');
+        if (punto >= 0) {
+            extension = nombreOriginal.substring(punto).toLowerCase();
         }
-        String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-        String guid8 = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
-        return fecha + "_pago_" + idpago + "_" + guid8 + "." + ext;
+        return "pago_" + idpago + "_" + UUID.randomUUID() + extension;
     }
 
-    private ComprobantePago toDominio(ComprobantePagoJpa e) {
+    private ComprobantePago toDomain(ComprobantePagoJpa entity) {
         return new ComprobantePago(
-                e.getIdcomprobante(),
-                e.getFkPago().getIdpago(),
-                e.getNombreArchivo(),
-                e.getRutaRelativa(),
-                e.getRutaDropbox(),
-                e.getUrlDropbox(),
-                e.getContentType(),
-                e.getTamano(),
-                e.getUsuarioRegistro(),
-                e.getFechaSubida()
-        );
+                entity.getIdcomprobante(),
+                entity.getFkPago() != null ? entity.getFkPago().getIdpago() : 0,
+                entity.getNombreArchivo(),
+                entity.getRutaRelativa(),
+                entity.getRutaDropbox(),
+                entity.getUrlDropbox(),
+                entity.getContentType(),
+                entity.getTamano(),
+                entity.getUsuarioRegistro(),
+                entity.getFechaSubida());
     }
 }

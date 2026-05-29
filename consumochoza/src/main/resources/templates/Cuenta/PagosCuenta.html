@@ -340,7 +340,8 @@
             </div>
         </div>
         <div class="card-body p-4">
-            <form th:action="@{'/cuentas/' + ${cuenta.idcuenta} + '/pagos'}" method="post" enctype="multipart/form-data" id="formPagoCuenta">
+            <form th:action="@{'/cuentas/' + ${cuenta.idcuenta} + '/pagos'}" method="post" enctype="multipart/form-data" id="formPagoCuenta"
+                th:attr="data-dropbox-disponible=${dropboxEstado == null || dropboxEstado.disponible},data-dropbox-mensaje=${dropboxEstado != null ? dropboxEstado.mensaje : ''}">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                 <input type="hidden" name="origen" th:value="${origen}">
                 <input type="hidden" name="referencia" value="">
@@ -394,6 +395,10 @@
                             <div class="pago-section-title">
                                 <span class="pago-section-icon"><i class="bi bi-bank"></i></span>
                                 <span>Datos para transferencia</span>
+                            </div>
+                            <div th:if="${dropboxEstado != null and !dropboxEstado.disponible}" class="alert alert-warning d-flex align-items-start gap-2 mb-3">
+                                <i class="bi bi-cloud-slash"></i>
+                                <span th:text="${dropboxEstado.mensaje}">Dropbox no disponible en este momento.</span>
                             </div>
                             <p class="pago-transfer-caption mb-3">Registra el canal, el número de operación y adjunta la imagen del comprobante para almacenarla en Dropbox.</p>
                             <div class="row g-3">
@@ -531,6 +536,8 @@
         const previewArchivoComprobanteDetalle = document.getElementById('previewArchivoComprobanteDetalle');
         const btnConfirmarPago = document.getElementById('btnConfirmarPago');
         const btnConfirmarPagoContenido = document.getElementById('btnConfirmarPagoContenido');
+        const dropboxDisponible = form.dataset.dropboxDisponible !== 'false';
+        const dropboxMensaje = form.dataset.dropboxMensaje || 'Dropbox no disponible en este momento.';
         let previewArchivoUrl = null;
 
         function to2(v) {
@@ -644,6 +651,12 @@
             if (!canal.value) {
                 e.preventDefault();
                 alert('Seleccione la plataforma de transferencia.');
+                return;
+            }
+
+            if (!dropboxDisponible) {
+                e.preventDefault();
+                alert(dropboxMensaje);
                 return;
             }
 

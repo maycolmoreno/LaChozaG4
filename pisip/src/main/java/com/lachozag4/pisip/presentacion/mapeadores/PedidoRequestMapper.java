@@ -68,7 +68,7 @@ public class PedidoRequestMapper {
                 producto,
                 null, // se completa luego en el agregado Pedido
                 dto.getCantidad(),
-                dto.getPrecioUnitario()
+                producto.getPrecio()
         );
     }
 }

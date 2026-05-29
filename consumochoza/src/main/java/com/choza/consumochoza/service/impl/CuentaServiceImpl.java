@@ -1,7 +1,6 @@
 package com.choza.consumochoza.service.impl;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +33,7 @@ public class CuentaServiceImpl implements ICuentaService {
                     .block(TIMEOUT);
         } catch (Exception e) {
             log.error("Error al listar cuentas: {}", e.getMessage());
-            return Collections.emptyList();
+            throw ApiErrorUtil.toApiException("No se pudo cargar la lista de cuentas.", e);
         }
     }
 
@@ -48,7 +47,7 @@ public class CuentaServiceImpl implements ICuentaService {
                     .block(TIMEOUT);
         } catch (Exception e) {
             log.error("Error al listar cuentas abiertas: {}", e.getMessage());
-            return Collections.emptyList();
+            throw ApiErrorUtil.toApiException("No se pudo cargar las cuentas abiertas.", e);
         }
     }
 
@@ -104,10 +103,9 @@ public class CuentaServiceImpl implements ICuentaService {
                 .uri(ENDPOINT + "/{id}/cliente", idCuenta)
                 .bodyValue(body)
                 .retrieve()
-                .onStatus(
-                    status -> status.is4xxClientError() || status.is5xxServerError(),
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
                     response -> response.bodyToMono(String.class)
-                        .map(RuntimeException::new))
+                        .map(errorBody -> new RuntimeException(ApiErrorUtil.extractMessage(errorBody))))
                 .bodyToMono(CuentaDTO.class)
                 .block(TIMEOUT);
     }

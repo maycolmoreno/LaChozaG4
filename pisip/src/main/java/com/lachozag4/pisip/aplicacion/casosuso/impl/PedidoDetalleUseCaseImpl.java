@@ -57,7 +57,7 @@ public class PedidoDetalleUseCaseImpl implements IPedidoDetalleUseCase {
 
     @Override
     public PedidoDetalle crear(int idPedido, int idProducto, int cantidad, double precioUnitario) {
-        validarCantidadYPrecio(cantidad, precioUnitario);
+        validarCantidad(cantidad);
         var pedido = verificarPedidoEditable(idPedido);
         var producto = verificarProductoActivoConStock(idProducto, cantidad);
 
@@ -67,7 +67,7 @@ public class PedidoDetalleUseCaseImpl implements IPedidoDetalleUseCase {
                 producto,
                 pedido,
                 cantidad,
-                precioUnitario
+                producto.getPrecio()
         );
 
         // Descuenta stock y guarda (si prefieres, haz el descuento después del guardar)
@@ -79,7 +79,7 @@ public class PedidoDetalleUseCaseImpl implements IPedidoDetalleUseCase {
 
     @Override
     public PedidoDetalle actualizar(int idPedido, int idDetalle, int idProducto, int cantidad, double precioUnitario) {
-        validarCantidadYPrecio(cantidad, precioUnitario);
+        validarCantidad(cantidad);
         var pedido = verificarPedidoEditable(idPedido);
 
         var actual = obtenerPorId(idPedido, idDetalle);
@@ -97,7 +97,7 @@ public class PedidoDetalleUseCaseImpl implements IPedidoDetalleUseCase {
                 nuevoProducto,
                 pedido,
                 cantidad,
-                precioUnitario
+                nuevoProducto.getPrecio()
         );
         stockServicio.validarYDescontar(List.of(actualizado));
 
@@ -124,9 +124,8 @@ public class PedidoDetalleUseCaseImpl implements IPedidoDetalleUseCase {
        Helpers
        ======================== */
 
-    private void validarCantidadYPrecio(int cantidad, double precioUnitario) {
+    private void validarCantidad(int cantidad) {
         if (cantidad <= 0) throw new BusinessException("Cantidad inválida (debe ser > 0).");
-        if (precioUnitario <= 0) throw new BusinessException("Precio unitario inválido (debe ser > 0).");
     }
 
     private Pedido verificarPedidoExiste(int idPedido) {

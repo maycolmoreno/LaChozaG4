@@ -130,7 +130,7 @@ public class SeguridadConfig {
                 // ═══════════════════════════════════════════════════════════════
                 // PEDIDOS — acceso base URL-level; control fino vía @PreAuthorize
                 //   GET    → ADMIN/CAMARERO/COCINA/CAJERO
-                //   POST   → ADMIN/CAMARERO/CAJERO
+                //   POST   → ADMIN/CAMARERO
                 //   PUT    → ADMIN/CAMARERO
                 //   DELETE → ADMIN/CAMARERO
                 //   PATCH  → se delega a @PreAuthorize por semántica de estado
@@ -138,7 +138,7 @@ public class SeguridadConfig {
                 .requestMatchers(HttpMethod.GET, "/api/pedidos/**")
                     .hasAnyRole("ADMIN", "CAMARERO", "COCINA", "CAJERO")
                 .requestMatchers(HttpMethod.POST,   "/api/pedidos/**")
-                    .hasAnyRole("ADMIN", "CAMARERO", "CAJERO")
+                    .hasAnyRole("ADMIN", "CAMARERO")
                 .requestMatchers(HttpMethod.PUT,    "/api/pedidos/**")
                     .hasAnyRole("ADMIN", "CAMARERO")
                 .requestMatchers(HttpMethod.DELETE, "/api/pedidos/**")

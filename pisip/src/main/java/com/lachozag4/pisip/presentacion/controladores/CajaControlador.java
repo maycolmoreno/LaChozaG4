@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import com.lachozag4.pisip.infraestructura.seguridad.Roles;
 import com.lachozag4.pisip.presentacion.dto.request.AperturaCajaRequestDTO;
 import com.lachozag4.pisip.presentacion.dto.request.CierreCajaRequestDTO;
 import com.lachozag4.pisip.presentacion.dto.response.CajaTurnoResponseDTO;
+import com.lachozag4.pisip.presentacion.dto.response.PagoResponseDTO;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +59,13 @@ public class CajaControlador {
 		return ResponseEntity.ok(lista);
 	}
 
+	@GetMapping("/{idcaja:\\d+}/pagos")
+	@PreAuthorize(Roles.ADMIN_CAJERO)
+	public ResponseEntity<List<PagoResponseDTO>> listarPagosCaja(@PathVariable int idcaja) {
+		var lista = cajaUseCase.listarPagosCaja(idcaja).stream().map(this::toPagoResponse).toList();
+		return ResponseEntity.ok(lista);
+	}
+
 	private CajaTurnoResponseDTO toResponse(com.lachozag4.pisip.dominio.entidades.CajaTurno caja) {
 		CajaTurnoResponseDTO dto = new CajaTurnoResponseDTO();
 		dto.setIdcaja(caja.getIdcaja());
@@ -70,6 +79,19 @@ public class CajaControlador {
 		dto.setUsuarioApertura(caja.getUsuarioApertura());
 		dto.setUsuarioCierre(caja.getUsuarioCierre());
 		dto.setObservaciones(caja.getObservaciones());
+		return dto;
+	}
+
+	private PagoResponseDTO toPagoResponse(com.lachozag4.pisip.dominio.entidades.Pago pago) {
+		PagoResponseDTO dto = new PagoResponseDTO();
+		dto.setIdpago(pago.getIdpago());
+		dto.setFecha(pago.getFecha());
+		dto.setMonto(pago.getMonto());
+		dto.setMetodo(pago.getMetodo());
+		dto.setReferencia(pago.getReferencia());
+		dto.setUsuario(pago.getUsuario());
+		dto.setIdcuenta(pago.getIdcuenta());
+		dto.setIdcaja(pago.getIdcaja());
 		return dto;
 	}
 }

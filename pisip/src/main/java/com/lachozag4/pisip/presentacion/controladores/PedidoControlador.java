@@ -115,11 +115,24 @@ public class PedidoControlador {
     // =======================
 
     @PostMapping(consumes = "application/json")
-        @PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO)
+        @PreAuthorize(Roles.ADMIN_CAMARERO)
     public ResponseEntity<PedidoResponseDTO> crear(@Valid @RequestBody PedidoRequestDTO request) {
 		var dominio = pedidoRequestMapper.toDomain(request);
         var creado  = pedidoUseCase.crear(dominio);
         var body    = responseMapper.toResponseDTO(creado);
+        return ResponseEntity
+                .created(URI.create("/api/pedidos/" + body.getIdpedido()))
+                .body(body);
+    }
+
+    @PostMapping(value = "/con-cuenta", consumes = "application/json")
+    @PreAuthorize(Roles.ADMIN_CAMARERO)
+    public ResponseEntity<PedidoResponseDTO> crearConCuenta(
+            @Valid @RequestBody PedidoRequestDTO request,
+            @RequestParam(value = "estadoDestino", required = false) String estadoDestino) {
+        var dominio = pedidoRequestMapper.toDomain(request);
+        var creado = pedidoUseCase.crearConCuenta(dominio, estadoDestino);
+        var body = responseMapper.toResponseDTO(creado);
         return ResponseEntity
                 .created(URI.create("/api/pedidos/" + body.getIdpedido()))
                 .body(body);
@@ -151,11 +164,11 @@ public class PedidoControlador {
     // ─── Transiciones de estado (semánticas) ──────────────────────────────────
 
     /**
-     * CAMARERO o CAJERO confirman el pedido y lo envían a cocina.
+     * CAMARERO confirma el pedido y lo envía a cocina.
      * Transición: PENDIENTE → EN_COCINA
      */
     @PatchMapping("/{id:\\d+}/confirmar")
-    @PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO)
+    @PreAuthorize(Roles.ADMIN_CAMARERO)
     public ResponseEntity<PedidoResponseDTO> confirmar(@PathVariable("id") int idpedido,
                                                        Authentication authentication) {
         var actualizado = pedidoUseCase.cambiarEstado(idpedido, Pedido.ESTADO_EN_COCINA);
@@ -228,12 +241,10 @@ public class PedidoControlador {
         boolean esAdmin = tieneRol(authentication, Roles.ADMIN);
         boolean esCamarero = tieneRol(authentication, Roles.CAMARERO);
         boolean esCocina = tieneRol(authentication, Roles.COCINA);
-        boolean esCajero = tieneRol(authentication, Roles.CAJERO);
-
         boolean permitido;
         switch (estado) {
             case Pedido.ESTADO_EN_COCINA:
-            permitido = esAdmin || esCamarero || esCajero;
+            permitido = esAdmin || esCamarero;
                 break;
             case "LISTO":
             case Pedido.ESTADO_LISTO_PARA_ENTREGA:
