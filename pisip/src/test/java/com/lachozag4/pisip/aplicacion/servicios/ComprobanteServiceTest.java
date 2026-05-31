@@ -140,6 +140,59 @@ class ComprobanteServiceTest {
                 .hasMessageContaining("Pago no encontrado");
     }
 
+    @Test
+    @DisplayName("subirComprobante — elimina archivo subido si falla al obtener URL publica")
+    void subirComprobante_fallaUrlPublica_eliminaArchivoSubido() throws Exception {
+        PagoJpa pago = new PagoJpa();
+        when(pagoRepo.findById(1)).thenReturn(Optional.of(pago));
+        when(comprobanteRepo.findByFkPago_Idpago(1)).thenReturn(Optional.empty());
+
+        when(archivo.getContentType()).thenReturn("image/jpeg");
+        when(archivo.getSize()).thenReturn(1024L);
+        when(archivo.getOriginalFilename()).thenReturn("comp.jpg");
+        when(archivo.getInputStream()).thenReturn(new ByteArrayInputStream("datos".getBytes()));
+
+        doNothing().when(dropboxService).validarExtension(anyString());
+        when(dropboxService.subirArchivo(anyString(), any(), anyLong()))
+                .thenReturn("/LaChoza/Comprobantes/comp_uuid.jpg");
+        when(dropboxService.obtenerUrlPublica("/LaChoza/Comprobantes/comp_uuid.jpg"))
+                .thenThrow(new DropboxException("url error"));
+
+        assertThatThrownBy(() -> service.subirComprobante(1, archivo, "cajero1"))
+                .isInstanceOf(DropboxException.class)
+                .hasMessageContaining("url error");
+
+        verify(dropboxService).eliminarArchivo("/LaChoza/Comprobantes/comp_uuid.jpg");
+        verify(comprobanteRepo, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("subirComprobante — elimina archivo subido si falla al guardar metadata")
+    void subirComprobante_fallaGuardarMetadata_eliminaArchivoSubido() throws Exception {
+        PagoJpa pago = new PagoJpa();
+        when(pagoRepo.findById(1)).thenReturn(Optional.of(pago));
+        when(comprobanteRepo.findByFkPago_Idpago(1)).thenReturn(Optional.empty());
+
+        when(archivo.getContentType()).thenReturn("image/jpeg");
+        when(archivo.getSize()).thenReturn(1024L);
+        when(archivo.getOriginalFilename()).thenReturn("comp.jpg");
+        when(archivo.getInputStream()).thenReturn(new ByteArrayInputStream("datos".getBytes()));
+
+        doNothing().when(dropboxService).validarExtension(anyString());
+        when(dropboxService.subirArchivo(anyString(), any(), anyLong()))
+                .thenReturn("/LaChoza/Comprobantes/comp_uuid.jpg");
+        when(dropboxService.obtenerUrlPublica("/LaChoza/Comprobantes/comp_uuid.jpg"))
+                .thenReturn("https://dl.dropboxusercontent.com/s/abc/comp.jpg");
+        when(comprobanteRepo.save(any(ComprobantePagoJpa.class)))
+                .thenThrow(new IllegalStateException("db error"));
+
+        assertThatThrownBy(() -> service.subirComprobante(1, archivo, "cajero1"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("db error");
+
+        verify(dropboxService).eliminarArchivo("/LaChoza/Comprobantes/comp_uuid.jpg");
+    }
+
     // ─── eliminarComprobante ─────────────────────────────────────────────────────
 
     @Test

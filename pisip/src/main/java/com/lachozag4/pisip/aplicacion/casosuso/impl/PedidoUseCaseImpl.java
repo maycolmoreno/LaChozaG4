@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.IPedidoUseCase;
 import com.lachozag4.pisip.aplicacion.excepciones.BusinessException;
 import com.lachozag4.pisip.aplicacion.excepciones.NotFoundException;
+import com.lachozag4.pisip.aplicacion.servicios.PedidoHistorialService;
 import com.lachozag4.pisip.dominio.entidades.Pedido;
 import com.lachozag4.pisip.dominio.entidades.Cuenta;
 import com.lachozag4.pisip.dominio.entidades.ResultadoPaginado;
@@ -25,6 +26,7 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 	private final IGestionStockServicio stockServicio;
     private final ICuentaRepositorio cuentaRepositorio;
     private final IMesaRepositorio mesaRepositorio;
+    private final PedidoHistorialService historialService;
 
 	@Override
 	@Transactional
@@ -34,6 +36,7 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 		stockServicio.validarProductosActivos(pedido.getDetalles());
 		stockServicio.validarYDescontar(pedido.getDetalles());
 		Pedido creado = repositorio.guardar(pedido.comoPendiente());
+		historialService.registrarCreacion(creado);
 		// Marcar la mesa como OCUPADA (estado = false) automáticamente
 		if (creado.getFkMesa() != null) {
 			mesaRepositorio.buscarPorId(creado.getFkMesa().getIdmesa()).ifPresent(mesa ->
@@ -98,6 +101,7 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 		Pedido actualizado = existente.conDatosActualizados(id, pedido.getFecha(), pedido.getObservaciones(),
 				pedido.getFkUsuario(), pedido.getFkMesa(), pedido.getFkCliente(), pedido.getDetalles());
 		Pedido guardado = repositorio.guardar(actualizado);
+		historialService.registrarGuardado(guardado);
 
 		// Si el pedido pertenece a una cuenta, recalcular el total de esa cuenta
 		recalcularTotalCuentaSiAplica(guardado);
@@ -125,6 +129,7 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 		}
 
 		Pedido guardado = repositorio.guardar(existente.conEstado(nuevoEstado));
+		historialService.registrarCambioEstado(existente, guardado);
 
 		// Si el pedido queda COMPLETADO o CANCELADO, verificar si la mesa
 		// tiene otros pedidos activos; si no, marcarla como LIBRE (estado = true)
@@ -155,6 +160,7 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 
 		stockServicio.restaurar(pedido.getDetalles());
 		Pedido cancelado = repositorio.guardar(pedido.conEstado(Pedido.ESTADO_CANCELADO));
+		historialService.registrarCambioEstado(pedido, cancelado);
 		recalcularTotalCuentaSiAplica(cancelado);
 	}
 

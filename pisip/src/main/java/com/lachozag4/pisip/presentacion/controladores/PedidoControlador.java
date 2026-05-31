@@ -21,12 +21,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.lachozag4.pisip.aplicacion.casosuso.entradas.ICajaUseCase;
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.IPedidoUseCase;
+import com.lachozag4.pisip.aplicacion.excepciones.BusinessException;
+import com.lachozag4.pisip.aplicacion.excepciones.NotFoundException;
 import com.lachozag4.pisip.aplicacion.servicios.NotificacionService;
+import com.lachozag4.pisip.aplicacion.servicios.PedidoHistorialService;
 import com.lachozag4.pisip.dominio.entidades.Pedido;
 import com.lachozag4.pisip.infraestructura.seguridad.Roles;
 import com.lachozag4.pisip.presentacion.dto.request.CambiarEstadoRequestDTO;
 import com.lachozag4.pisip.presentacion.dto.request.PedidoRequestDTO;
+import com.lachozag4.pisip.presentacion.dto.response.PedidoHistorialResponseDTO;
 import com.lachozag4.pisip.presentacion.dto.response.PedidoPaginadoResponseDTO;
 import com.lachozag4.pisip.presentacion.dto.response.PedidoResponseDTO;
 import com.lachozag4.pisip.presentacion.mapeadores.IPedidoDtoMapper;      // Dominio -> ResponseDTO
@@ -41,9 +46,11 @@ import lombok.RequiredArgsConstructor;
 public class PedidoControlador {
 
     private final IPedidoUseCase pedidoUseCase;
+    private final ICajaUseCase cajaUseCase;
     private final IPedidoDtoMapper responseMapper;         // Dominio -> ResponseDTO
     private final PedidoRequestMapper pedidoRequestMapper; // RequestDTO -> Dominio
     private final NotificacionService notificaciones;
+    private final PedidoHistorialService historialService;
 
     // =======================
     //         QUERIES
@@ -64,6 +71,13 @@ public class PedidoControlador {
     public ResponseEntity<PedidoResponseDTO> obtenerPorId(@PathVariable("id") int idpedido) {
         var pedido = pedidoUseCase.obtenerPorId(idpedido);
         return ResponseEntity.ok(responseMapper.toResponseDTO(pedido));
+    }
+
+    @GetMapping("/{id:\\d+}/historial")
+    @PreAuthorize(Roles.TODOS)
+    public ResponseEntity<List<PedidoHistorialResponseDTO>> obtenerHistorial(@PathVariable("id") int idpedido) {
+        pedidoUseCase.obtenerPorId(idpedido);
+        return ResponseEntity.ok(historialService.listarPorPedido(idpedido));
     }
 
     @GetMapping("/cuenta/{idCuenta:\\d+}/reciente")
@@ -115,8 +129,10 @@ public class PedidoControlador {
     // =======================
 
     @PostMapping(consumes = "application/json")
-        @PreAuthorize(Roles.ADMIN_CAMARERO)
-    public ResponseEntity<PedidoResponseDTO> crear(@Valid @RequestBody PedidoRequestDTO request) {
+    @PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO_PEDIDOS)
+    public ResponseEntity<PedidoResponseDTO> crear(@Valid @RequestBody PedidoRequestDTO request,
+                                                   Authentication authentication) {
+        validarCajaAbiertaSiCajero(authentication);
 		var dominio = pedidoRequestMapper.toDomain(request);
         var creado  = pedidoUseCase.crear(dominio);
         var body    = responseMapper.toResponseDTO(creado);
@@ -126,10 +142,12 @@ public class PedidoControlador {
     }
 
     @PostMapping(value = "/con-cuenta", consumes = "application/json")
-    @PreAuthorize(Roles.ADMIN_CAMARERO)
+    @PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO_PEDIDOS)
     public ResponseEntity<PedidoResponseDTO> crearConCuenta(
             @Valid @RequestBody PedidoRequestDTO request,
-            @RequestParam(value = "estadoDestino", required = false) String estadoDestino) {
+            @RequestParam(value = "estadoDestino", required = false) String estadoDestino,
+            Authentication authentication) {
+        validarCajaAbiertaSiCajero(authentication);
         var dominio = pedidoRequestMapper.toDomain(request);
         var creado = pedidoUseCase.crearConCuenta(dominio, estadoDestino);
         var body = responseMapper.toResponseDTO(creado);
@@ -139,9 +157,11 @@ public class PedidoControlador {
     }
 
     @PutMapping(value = "/{id:\\d+}", consumes = "application/json")
-    @PreAuthorize(Roles.ADMIN_CAMARERO)
+    @PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO_PEDIDOS)
     public ResponseEntity<PedidoResponseDTO> actualizar(@PathVariable("id") int idpedido,
-                                                        @Valid @RequestBody PedidoRequestDTO request) {
+                                                        @Valid @RequestBody PedidoRequestDTO request,
+                                                        Authentication authentication) {
+        validarCajaAbiertaSiCajero(authentication);
 		var dominio      = pedidoRequestMapper.toDomain(request);
         var actualizado  = pedidoUseCase.actualizar(idpedido, dominio);
         return ResponseEntity.ok(responseMapper.toResponseDTO(actualizado));
@@ -157,6 +177,7 @@ public class PedidoControlador {
                                                            @Valid @RequestBody CambiarEstadoRequestDTO request,
                                                            Authentication authentication) {
         validarPermisoCambioEstadoCompat(request.getEstado(), authentication);
+        validarCajaAbiertaSiCajeroSiEnviaACocina(request.getEstado(), authentication);
         var actualizado = pedidoUseCase.cambiarEstado(idpedido, request.getEstado());
         return ResponseEntity.ok(responseMapper.toResponseDTO(actualizado));
     }
@@ -168,9 +189,10 @@ public class PedidoControlador {
      * Transición: PENDIENTE → EN_COCINA
      */
     @PatchMapping("/{id:\\d+}/confirmar")
-    @PreAuthorize(Roles.ADMIN_CAMARERO)
+    @PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO_PEDIDOS)
     public ResponseEntity<PedidoResponseDTO> confirmar(@PathVariable("id") int idpedido,
                                                        Authentication authentication) {
+        validarCajaAbiertaSiCajero(authentication);
         var actualizado = pedidoUseCase.cambiarEstado(idpedido, Pedido.ESTADO_EN_COCINA);
         var origen = obtenerRolOperativo(authentication);
         notificaciones.notificarCocina(idpedido, actualizado.getEstado(), origen);
@@ -226,10 +248,29 @@ public class PedidoControlador {
     }
 
     @DeleteMapping("/{id:\\d+}")
-    @PreAuthorize(Roles.ADMIN_CAMARERO)
+    @PreAuthorize(Roles.SOLO_ADMIN)
     public ResponseEntity<Void> eliminar(@PathVariable("id") int idpedido) {
         pedidoUseCase.eliminar(idpedido);
         return ResponseEntity.noContent().build();
+    }
+
+    private void validarCajaAbiertaSiCajeroSiEnviaACocina(String estadoSolicitado, Authentication authentication) {
+        var estado = (estadoSolicitado == null ? "" : estadoSolicitado.trim().toUpperCase());
+        if (Pedido.ESTADO_EN_COCINA.equals(estado)) {
+            validarCajaAbiertaSiCajero(authentication);
+        }
+    }
+
+    private void validarCajaAbiertaSiCajero(Authentication authentication) {
+        if (!tieneRol(authentication, Roles.CAJERO)) {
+            return;
+        }
+
+        try {
+            cajaUseCase.obtenerCajaAbierta();
+        } catch (NotFoundException ex) {
+            throw new BusinessException("Debe aperturar caja antes de crear o enviar pedidos como cajero.");
+        }
     }
 
     private void validarPermisoCambioEstadoCompat(String estadoSolicitado, Authentication authentication) {
@@ -240,11 +281,12 @@ public class PedidoControlador {
 
         boolean esAdmin = tieneRol(authentication, Roles.ADMIN);
         boolean esCamarero = tieneRol(authentication, Roles.CAMARERO);
+        boolean esCajero = tieneRol(authentication, Roles.CAJERO);
         boolean esCocina = tieneRol(authentication, Roles.COCINA);
         boolean permitido;
         switch (estado) {
             case Pedido.ESTADO_EN_COCINA:
-            permitido = esAdmin || esCamarero;
+            permitido = esAdmin || esCamarero || esCajero;
                 break;
             case "LISTO":
             case Pedido.ESTADO_LISTO_PARA_ENTREGA:
@@ -268,6 +310,9 @@ public class PedidoControlador {
     }
 
     private boolean tieneRol(Authentication authentication, String rol) {
+        if (authentication == null) {
+            return false;
+        }
         String authority = "ROLE_" + rol;
         return authentication.getAuthorities().stream().anyMatch(a -> authority.equals(a.getAuthority()));
     }

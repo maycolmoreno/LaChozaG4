@@ -11,6 +11,7 @@ import com.lachozag4.pisip.aplicacion.casosuso.entradas.IPagoUseCase;
 import com.lachozag4.pisip.aplicacion.excepciones.BusinessException;
 import com.lachozag4.pisip.aplicacion.excepciones.NotFoundException;
 import com.lachozag4.pisip.aplicacion.servicios.ComprobanteService;
+import com.lachozag4.pisip.aplicacion.servicios.PedidoHistorialService;
 import com.lachozag4.pisip.dominio.entidades.CajaTurno;
 import com.lachozag4.pisip.dominio.entidades.Cuenta;
 import com.lachozag4.pisip.dominio.entidades.Mesa;
@@ -19,6 +20,7 @@ import com.lachozag4.pisip.dominio.repositorios.ICajaTurnoRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.ICuentaRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.IMesaRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.IPagoRepositorio;
+import com.lachozag4.pisip.dominio.repositorios.IPedidoRepositorio;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,6 +36,8 @@ public class PagoUseCaseImpl implements IPagoUseCase {
 	private final ICajaTurnoRepositorio cajaRepositorio;
 	private final IMesaRepositorio mesaRepositorio;
 	private final ComprobanteService comprobanteService;
+	private final IPedidoRepositorio pedidoRepositorio;
+	private final PedidoHistorialService historialService;
 
 	@Override
 	@Transactional
@@ -59,7 +63,7 @@ public class PagoUseCaseImpl implements IPagoUseCase {
 		}
 
 		CajaTurno cajaAbierta = cajaRepositorio.buscarCajaAbierta()
-				.orElseThrow(() -> new BusinessException("No hay una caja abierta para registrar el pago"));
+				.orElseThrow(() -> new BusinessException("No hay una caja abierta. Abra caja antes de registrar pagos."));
 
 		double totalPagado = pagoRepositorio.totalPagadoCuenta(idcuenta);
 		double saldoPendiente = cuenta.getTotal() - totalPagado;
@@ -78,9 +82,25 @@ public class PagoUseCaseImpl implements IPagoUseCase {
 		if (nuevoTotalPagado + EPSILON >= cuenta.getTotal()) {
 			Cuenta pagada = cuenta.conEstado(Cuenta.ESTADO_PAGADA, LocalDateTime.now());
 			cuentaRepositorio.actualizar(pagada);
+			pedidoRepositorio.listarPorCuenta(idcuenta).forEach(pedido -> {
+				historialService.registrarEvento(
+						pedido.getIdpedido(),
+						PedidoHistorialService.ACCION_COBRAR_CUENTA,
+						pedido.getEstado(),
+						pedido.getEstado(),
+						"Cuenta #" + idcuenta + " cobrada completamente");
+			});
 			Mesa mesa = cuenta.getFkMesa();
 			if (mesa != null) {
 				mesaRepositorio.actualizar(mesa.conEstado(true));
+				pedidoRepositorio.listarPorCuenta(idcuenta).forEach(pedido -> {
+					historialService.registrarEvento(
+							pedido.getIdpedido(),
+							PedidoHistorialService.ACCION_CERRAR_MESA,
+							pedido.getEstado(),
+							pedido.getEstado(),
+							"Mesa #" + mesa.getNumero() + " liberada por cobro completo");
+				});
 			}
 		}
 

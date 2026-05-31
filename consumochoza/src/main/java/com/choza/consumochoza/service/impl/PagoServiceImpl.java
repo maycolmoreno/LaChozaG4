@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.choza.consumochoza.modelo.dto.ComprobanteDTO;
 import com.choza.consumochoza.modelo.dto.DropboxEstadoDTO;
 import com.choza.consumochoza.modelo.dto.PagoDTO;
+import com.choza.consumochoza.service.ApiClientException;
 import com.choza.consumochoza.service.IPagoService;
 
 import lombok.RequiredArgsConstructor;
@@ -40,12 +41,17 @@ public class PagoServiceImpl implements IPagoService {
                 "usuario", usuario
         );
 
-        return webClient.post()
-                .uri("/cuentas/{idCuenta}/pagos", idCuenta)
-                .bodyValue(body)
-                .retrieve()
-                .bodyToMono(PagoDTO.class)
-                .block(TIMEOUT);
+        try {
+            return webClient.post()
+                    .uri("/cuentas/{idCuenta}/pagos", idCuenta)
+                    .bodyValue(body)
+                    .retrieve()
+                    .bodyToMono(PagoDTO.class)
+                    .block(TIMEOUT);
+        } catch (Exception e) {
+            log.warn("No se pudo registrar pago para cuenta {}: {}", idCuenta, e.getMessage());
+            throw ApiErrorUtil.toApiException("No se pudo registrar el pago.", e);
+        }
     }
 
     @Override
@@ -79,6 +85,11 @@ public class PagoServiceImpl implements IPagoService {
                     .block(TIMEOUT);
         } catch (IOException e) {
             throw new IllegalStateException("No se pudo leer el archivo del comprobante.", e);
+        } catch (ApiClientException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("No se pudo subir comprobante del pago {}: {}", idPago, e.getMessage());
+            throw ApiErrorUtil.toApiException("No se pudo subir el comprobante.", e);
         }
     }
 

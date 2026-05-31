@@ -30,6 +30,7 @@ import com.lachozag4.pisip.aplicacion.casosuso.impl.ProductoUseCaseImpl;
 import com.lachozag4.pisip.aplicacion.casosuso.impl.ReporteUseCaseImpl;
 import com.lachozag4.pisip.aplicacion.casosuso.impl.UsuarioUseCaseImpl;
 import com.lachozag4.pisip.aplicacion.servicios.GestionStockServicioImpl;
+import com.lachozag4.pisip.aplicacion.servicios.PedidoHistorialService;
 import com.lachozag4.pisip.dominio.entidades.Categoria;
 import com.lachozag4.pisip.dominio.repositorios.ICajaTurnoRepositorio;
 import com.lachozag4.pisip.dominio.repositorios.ICategoriaRepositorio;
@@ -114,8 +115,10 @@ return new ClienteUseCaseImpl(repositorio);
 }
 
 @Bean
-ICuentaUseCase cuentaUseCase(ICuentaRepositorio repositorio, IPedidoRepositorio pedidoRepositorio, IClienteRepositorio clienteRepositorio, IMesaRepositorio mesaRepositorio) {
-return new CuentaUseCaseImpl(repositorio, pedidoRepositorio, clienteRepositorio, mesaRepositorio);
+ICuentaUseCase cuentaUseCase(ICuentaRepositorio repositorio, IPedidoRepositorio pedidoRepositorio,
+IClienteRepositorio clienteRepositorio, IMesaRepositorio mesaRepositorio,
+PedidoHistorialService historialService) {
+return new CuentaUseCaseImpl(repositorio, pedidoRepositorio, clienteRepositorio, mesaRepositorio, historialService);
 }
 
 @Bean
@@ -151,8 +154,9 @@ return new GestionStockServicioImpl(productoRepositorio);
 @Bean
 IPedidoUseCase pedidoUseCase(IPedidoRepositorio repositorio, IGestionStockServicio stockServicio,
 ICuentaRepositorio cuentaRepositorio,
-IMesaRepositorio mesaRepositorio) {
-return new PedidoUseCaseImpl(repositorio, stockServicio, cuentaRepositorio, mesaRepositorio);
+IMesaRepositorio mesaRepositorio,
+PedidoHistorialService historialService) {
+return new PedidoUseCaseImpl(repositorio, stockServicio, cuentaRepositorio, mesaRepositorio, historialService);
 }
 
 @Bean
@@ -197,8 +201,11 @@ return new CajaUseCaseImpl(cajaRepositorio, pagoRepositorio);
 @Bean
 IPagoUseCase pagoUseCase(IPagoRepositorio pagoRepositorio, ICuentaRepositorio cuentaRepositorio,
 ICajaTurnoRepositorio cajaRepositorio, IMesaRepositorio mesaRepositorio,
-com.lachozag4.pisip.aplicacion.servicios.ComprobanteService comprobanteService) {
-return new PagoUseCaseImpl(pagoRepositorio, cuentaRepositorio, cajaRepositorio, mesaRepositorio, comprobanteService);
+com.lachozag4.pisip.aplicacion.servicios.ComprobanteService comprobanteService,
+IPedidoRepositorio pedidoRepositorio,
+PedidoHistorialService historialService) {
+return new PagoUseCaseImpl(pagoRepositorio, cuentaRepositorio, cajaRepositorio, mesaRepositorio, comprobanteService,
+pedidoRepositorio, historialService);
 }
 
 @Bean

@@ -22,6 +22,7 @@ import com.choza.consumochoza.modelo.dto.ComprobanteDTO;
 import com.choza.consumochoza.modelo.dto.CuentaDTO;
 import com.choza.consumochoza.modelo.dto.DropboxEstadoDTO;
 import com.choza.consumochoza.modelo.dto.PagoDTO;
+import com.choza.consumochoza.service.ApiClientException;
 import com.choza.consumochoza.service.IClienteService;
 import com.choza.consumochoza.service.ICuentaService;
 import com.choza.consumochoza.service.IPagoService;
@@ -139,7 +140,8 @@ public class CuentasControlador {
                 }
             }
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensajeError", "No se pudo cobrar la cuenta: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("mensajeError",
+                    mensajeParaAlerta("No se pudo cobrar la cuenta.", e));
         }
         // Si viene desde la lista de pedidos, regresar allí; de lo contrario, a cuentas
         if (origen != null && origen.equalsIgnoreCase("pedidos")) {
@@ -154,7 +156,8 @@ public class CuentasControlador {
             cuentaService.cambiarEstado(idcuenta, "ANULADA");
             redirectAttributes.addFlashAttribute("mensajeExito", "Cuenta anulada correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensajeError", "No se pudo anular la cuenta: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("mensajeError",
+                    mensajeParaAlerta("No se pudo anular la cuenta.", e));
         }
         return "redirect:/cuentas";
     }
@@ -169,7 +172,8 @@ public class CuentasControlador {
             cuentaService.asignarCliente(idcuenta, idCliente);
             redirectAttributes.addFlashAttribute("mensajeExito", "Cliente asignado correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensajeError", "No se pudo asignar el cliente: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("mensajeError",
+                    mensajeParaAlerta("No se pudo asignar el cliente.", e));
         }
         String redirect = "redirect:/cuentas/" + idcuenta + "/pagos";
         if (origen != null && !origen.isBlank()) redirect += "?origen=" + origen;
@@ -293,11 +297,25 @@ public class CuentasControlador {
                 redirectAttributes.addFlashAttribute("mensajeExito", "Pago registrado correctamente.");
             }
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensajeError", "No se pudo registrar el pago: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("mensajeError",
+                    mensajeParaAlerta("No se pudo registrar el pago.", e));
         }
         if (origen != null && !origen.isBlank()) {
             return "redirect:/cuentas/" + idcuenta + "/pagos?origen=" + origen;
         }
         return "redirect:/cuentas/" + idcuenta + "/pagos";
+    }
+
+    private String mensajeParaAlerta(String mensajeBase, Exception ex) {
+        String detalle = ex.getMessage();
+        if (ex instanceof ApiClientException || ex instanceof IllegalArgumentException || ex instanceof IllegalStateException) {
+            return detalle == null || detalle.isBlank() ? mensajeBase : detalle;
+        }
+        if (detalle != null && (detalle.contains("400 Bad Request") || detalle.contains("403 Forbidden"))) {
+            return mensajeBase;
+        }
+        return detalle == null || detalle.isBlank()
+                ? mensajeBase
+                : mensajeBase + " " + detalle;
     }
 }

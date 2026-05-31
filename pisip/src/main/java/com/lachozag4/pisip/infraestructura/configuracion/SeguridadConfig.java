@@ -130,19 +130,19 @@ public class SeguridadConfig {
                 // ═══════════════════════════════════════════════════════════════
                 // PEDIDOS — acceso base URL-level; control fino vía @PreAuthorize
                 //   GET    → ADMIN/CAMARERO/COCINA/CAJERO
-                //   POST   → ADMIN/CAMARERO
-                //   PUT    → ADMIN/CAMARERO
-                //   DELETE → ADMIN/CAMARERO
+                //   POST   → ADMIN/CAMARERO/CAJERO
+                //   PUT    → ADMIN/CAMARERO/CAJERO
+                //   DELETE → ADMIN
                 //   PATCH  → se delega a @PreAuthorize por semántica de estado
                 // ═══════════════════════════════════════════════════════════════
                 .requestMatchers(HttpMethod.GET, "/api/pedidos/**")
                     .hasAnyRole("ADMIN", "CAMARERO", "COCINA", "CAJERO")
                 .requestMatchers(HttpMethod.POST,   "/api/pedidos/**")
-                    .hasAnyRole("ADMIN", "CAMARERO")
+                    .hasAnyRole("ADMIN", "CAMARERO", "CAJERO")
                 .requestMatchers(HttpMethod.PUT,    "/api/pedidos/**")
-                    .hasAnyRole("ADMIN", "CAMARERO")
+                    .hasAnyRole("ADMIN", "CAMARERO", "CAJERO")
                 .requestMatchers(HttpMethod.DELETE, "/api/pedidos/**")
-                    .hasAnyRole("ADMIN", "CAMARERO")
+                    .hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PATCH,  "/api/pedidos/**")
                     .hasAnyRole("ADMIN", "CAMARERO", "COCINA", "CAJERO")
 

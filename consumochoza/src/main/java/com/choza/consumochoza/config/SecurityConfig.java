@@ -46,11 +46,14 @@ public class SecurityConfig {
 				// COCINA: ve pedidos pendientes (ADMIN también puede acceder)
 				.requestMatchers("/cocina/**").hasAnyRole("COCINA", "ADMIN")
 
-				// Creación y cambios operativos de pedidos: ADMIN/CAMARERO
+				// Cancelación/eliminación lógica de pedidos: solo ADMIN
+				.requestMatchers("/pedidos/eliminar/**").hasRole("ADMIN")
+
+				// Creación y cambios operativos de pedidos desde mesas: ADMIN/CAMARERO/CAJERO
 				.requestMatchers("/pedidos/nuevo", "/pedidos/guardar", "/pedidos/editar/**",
-						"/pedidos/eliminar/**", "/pedidos/finalizar/**", "/pedidos/entregar/**",
+						"/pedidos/finalizar/**", "/pedidos/entregar/**",
 						"/pedidos/enviar-cocina/**", "/pedidos/enviar-bar/**", "/pedidos/finalizar-bar/**")
-				.hasAnyRole("CAMARERO", "ADMIN")
+				.hasAnyRole("CAMARERO", "ADMIN", "CAJERO")
 
 				// Consulta de pedidos
 				.requestMatchers("/pedidos/**").hasAnyRole("CAMARERO", "ADMIN", "CAJERO")

@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.ICuentaUseCase;
 import com.lachozag4.pisip.aplicacion.excepciones.BusinessException;
 import com.lachozag4.pisip.aplicacion.excepciones.NotFoundException;
+import com.lachozag4.pisip.aplicacion.servicios.PedidoHistorialService;
 import com.lachozag4.pisip.dominio.entidades.Cuenta;
 import com.lachozag4.pisip.dominio.entidades.Pedido;
 import com.lachozag4.pisip.dominio.repositorios.IClienteRepositorio;
@@ -24,6 +25,7 @@ public class CuentaUseCaseImpl implements ICuentaUseCase {
 	private final IPedidoRepositorio pedidoRepositorio;
 	private final IClienteRepositorio clienteRepositorio;
 	private final IMesaRepositorio mesaRepositorio;
+	private final PedidoHistorialService historialService;
 
 	@Override
 	@Transactional
@@ -85,8 +87,10 @@ public class CuentaUseCaseImpl implements ICuentaUseCase {
 		if (Cuenta.ESTADO_PAGADA.equals(nuevoEstado)) {
 			pedidoRepositorio.listarPorCuenta(idcuenta).stream()
 					.filter(p -> !p.esEstadoFinal())
-					.map(p -> p.conEstadoForzado(Pedido.ESTADO_COMPLETADO))
-					.forEach(pedidoRepositorio::actualizar);
+					.forEach(p -> {
+						var actualizado = pedidoRepositorio.actualizar(p.conEstadoForzado(Pedido.ESTADO_COMPLETADO));
+						historialService.registrarCambioEstado(p, actualizado);
+					});
 		}
 
 		LocalDateTime ahora = LocalDateTime.now();
@@ -97,6 +101,13 @@ public class CuentaUseCaseImpl implements ICuentaUseCase {
 		if (existente.getFkMesa() != null) {
 			mesaRepositorio.buscarPorId(existente.getFkMesa().getIdmesa())
 					.ifPresent(mesa -> mesaRepositorio.actualizar(mesa.conEstado(true)));
+			pedidoRepositorio.listarPorCuenta(idcuenta).forEach(pedido ->
+					historialService.registrarEvento(
+							pedido.getIdpedido(),
+							PedidoHistorialService.ACCION_CERRAR_MESA,
+							pedido.getEstado(),
+							pedido.getEstado(),
+							"Mesa liberada por cierre de cuenta " + nuevoEstado));
 		}
 
 		return resultado;

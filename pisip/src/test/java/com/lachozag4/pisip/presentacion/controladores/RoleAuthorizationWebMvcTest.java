@@ -3,6 +3,7 @@ package com.lachozag4.pisip.presentacion.controladores;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -22,6 +23,7 @@ import com.lachozag4.pisip.aplicacion.casosuso.entradas.IPagoUseCase;
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.IPedidoUseCase;
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.IProductoUseCase;
 import com.lachozag4.pisip.aplicacion.casosuso.entradas.IUsuarioUseCase;
+import com.lachozag4.pisip.aplicacion.excepciones.NotFoundException;
 import com.lachozag4.pisip.aplicacion.servicios.ComprobanteService;
 import com.lachozag4.pisip.aplicacion.servicios.NotificacionService;
 import com.lachozag4.pisip.dominio.entidades.CajaTurno;
@@ -51,6 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -187,13 +190,37 @@ class RoleAuthorizationWebMvcTest {
     private JwtUtil jwtUtil;
 
     @Test
-    void cajeroNoPuedeCrearPedidos() throws Exception {
+    void cajeroPuedeCrearPedidos() throws Exception {
+        Pedido pedido = pedidoDominio(Pedido.ESTADO_PENDIENTE);
+        PedidoResponseDTO response = pedidoResponse(16, Pedido.ESTADO_PENDIENTE);
+
+        when(pedidoRequestMapper.toDomain(any(PedidoRequestDTO.class))).thenReturn(pedido);
+        when(pedidoUseCase.crear(pedido)).thenReturn(pedido);
+        when(pedidoDtoMapper.toResponseDTO(pedido)).thenReturn(response);
+        when(cajaUseCase.obtenerCajaAbierta()).thenReturn(cajaAbierta());
+
         mvc.perform(post("/api/pedidos")
                         .with(user("cajero").roles("CAJERO"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(PEDIDO_VALIDO))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isCreated());
 
+        verify(pedidoUseCase).crear(pedido);
+    }
+
+    @Test
+    void cajeroNoPuedeCrearPedidoSinCajaAbierta() throws Exception {
+        when(cajaUseCase.obtenerCajaAbierta())
+                .thenThrow(new NotFoundException("No hay una caja abierta actualmente"));
+
+        mvc.perform(post("/api/pedidos")
+                        .with(user("cajero").roles("CAJERO"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(PEDIDO_VALIDO))
+                .andExpect(status().isBadRequest());
+
+        verify(cajaUseCase).obtenerCajaAbierta();
+        verifyNoInteractions(pedidoRequestMapper);
         verifyNoInteractions(pedidoUseCase);
     }
 
@@ -204,6 +231,20 @@ class RoleAuthorizationWebMvcTest {
                 .andExpect(status().isForbidden());
 
         verifyNoInteractions(pedidoUseCase);
+    }
+
+    @Test
+    void cajeroPuedeEnviarPedidoACocina() throws Exception {
+        Pedido pedido = pedidoDominio(Pedido.ESTADO_EN_COCINA);
+        when(pedidoUseCase.cambiarEstado(10, Pedido.ESTADO_EN_COCINA)).thenReturn(pedido);
+        when(pedidoDtoMapper.toResponseDTO(pedido)).thenReturn(pedidoResponse(10, Pedido.ESTADO_EN_COCINA));
+        when(cajaUseCase.obtenerCajaAbierta()).thenReturn(cajaAbierta());
+
+        mvc.perform(patch("/api/pedidos/10/confirmar")
+                        .with(user("cajero").roles("CAJERO")))
+                .andExpect(status().isOk());
+
+        verify(pedidoUseCase).cambiarEstado(10, Pedido.ESTADO_EN_COCINA);
     }
 
     @Test
@@ -227,6 +268,15 @@ class RoleAuthorizationWebMvcTest {
     }
 
     @Test
+    void cajeroNoPuedeEliminarPedidosPorDelete() throws Exception {
+        mvc.perform(delete("/api/pedidos/10")
+                        .with(user("cajero").roles("CAJERO")))
+                .andExpect(status().isForbidden());
+
+        verifyNoInteractions(pedidoUseCase);
+    }
+
+    @Test
     void camareroPuedeCrearPedidos() throws Exception {
         Pedido pedido = pedidoDominio(Pedido.ESTADO_PENDIENTE);
         PedidoResponseDTO response = pedidoResponse(15, Pedido.ESTADO_PENDIENTE);
@@ -242,6 +292,7 @@ class RoleAuthorizationWebMvcTest {
                 .andExpect(status().isCreated());
 
         verify(pedidoUseCase).crear(pedido);
+        verify(cajaUseCase, never()).obtenerCajaAbierta();
     }
 
     @Test
@@ -281,6 +332,15 @@ class RoleAuthorizationWebMvcTest {
                 .andExpect(status().isOk());
 
         verify(pedidoUseCase).cambiarEstado(10, Pedido.ESTADO_CANCELADO);
+    }
+
+    @Test
+    void adminPuedeEliminarPedidoPorDelete() throws Exception {
+        mvc.perform(delete("/api/pedidos/10")
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isNoContent());
+
+        verify(pedidoUseCase).eliminar(10);
     }
 
     @Test
@@ -475,6 +535,43 @@ class RoleAuthorizationWebMvcTest {
     }
 
     @Test
+    void setupAdminSeBloqueaSiYaExistenUsuarios() throws Exception {
+        Usuario existente = new Usuario(1, "romo", "hash", "Administrador", "ADMIN", true, false);
+        when(usuarioUseCase.listar()).thenReturn(List.of(existente));
+
+        mvc.perform(post("/api/usuarios/setup-admin")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(USUARIO_VALIDO))
+                .andExpect(status().isForbidden());
+
+        verify(usuarioUseCase, never()).crear(any(Usuario.class));
+        verifyNoInteractions(usuarioDtoMapper);
+    }
+
+    @Test
+    void setupAdminCreaAdminSoloCuandoNoHayUsuarios() throws Exception {
+        Usuario usuario = new Usuario(9, "admin2", "secret", "Administrador Dos", "ADMIN", true, false);
+        UsuarioResponseDTO response = new UsuarioResponseDTO();
+        response.setIdusuario(9);
+        response.setUsername("admin2");
+        response.setNombreCompleto("Administrador Dos");
+        response.setRol("ADMIN");
+        response.setEstado(true);
+
+        when(usuarioUseCase.listar()).thenReturn(List.of());
+        when(usuarioDtoMapper.toDomain(any(UsuarioRequestDTO.class))).thenReturn(usuario);
+        when(usuarioUseCase.crear(usuario)).thenReturn(usuario);
+        when(usuarioDtoMapper.toResponseDTO(usuario)).thenReturn(response);
+
+        mvc.perform(post("/api/usuarios/setup-admin")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(USUARIO_VALIDO))
+                .andExpect(status().isCreated());
+
+        verify(usuarioUseCase).crear(usuario);
+    }
+
+    @Test
     void adminPuedeActualizarProducto() throws Exception {
         Categoria categoria = new Categoria(1, "Platos", "Menu principal", true);
         Producto producto = new Producto(4, "Seco de pollo", 7.50, 10, "Con arroz", "", true, categoria);
@@ -522,6 +619,11 @@ class RoleAuthorizationWebMvcTest {
         return dto;
     }
 
+    private CajaTurno cajaAbierta() {
+        return new CajaTurno(3, LocalDateTime.now(), null, 20.0, null, null, null,
+                CajaTurno.ESTADO_ABIERTA, "cajero", null, null);
+    }
+
     @TestConfiguration
     @EnableMethodSecurity
     static class SecurityForTests {
@@ -529,7 +631,9 @@ class RoleAuthorizationWebMvcTest {
         SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
             return http
                     .csrf(csrf -> csrf.disable())
-                    .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+                    .authorizeHttpRequests(auth -> auth
+                            .requestMatchers(HttpMethod.POST, "/api/usuarios/setup-admin").permitAll()
+                            .anyRequest().authenticated())
                     .build();
         }
     }

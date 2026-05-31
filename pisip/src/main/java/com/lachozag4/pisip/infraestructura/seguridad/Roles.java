@@ -32,6 +32,10 @@ public final class Roles {
     public static final String ADMIN_CAMARERO =
             "hasAnyRole('ADMIN','CAMARERO')";
 
+    /** ADMIN + CAMARERO + CAJERO (creación/edición operativa de pedidos desde mesas) */
+    public static final String ADMIN_CAMARERO_CAJERO_PEDIDOS =
+            "hasAnyRole('ADMIN','CAMARERO','CAJERO')";
+
     /** ADMIN + COCINA (operaciones de cocina) */
     public static final String ADMIN_COCINA =
             "hasAnyRole('ADMIN','COCINA')";

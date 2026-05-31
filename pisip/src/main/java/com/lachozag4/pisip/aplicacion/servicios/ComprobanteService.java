@@ -45,9 +45,10 @@ public class ComprobanteService {
         });
 
         var nombreDropbox = construirNombreDropbox(idpago, nombreOriginal);
+        String rutaDropbox = null;
 
         try {
-            var rutaDropbox = dropboxService.subirArchivo(nombreDropbox, archivo.getInputStream(), archivo.getSize());
+            rutaDropbox = dropboxService.subirArchivo(nombreDropbox, archivo.getInputStream(), archivo.getSize());
             var urlDropbox = dropboxService.obtenerUrlPublica(rutaDropbox);
 
             var entity = new ComprobantePagoJpa();
@@ -64,6 +65,9 @@ public class ComprobanteService {
             return toDomain(comprobanteRepositorio.save(entity));
         } catch (IOException ex) {
             throw new IllegalStateException("No se pudo leer el comprobante.", ex);
+        } catch (RuntimeException ex) {
+            eliminarArchivoSubidoSiAplica(rutaDropbox);
+            throw ex;
         }
     }
 
@@ -119,6 +123,18 @@ public class ComprobanteService {
             extension = nombreOriginal.substring(punto).toLowerCase();
         }
         return "pago_" + idpago + "_" + UUID.randomUUID() + extension;
+    }
+
+    private void eliminarArchivoSubidoSiAplica(String rutaDropbox) {
+        if (rutaDropbox == null || rutaDropbox.isBlank()) {
+            return;
+        }
+
+        try {
+            dropboxService.eliminarArchivo(rutaDropbox);
+        } catch (IDropboxService.DropboxException ignored) {
+            // La operacion principal debe conservar el error original.
+        }
     }
 
     private ComprobantePago toDomain(ComprobantePagoJpa entity) {
