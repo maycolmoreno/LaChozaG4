@@ -43,6 +43,9 @@ public class ProductoJpa implements Serializable {
 	@Column(name = "imagen_url", length = 500)
 	private String imagenUrl;
 
+	@Column(name = "thumbnail_url", length = 500)
+	private String thumbnailUrl;
+
 	@Column(nullable = false)
 	private boolean estado;
 

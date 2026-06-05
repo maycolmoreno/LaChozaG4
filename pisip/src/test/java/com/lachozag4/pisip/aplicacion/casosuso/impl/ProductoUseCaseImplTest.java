@@ -31,7 +31,7 @@ class ProductoUseCaseImplTest {
     @Test
     void eliminarDesactivaProductoSinBorrarloFisicamenteParaMantenerHistorial() {
         var categoria = new Categoria(2, "Platos", "Menu principal", true);
-        var producto = new Producto(7, "Seco de pollo", 7.50, 12, "Con arroz", "foto.jpg", true, categoria);
+        var producto = new Producto(7, "Seco de pollo", 7.50, 12, "Con arroz", "foto.jpg", null, true, categoria);
 
         when(productoRepositorio.buscarPorId(7)).thenReturn(Optional.of(producto));
         when(productoRepositorio.guardar(any(Producto.class))).thenAnswer(invocation -> invocation.getArgument(0));

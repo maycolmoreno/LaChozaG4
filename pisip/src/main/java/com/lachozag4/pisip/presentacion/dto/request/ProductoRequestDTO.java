@@ -25,6 +25,8 @@ public class ProductoRequestDTO {
 	private String descripcion;
 	@Size(max = 500, message = "La URL de imagen no debe superar 500 caracteres")
 	private String imagenUrl;
+	@Size(max = 500, message = "La URL de thumbnail no debe superar 500 caracteres")
+	private String thumbnailUrl;
 	private boolean estado;
 
 	@Min(value = 1, message = "La categoría es obligatoria")

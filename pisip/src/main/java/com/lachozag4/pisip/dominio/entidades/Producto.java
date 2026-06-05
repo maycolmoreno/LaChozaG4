@@ -12,19 +12,21 @@ public class Producto implements Serializable {
     private final int stockActual;
     private final String descripcion;
     private final String imagenUrl;
+	private final String thumbnailUrl;
     private final boolean estado;
 	private Categoria fkCategoria;
 
 	
 	
 	public Producto(int idproducto, String nombre, double precio, int stockActual, String descripcion, String imagenUrl,
-			boolean estado, Categoria fkCategoria) {
+			String thumbnailUrl, boolean estado, Categoria fkCategoria) {
 		this.idproducto = idproducto;
 		this.nombre = nombre;
 		this.precio = precio;
 		this.stockActual = stockActual;
 		this.descripcion = descripcion;
 		this.imagenUrl = imagenUrl;
+		this.thumbnailUrl = thumbnailUrl;
 		this.estado = estado;
 		this.fkCategoria = fkCategoria;
 	}
@@ -51,6 +53,10 @@ public class Producto implements Serializable {
 
 	public String getImagenUrl() {
 		return imagenUrl;
+	}
+
+	public String getThumbnailUrl() {
+		return thumbnailUrl;
 	}
 
 	public boolean isEstado() {
@@ -88,7 +94,7 @@ public class Producto implements Serializable {
                 "Stock insuficiente para " + nombre + ". Disponible: " + stockActual + ", Solicitado: " + cantidad);
         }
         return new Producto(idproducto, nombre, precio, stockActual - cantidad, 
-                descripcion, imagenUrl, estado, fkCategoria);
+                descripcion, imagenUrl, thumbnailUrl, estado, fkCategoria);
     }
 
     /**
@@ -96,7 +102,7 @@ public class Producto implements Serializable {
      */
     public Producto restaurarStock(int cantidad) {
         return new Producto(idproducto, nombre, precio, stockActual + cantidad, 
-                descripcion, imagenUrl, estado, fkCategoria);
+                descripcion, imagenUrl, thumbnailUrl, estado, fkCategoria);
     }
 
     @Override

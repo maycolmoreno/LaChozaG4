@@ -42,7 +42,7 @@ class PedidoRequestMapperTest {
         when(clienteUseCase.obtenerPorId(3))
                 .thenReturn(new Cliente(3, "Cliente", "000", null, null, null, true));
         when(productoUseCase.buscarPorId(4))
-                .thenReturn(new Producto(4, "Seco de pollo", 7.50, 20, "", null, true, null));
+                .thenReturn(new Producto(4, "Seco de pollo", 7.50, 20, "", null, null, true, null));
 
         var detalle = new PedidoDetalleRequestDTO();
         detalle.setIdProducto(4);

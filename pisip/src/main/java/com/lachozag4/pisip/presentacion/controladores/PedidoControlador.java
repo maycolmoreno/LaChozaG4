@@ -228,7 +228,7 @@ public class PedidoControlador {
      * Transición: LISTO_PARA_ENTREGA → COMPLETADO
      */
     @PatchMapping("/{id:\\d+}/entregado")
-    @PreAuthorize(Roles.ADMIN_CAMARERO)
+    @PreAuthorize(Roles.ADMIN_CAMARERO_CAJERO_PEDIDOS)
     public ResponseEntity<PedidoResponseDTO> entregado(@PathVariable("id") int idpedido) {
         var actualizado = pedidoUseCase.cambiarEstado(idpedido, Pedido.ESTADO_COMPLETADO);
         notificaciones.notificarCamareroEntregado(idpedido, actualizado.getEstado(), "CAMARERO");
@@ -294,7 +294,7 @@ public class PedidoControlador {
                 break;
             case Pedido.ESTADO_COMPLETADO:
             case "ENTREGADO":
-                permitido = esAdmin || esCamarero;
+                permitido = esAdmin || esCamarero || esCajero;
                 break;
             case Pedido.ESTADO_CANCELADO:
                 permitido = esAdmin;

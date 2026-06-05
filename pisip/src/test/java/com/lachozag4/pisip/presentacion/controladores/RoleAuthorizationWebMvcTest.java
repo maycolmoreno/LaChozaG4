@@ -26,6 +26,7 @@ import com.lachozag4.pisip.aplicacion.casosuso.entradas.IUsuarioUseCase;
 import com.lachozag4.pisip.aplicacion.excepciones.NotFoundException;
 import com.lachozag4.pisip.aplicacion.servicios.ComprobanteService;
 import com.lachozag4.pisip.aplicacion.servicios.NotificacionService;
+import com.lachozag4.pisip.aplicacion.servicios.PedidoHistorialService;
 import com.lachozag4.pisip.dominio.entidades.CajaTurno;
 import com.lachozag4.pisip.dominio.entidades.Categoria;
 import com.lachozag4.pisip.dominio.entidades.Pago;
@@ -155,6 +156,9 @@ class RoleAuthorizationWebMvcTest {
 
     @MockitoBean
     private NotificacionService notificacionService;
+
+    @MockitoBean
+    private PedidoHistorialService pedidoHistorialService;
 
     @MockitoBean
     private IPagoUseCase pagoUseCase;
@@ -466,7 +470,7 @@ class RoleAuthorizationWebMvcTest {
     @Test
     void adminPuedeCrearProducto() throws Exception {
         Categoria categoria = new Categoria(1, "Platos", "Menu principal", true);
-        Producto producto = new Producto(4, "Seco de pollo", 7.50, 10, "Con arroz", "", true, categoria);
+        Producto producto = new Producto(4, "Seco de pollo", 7.50, 10, "Con arroz", "", null, true, categoria);
         ProductoResponseDTO response = new ProductoResponseDTO();
         response.setIdproducto(4);
         response.setNombre("Seco de pollo");
@@ -574,7 +578,7 @@ class RoleAuthorizationWebMvcTest {
     @Test
     void adminPuedeActualizarProducto() throws Exception {
         Categoria categoria = new Categoria(1, "Platos", "Menu principal", true);
-        Producto producto = new Producto(4, "Seco de pollo", 7.50, 10, "Con arroz", "", true, categoria);
+        Producto producto = new Producto(4, "Seco de pollo", 7.50, 10, "Con arroz", "", null, true, categoria);
         ProductoResponseDTO response = new ProductoResponseDTO();
         response.setIdproducto(4);
         response.setNombre("Seco de pollo");

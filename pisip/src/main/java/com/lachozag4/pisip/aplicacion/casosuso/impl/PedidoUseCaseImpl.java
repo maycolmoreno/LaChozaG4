@@ -131,13 +131,14 @@ public class PedidoUseCaseImpl implements IPedidoUseCase {
 		Pedido guardado = repositorio.guardar(existente.conEstado(nuevoEstado));
 		historialService.registrarCambioEstado(existente, guardado);
 
-		// Si el pedido queda COMPLETADO o CANCELADO, verificar si la mesa
-		// tiene otros pedidos activos; si no, marcarla como LIBRE (estado = true)
-		if ((Pedido.ESTADO_COMPLETADO.equals(nuevoEstado) || Pedido.ESTADO_CANCELADO.equals(nuevoEstado))
-				&& guardado.getFkMesa() != null) {
+		// ENTREGADO/COMPLETADO no libera la mesa: queda pendiente de cobro.
+		// Solo una cancelacion sin cuenta abierta puede liberar la mesa aqui.
+		// El cierre/cobro real de una cuenta libera la mesa en CuentaUseCaseImpl.
+		if (Pedido.ESTADO_CANCELADO.equals(nuevoEstado) && guardado.getFkMesa() != null) {
 			int idMesa = guardado.getFkMesa().getIdmesa();
 			boolean tieneOtrosPedidosActivos = repositorio.existePedidoActivoPorMesa(idMesa, guardado.getIdpedido());
-			if (!tieneOtrosPedidosActivos) {
+			boolean tieneCuentaAbierta = cuentaRepositorio.buscarAbiertaPorMesa(idMesa).isPresent();
+			if (!tieneOtrosPedidosActivos && !tieneCuentaAbierta) {
 				mesaRepositorio.buscarPorId(idMesa).ifPresent(mesa ->
 					mesaRepositorio.guardar(mesa.conEstado(true))
 				);

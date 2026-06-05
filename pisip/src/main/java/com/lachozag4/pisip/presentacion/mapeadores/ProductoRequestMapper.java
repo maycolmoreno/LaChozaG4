@@ -28,6 +28,7 @@ public class ProductoRequestMapper {
                 dto.getStockActual(),
                 dto.getDescripcion(),
                 dto.getImagenUrl(),
+                dto.getThumbnailUrl(),
                 dto.isEstado(),
                 null // La categoría se resuelve en el caso de uso
         );

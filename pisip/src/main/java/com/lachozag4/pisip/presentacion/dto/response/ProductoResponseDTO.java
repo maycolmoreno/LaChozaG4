@@ -11,6 +11,7 @@ public class ProductoResponseDTO {
 	private int stockActual;
 	private String descripcion;
 	private String imagenUrl;
+	private String thumbnailUrl;
 	private boolean estado;
 	private int categoriaId;
 
